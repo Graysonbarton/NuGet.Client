@@ -24,11 +24,18 @@ steps:
     arguments: "-Force -CleanCache"
 
 - task: MSBuild@1
-  displayName: "Restore for VS2019"
+  displayName: "Restore"
   inputs:
-    solution: "build\\build.proj"
+    solution: "NuGet.sln"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+    msbuildArguments: "/target:restore /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+
+- task: MSBuild@1
+  displayName: "Build"
+  inputs:
+    solution: "NuGet.sln"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/restore:false /target:Build /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
 - task: MSBuild@1
   displayName: "Run Functional Tests (continue on error)"
@@ -60,11 +67,3 @@ steps:
     mergeTestResults: "true"
     testRunTitle: "NuGet.Client Functional Tests On Windows"
   condition: "succeededOrFailed()"
-
-- task: PublishBuildArtifacts@1
-  displayName: "Publish Test Hang Dump"
-  inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-    ArtifactName: "$(Agent.JobName)"
-    ArtifactType: "Container"
-  condition: "or(failed(), canceled())"
