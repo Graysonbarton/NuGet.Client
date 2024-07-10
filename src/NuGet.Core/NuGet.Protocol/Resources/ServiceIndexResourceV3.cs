@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -23,6 +24,8 @@ namespace NuGet.Protocol
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
+        internal string _sourceUri;
+        internal bool _allowInsecureConnections; // By default, don't allow non-HTTPS service index
 
         internal ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
         {
@@ -109,7 +112,22 @@ namespace NuGet.Protocol
             else
             {
                 // Find all entries with the same version.
-                return entries.Where(e => e.ClientVersion == bestMatch.ClientVersion).ToList();
+                List<ServiceIndexEntry> matchingEntries = new List<ServiceIndexEntry>();
+
+                foreach (var entry in entries)
+                {
+                    if (entry.ClientVersion == bestMatch.ClientVersion)
+                    {
+                        if (entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_allowInsecureConnections)
+                        {
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _sourceUri));
+                        }
+
+                        matchingEntries.Add(entry);
+                    }
+                }
+
+                return matchingEntries;
             }
         }
 
