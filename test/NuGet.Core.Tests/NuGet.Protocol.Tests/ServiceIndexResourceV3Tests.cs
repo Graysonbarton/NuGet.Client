@@ -111,7 +111,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void GetServiceEntries_WithResourceEndPointAndAllowInsecureConnections_Succeeds()
+        public void GetServiceEntries_WithHttpResourceEndPointAndAllowInsecureConnections_Succeeds()
         {
             // Arrange
             var serviceIndex = CreateServiceIndexWithHttpResources();
@@ -127,6 +127,20 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(searchRec, "http://search/");
             Assert.Equal(regRec, "http://reg/");
             Assert.Equal(legacyRec, "http://legacy/");
+        }
+
+        [Fact]
+        public void GetServiceEntries_RequestsHttpsResourceInServiceIndexContainingOtherHttpResourcesWithoutAllowInsecureConnections_Succeeds()
+        {
+            // Arrange
+            var serviceIndex = CreateServiceIndexWithHttpResources();
+            var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now);
+
+            // Act
+            var vulnRec = resource.GetServiceEntries("VulnerabilityInfo/6.7.0").FirstOrDefault().Uri.ToString();
+
+            // Assert
+            Assert.Equal(vulnRec, "https://vulnerability/");
         }
 
         private static JObject CreateServiceIndex()
@@ -167,6 +181,11 @@ namespace NuGet.Protocol.Tests
                         {
                             { "@type", "LegacyGallery" },
                             { "@id", "http://legacy" }
+                        },
+                        new JObject
+                        {
+                            { "@type", "VulnerabilityInfo/6.7.0" },
+                            { "@id", "https://vulnerability" }
                         }
                     }
                 }
