@@ -38,7 +38,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         public string ProjectFilePath { get; set; }
 
-        public IList<IAssetsLogMessage> LogMessages { get; set; }
+        public IList<AssetsLogMessage> LogMessages { get; set; }
 
         public bool IsValid { get { return Version == CurrentVersion && Success && DgSpecHash != null; } }
 

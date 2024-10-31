@@ -470,7 +470,7 @@ namespace NuGet.Commands
                     {
                         cacheFile.Success = _success;
                         cacheFile.ProjectFilePath = _request.Project.FilePath;
-                        cacheFile.LogMessages = assetsFile.LogMessages;
+                        cacheFile.LogMessages = assetsFile.LogMessages.Select(m => (AssetsLogMessage)m).ToList();
                         cacheFile.ExpectedPackageFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
                         telemetry.TelemetryEvent[TotalUniquePackagesCount] = cacheFile?.ExpectedPackageFilePaths.Count;
                     }

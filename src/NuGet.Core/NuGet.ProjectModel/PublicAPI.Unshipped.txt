@@ -1,6 +1,7 @@
 #nullable enable
 NuGet.ProjectModel.TargetFrameworkInformation.AssetTargetFallback.init -> void
 NuGet.ProjectModel.TargetFrameworkInformation.Warn.init -> void
+~NuGet.ProjectModel.CacheFile.LogMessages.get -> System.Collections.Generic.IList<NuGet.ProjectModel.AssetsLogMessage>
 ~NuGet.ProjectModel.TargetFrameworkInformation.CentralPackageVersions.get -> System.Collections.Generic.IReadOnlyDictionary<string, NuGet.LibraryModel.CentralPackageVersion>
 ~NuGet.ProjectModel.TargetFrameworkInformation.CentralPackageVersions.init -> void
 ~NuGet.ProjectModel.TargetFrameworkInformation.Dependencies.get -> System.Collections.Immutable.ImmutableArray<NuGet.LibraryModel.LibraryDependency>

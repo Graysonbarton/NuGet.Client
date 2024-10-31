@@ -44,7 +44,6 @@ NuGet.ProjectModel.CacheFile
 NuGet.ProjectModel.CacheFile.HasAnyMissingPackageFiles.get -> bool
 NuGet.ProjectModel.CacheFile.HasAnyMissingPackageFiles.set -> void
 NuGet.ProjectModel.CacheFile.IsValid.get -> bool
-~NuGet.ProjectModel.CacheFile.LogMessages.get -> System.Collections.Generic.IList<NuGet.ProjectModel.IAssetsLogMessage>
 ~NuGet.ProjectModel.CacheFile.LogMessages.set -> void
 ~NuGet.ProjectModel.CacheFile.ProjectFilePath.get -> string
 ~NuGet.ProjectModel.CacheFile.ProjectFilePath.set -> void

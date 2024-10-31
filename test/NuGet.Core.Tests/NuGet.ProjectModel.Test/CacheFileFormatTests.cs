@@ -131,7 +131,7 @@ namespace NuGet.ProjectModel.Test
                     file1,
                     file2
                 },
-                    LogMessages = new List<IAssetsLogMessage>
+                    LogMessages = new List<AssetsLogMessage>
                 {
                     new AssetsLogMessage(LogLevel.Information, NuGetLogCode.NU1000, "Test")
                 }

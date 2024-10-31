@@ -341,7 +341,7 @@ namespace NuGet.Commands.Test
             var cacheFile = new CacheFile("hash")
             {
                 Success = true,
-                LogMessages = new List<IAssetsLogMessage>() { cacheLogMessage },
+                LogMessages = new List<AssetsLogMessage>() { cacheLogMessage },
             };
 
             // Act 
@@ -382,7 +382,7 @@ namespace NuGet.Commands.Test
             var cacheFile = new CacheFile("hash")
             {
                 Success = true,
-                LogMessages = new List<IAssetsLogMessage>() { cacheLogMessage },
+                LogMessages = new List<AssetsLogMessage>() { cacheLogMessage },
             };
 
             // Act

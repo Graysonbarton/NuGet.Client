@@ -246,7 +246,7 @@ namespace NuGet.ProjectModel
 
             var logMessage = (flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages
                 ? ReadLogMessageArray(cursor[LogsProperty] as JArray, packagesSpec?.RestoreMetadata?.ProjectPath)
-                : Array.Empty<IAssetsLogMessage>();
+                : Array.Empty<AssetsLogMessage>();
 
             var lockFile = new LockFile()
             {
@@ -259,7 +259,7 @@ namespace NuGet.ProjectModel
                 CentralTransitiveDependencyGroups = centralTransitiveDependencyGroups
             };
 
-            lockFile.LogMessages = logMessage;
+            lockFile.LogMessages = (IList<IAssetsLogMessage>)logMessage;
 
             return lockFile;
         }
@@ -493,7 +493,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="json"><code>JObject</code> containg the json representation of the log message.</param>
         /// <returns><code>IAssetsLogMessage</code> representing the log message.</returns>
-        private static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
+        private static AssetsLogMessage ReadLogMessage(JObject json, string projectPath)
         {
             AssetsLogMessage assetsLogMessage = null;
 
@@ -905,14 +905,14 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        internal static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
+        internal static IList<AssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
         {
             if (json == null)
             {
-                return new List<IAssetsLogMessage>();
+                return new List<AssetsLogMessage>();
             }
 
-            var items = new List<IAssetsLogMessage>(json.Count);
+            var items = new List<AssetsLogMessage>(json.Count);
             foreach (var child in json)
             {
                 var logMessage = ReadLogMessage(child as JObject, projectPath);
