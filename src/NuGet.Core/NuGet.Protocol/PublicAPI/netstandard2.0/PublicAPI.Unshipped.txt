@@ -1,1 +1,15 @@
 #nullable enable
+NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticServiceIndexEntryEventHandler
+NuGet.Protocol.Events.ProtocolDiagnosticServiceIndexEntryEvent
+NuGet.Protocol.Events.ProtocolDiagnosticServiceIndexEntryEvent.HttpsSourceHasHttpResource.get -> bool
+static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticServiceIndexEntryEventHandler
+~NuGet.Protocol.Events.ProtocolDiagnosticServiceIndexEntryEvent.ProtocolDiagnosticServiceIndexEntryEvent(string source, bool httpsSourceHasHttpResource) -> void
+~NuGet.Protocol.Events.ProtocolDiagnosticServiceIndexEntryEvent.Source.get -> string
+~NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer(string rawPluginPaths) -> void
+~const NuGet.Protocol.JsonProperties.ReadmeFileUrl = "readmeFileUrl" -> string
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.PackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeFileUrl.get -> string

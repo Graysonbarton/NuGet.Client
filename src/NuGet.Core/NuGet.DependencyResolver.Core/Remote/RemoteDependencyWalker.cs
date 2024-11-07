@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -251,14 +250,16 @@ namespace NuGet.DependencyResolver
             return rootNode;
         }
 
-        public static void EvaluateRuntimeDependencies(ref LibraryRange libraryRange, string runtimeName, RuntimeGraph runtimeGraph, ref HashSet<LibraryDependency> runtimeDependencies)
+        public static bool EvaluateRuntimeDependencies(ref LibraryRange libraryRange, string runtimeName, RuntimeGraph runtimeGraph, ref HashSet<LibraryDependency> runtimeDependencies)
         {
+            bool changedLibraryRange = false;
+
             // HACK(davidfowl): This is making runtime.json support package redirects
 
             // Look up any additional dependencies for this package
             foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name).NoAllocEnumerate())
             {
-                var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                var libraryDependency = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange()
                     {
@@ -275,6 +276,8 @@ namespace NuGet.DependencyResolver
                         libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
                     {
                         libraryRange = libraryDependency.LibraryRange;
+
+                        changedLibraryRange = true;
                     }
                 }
                 else
@@ -284,6 +287,8 @@ namespace NuGet.DependencyResolver
                     runtimeDependencies.Add(libraryDependency);
                 }
             }
+
+            return changedLibraryRange;
         }
 
         public static void MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphNode<RemoteResolveResult> node)
@@ -485,25 +490,29 @@ namespace NuGet.DependencyResolver
 
         private static NuGetVersion GetReleaseLabelFreeVersion(VersionRange versionRange)
         {
-            if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Major)
+            if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Major || versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.PrereleaseMajor)
             {
                 return new NuGetVersion(int.MaxValue, int.MaxValue, int.MaxValue);
             }
-            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor)
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Minor || versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.PrereleaseMinor)
             {
                 return new NuGetVersion(versionRange.MinVersion.Major, int.MaxValue, int.MaxValue, int.MaxValue);
             }
-            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch)
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Patch || versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.PrereleasePatch)
             {
                 return new NuGetVersion(versionRange.MinVersion.Major, versionRange.MinVersion.Minor, int.MaxValue, int.MaxValue);
             }
-            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision)
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.Revision || versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.PrereleaseRevision)
             {
                 return new NuGetVersion(
                     versionRange.MinVersion.Major,
                     versionRange.MinVersion.Minor,
                     versionRange.MinVersion.Patch,
                     int.MaxValue);
+            }
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.AbsoluteLatest)
+            {
+                return new NuGetVersion(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue);
             }
             else
             {

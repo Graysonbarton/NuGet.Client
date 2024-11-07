@@ -564,7 +564,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         typeConstraint: LibraryDependencyTarget.Package),
                 };
 
-                packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+                var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+                packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                 projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
 
@@ -675,7 +677,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         typeConstraint: LibraryDependencyTarget.Package),
                 };
 
-                packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+                var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+                packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                 projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                 projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
 
@@ -809,7 +813,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -937,7 +944,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -972,7 +982,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Insert(0, installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1091,7 +1104,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1228,7 +1244,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1377,7 +1396,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1527,7 +1549,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1677,7 +1702,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1827,7 +1855,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -1965,7 +1996,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -2099,7 +2133,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -2232,7 +2269,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -2580,7 +2620,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -2735,7 +2778,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     var packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     var projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     var projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -3052,7 +3098,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     PackageSpec packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     ProjectNames projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -3194,7 +3243,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     PackageSpec packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     ProjectNames projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -3339,7 +3391,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     PackageSpec packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     ProjectNames projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -3483,7 +3538,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     PackageSpec packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     ProjectNames projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -3629,7 +3687,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     };
 
                     PackageSpec packageSpec = packageSpecs[i];
-                    packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+
+                    var newDependencies = packageSpec.TargetFrameworks.First().Dependencies.Add(installed);
+                    packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0]) { Dependencies = newDependencies };
+
                     DependencyGraphSpec projectRestoreInfo = ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec);
                     ProjectNames projectNames = GetTestProjectNames(projectFullPaths[i], $"project{i}");
                     projectCache.AddProjectRestoreInfo(projectNames, projectRestoreInfo, new List<IAssetsLogMessage>());
@@ -4126,6 +4187,56 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_WithProjectReference_MultipleTransitivePackagesAsync()
+        {
+            // Project2 -> Project1 -> PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageA");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj1Spec);
+
+            await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec);
+
+            CpsPackageReferenceProject project2 = PrepareCpsRestoredProject(prj2Spec);
+
+            // Act
+            ProjectPackages result = await project2.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert
+            Assert.Empty(result.InstalledPackages); // No installed packages
+            Assert.Equal(2, result.TransitivePackages.Count); // A and B are transitive
+        }
+
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_WithPackagesConfigProjectReferenceAsync()
+        {
+            // Project2 (PR) -> Project1 (PC)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackagesConfigPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj1Spec);
+
+            await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec);
+
+            CpsPackageReferenceProject project2 = PrepareCpsRestoredProject(prj2Spec);
+
+            // Act
+            ProjectPackages result = await project2.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert
+            Assert.Empty(result.InstalledPackages); // No installed packages
+            Assert.Empty(result.TransitivePackages); // No transitive packages
+        }
+
+        [Fact]
         public async Task GetInstalledAndTransitivePackagesAsync_SimulatePackageInstallation_UpdatesDataAsync()
         {
             using var rootDir = new SimpleTestPathContext();
@@ -4229,6 +4340,26 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, installedAndTransitivePackages.InstalledPackages.Count);
             Assert.Equal(transitivePackagesCount, installedAndTransitivePackages.TransitivePackages.Count);
             Assert.All(installedAndTransitivePackages.TransitivePackages, pkg => Assert.Equal(transitiveOriginsCount, pkg.TransitiveOrigins.Count()));
+        }
+
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_NoRestore_ReturnsOnlyTopLevelPackages()
+        {
+            using var rootDir = new SimpleTestPathContext();
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0"); // PackageA is top level package with a dependency on PackageB
+            IProjectSystemCache cache = new ProjectSystemCache();
+
+            // Arrange
+            PackageSpec initialProjectSpec = ProjectTestHelpers.GetPackageSpec("MyProject", rootDir.SolutionRoot, framework: "net472", dependencyName: "PackageA");
+
+            CpsPackageReferenceProject project = PrepareCpsRestoredProject(initialProjectSpec, cache);
+
+            // Act
+            ProjectPackages result = await project.GetInstalledAndTransitivePackagesAsync(true, true, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, result.InstalledPackages.Count);
+            Assert.Empty(result.TransitivePackages);
         }
 
         [Fact]

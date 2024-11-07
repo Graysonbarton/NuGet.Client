@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Common;
@@ -33,7 +34,7 @@ namespace NuGet.Commands.FuncTest
     using LocalPackageArchiveDownloader = Protocol.LocalPackageArchiveDownloader;
 
     [Collection(TestCollection.Name)]
-    public class RestoreCommandTests
+    public partial class RestoreCommandTests
     {
         private const string PrimarySourceName = "source";
 
@@ -1222,39 +1223,29 @@ namespace NuGet.Commands.FuncTest
             {
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
+            using var pathContext = new SimpleTestPathContext();
 
-            using (var packagesDir = TestDirectory.Create())
-            using (var projectDir = TestDirectory.Create())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
+            var specPath = Path.Combine(pathContext.SolutionRoot, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
+            spec.RestoreMetadata.Sources = sources;
+            AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
 
-                AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
+            (RestoreResult result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, spec);
 
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+            var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
+            var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/net45/Newtonsoft.Json.dll");
+            var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
 
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
-                var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/net45/Newtonsoft.Json.dll");
-                var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
-
-                // Assert
-                // There will be compatibility errors, but we don't care
-                Assert.Equal(25, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
-
-                Assert.Equal(24, runtimeAssemblies.Count);
-                Assert.NotNull(jsonNetReference);
-            }
+            // Assert
+            // There will be compatibility errors, but we don't care
+            Assert.Equal(26, installed.Count);
+            Assert.Equal(0, unresolved.Count);
+            Assert.Equal(24, result.LockFile.Targets[0].Libraries.Count);
+            Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
+            Assert.Equal(24, runtimeAssemblies.Count);
+            Assert.NotNull(jsonNetReference);
         }
 
         [Fact]
@@ -3477,20 +3468,18 @@ namespace NuGet.Commands.FuncTest
                 new TargetFrameworkInformation
                 {
                     FrameworkName = NuGetFramework.Parse("net5.0"),
-                    Dependencies = new List<LibraryDependency>(
-                        new[]
+                    Dependencies = [
+                        new LibraryDependency
                         {
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                        })
+                            LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                    ]
                 }
             })
             .Build();
@@ -3567,20 +3556,18 @@ namespace NuGet.Commands.FuncTest
                 new TargetFrameworkInformation
                 {
                     FrameworkName = NuGetFramework.Parse("net5.0"),
-                    Dependencies = new List<LibraryDependency>(
-                        new[]
+                    Dependencies = [
+                        new LibraryDependency
                         {
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
-                                    LibraryDependencyTarget.Package)
-                            },
-                        })
+                            LibraryRange = new LibraryRange(packageA, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(packageB, VersionRange.Parse(version),
+                                LibraryDependencyTarget.Package)
+                        },
+                    ]
                 }
             })
             .Build();
@@ -3944,6 +3931,14 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.Libraries.Should().HaveCount(1);
             result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
+
+            static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
+            {
+                return new TestRestoreRequest(spec, sources, userPackagesFolder, new TestSourceCacheContext { IgnoreFailedSources = true }, logger)
+                {
+                    LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
+                };
+            }
         }
 
         [Fact]
@@ -4243,22 +4238,6 @@ namespace NuGet.Commands.FuncTest
             logger.Errors.Should().Be(0, because: logger.ShowErrors());
             logger.Warnings.Should().Be(1, because: logger.ShowWarnings());
         }
-
-        static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
-        {
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(spec);
-            dgSpec.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
-
-            var testSourceCacheContext = new TestSourceCacheContext();
-            testSourceCacheContext.IgnoreFailedSources = true;
-            return new TestRestoreRequest(spec, sources, userPackagesFolder, testSourceCacheContext, logger)
-            {
-                LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
-                DependencyGraphSpec = dgSpec,
-            };
-        }
-
         private static void CreateFakeProjectFile(PackageSpec project2spec)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));
@@ -4269,7 +4248,7 @@ namespace NuGet.Commands.FuncTest
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
-                $"Test.Utility.compiler.resources.{name}",
+                $"Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
                 typeof(ResourceTestUtility));
         }
 

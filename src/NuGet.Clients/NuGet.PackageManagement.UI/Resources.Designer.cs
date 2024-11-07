@@ -619,6 +619,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package Level.
+        /// </summary>
+        public static string ColumnHeader_PackageLevel {
+            get {
+                return ResourceManager.GetString("ColumnHeader_PackageLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project.
         /// </summary>
         public static string ColumnHeader_Project {
@@ -795,6 +804,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Error_SourceMapping_GPF_NotEnabled {
             get {
                 return ResourceManager.GetString("Error_SourceMapping_GPF_NotEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while trying to load the README..
+        /// </summary>
+        public static string Error_UnableToLoadReadme {
+            get {
+                return ResourceManager.GetString("Error_UnableToLoadReadme", resourceCulture);
             }
         }
         
@@ -1168,6 +1186,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to These installed package versions contain vulnerabilities: {0}.
+        /// </summary>
+        public static string Label_MultiplePackageVulnerableVersionToolTip {
+            get {
+                return ResourceManager.GetString("Label_MultiplePackageVulnerableVersionToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while fetching additional information about the package. Refresh to try again..
         /// </summary>
         public static string Label_NetworkError {
@@ -1209,6 +1236,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_PackageDeprecatedToolTip {
             get {
                 return ResourceManager.GetString("Label_PackageDeprecatedToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Details.
+        /// </summary>
+        public static string Label_PackageDetails {
+            get {
+                return ResourceManager.GetString("Label_PackageDetails", resourceCulture);
             }
         }
         
@@ -1263,6 +1299,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Readme {
             get {
                 return ResourceManager.GetString("Label_Readme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to README.
+        /// </summary>
+        public static string Label_Readme_Tab {
+            get {
+                return ResourceManager.GetString("Label_Readme_Tab", resourceCulture);
             }
         }
         
@@ -2034,6 +2079,19 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not read package README from selected package.
+        ///
+        ///Only the package maintainer can add a README. If you are not the maintainer, please consider filing an issue or contacting the maintainer to request a README.
+        ///
+        ///For instructions on how to add a README, please visit [aka.ms/nuget/readme](https://aka.ms/nuget/readme).
+        /// </summary>
+        public static string Text_NoReadme {
+            get {
+                return ResourceManager.GetString("Text_NoReadme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not available in this source.
         /// </summary>
         public static string Text_NotAvailableInSource {
@@ -2084,6 +2142,24 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_PackageFormatApply {
             get {
                 return ResourceManager.GetString("Text_PackageFormatApply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Top-level.
+        /// </summary>
+        public static string Text_PackageLevelTopLevel {
+            get {
+                return ResourceManager.GetString("Text_PackageLevelTopLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitive.
+        /// </summary>
+        public static string Text_PackageLevelTransitive {
+            get {
+                return ResourceManager.GetString("Text_PackageLevelTransitive", resourceCulture);
             }
         }
         

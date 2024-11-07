@@ -1,2 +1,0 @@
-#nullable enable
-~static NuGet.Packaging.Signing.CertificateUtility.TryDeduceHashAlgorithm(string certificateFingerprint, out NuGet.Common.HashAlgorithmName hashAlgorithmName) -> bool

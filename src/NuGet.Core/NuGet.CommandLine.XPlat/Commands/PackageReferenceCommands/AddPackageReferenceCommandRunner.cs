@@ -19,6 +19,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
@@ -49,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
                     versionRange = VersionRange.Parse(packageReferenceArgs.PackageVersion);
                 }
 
-                var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                var libraryDependency = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(
                         name: packageReferenceArgs.PackageId,
@@ -132,22 +133,37 @@ namespace NuGet.CommandLine.XPlat
             PackageDependency packageDependency = default;
             if (packageReferenceArgs.NoVersion)
             {
-                var latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, packageReferenceArgs.Prerelease);
-
-                if (latestVersion == null)
+                if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                 {
-                    if (!packageReferenceArgs.Prerelease)
+                    var centralVersion = originalPackageSpec
+                        .TargetFrameworks
+                        .Where(tf => tf.CentralPackageVersions.ContainsKey(packageReferenceArgs.PackageId))
+                        .Select(tf => tf.CentralPackageVersions[packageReferenceArgs.PackageId])
+                        .FirstOrDefault();
+                    if (centralVersion != null)
                     {
-                        latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, !packageReferenceArgs.Prerelease);
-                        if (latestVersion != null)
-                        {
-                            throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.PrereleaseVersionsAvailable, latestVersion));
-                        }
+                        packageDependency = new PackageDependency(packageReferenceArgs.PackageId, centralVersion.VersionRange);
                     }
-                    throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoVersionsAvailable, packageReferenceArgs.PackageId));
                 }
+                if (packageDependency == null)
+                {
+                    var latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, packageReferenceArgs.Prerelease);
 
-                packageDependency = new PackageDependency(packageReferenceArgs.PackageId, new VersionRange(minVersion: latestVersion, includeMinVersion: true));
+                    if (latestVersion == null)
+                    {
+                        if (!packageReferenceArgs.Prerelease)
+                        {
+                            latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, !packageReferenceArgs.Prerelease);
+                            if (latestVersion != null)
+                            {
+                                throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.PrereleaseVersionsAvailable, latestVersion));
+                            }
+                        }
+                        throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoVersionsAvailable, packageReferenceArgs.PackageId));
+                    }
+
+                    packageDependency = new PackageDependency(packageReferenceArgs.PackageId, new VersionRange(minVersion: latestVersion, includeMinVersion: true));
+                }
             }
             else
             {
@@ -305,31 +321,41 @@ namespace NuGet.CommandLine.XPlat
 
             if (developmentDependency)
             {
-                foreach (var frameworkInfo in project.TargetFrameworks
-                    .OrderBy(framework => framework.FrameworkName.ToString(),
-                        StringComparer.Ordinal))
+                var orderedFrameworksWithOriginalIndex = project.TargetFrameworks
+                    .Select((frameworkInfo, originalIndex) => (frameworkInfo, originalIndex))
+                    .OrderBy(tuple => tuple.frameworkInfo.FrameworkName.ToString(), StringComparer.Ordinal);
+
+                foreach (var (frameworkInfo, originalIndex) in orderedFrameworksWithOriginalIndex)
                 {
-                    var dependency = frameworkInfo.Dependencies.First(
-                        dep => dep.Name.Equals(packageReferenceArgs.PackageId, StringComparison.OrdinalIgnoreCase));
+                    var index = frameworkInfo.Dependencies.FirstIndex(dep => dep.Name.Equals(packageReferenceArgs.PackageId, StringComparison.OrdinalIgnoreCase));
+                    var dependency = frameworkInfo.Dependencies[index];
+                    var includeType = dependency.IncludeType;
+                    var suppressParent = dependency.SuppressParent;
 
                     // if suppressParent and IncludeType aren't set by user, then only update those as per dev dependency
-                    if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
-                        dependency?.IncludeType == LibraryIncludeFlags.All)
+                    if (suppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
+                        includeType == LibraryIncludeFlags.All)
                     {
-                        dependency.SuppressParent = LibraryIncludeFlags.All;
-                        dependency.IncludeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
+                        suppressParent = LibraryIncludeFlags.All;
+                        includeType = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
                     }
 
-                    if (dependency != null)
+                    dependency = new LibraryDependency(dependency)
                     {
-                        dependency.LibraryRange.VersionRange = version;
-                        dependency.VersionCentrallyManaged = isCentralPackageManagementEnabled;
-                        return dependency;
-                    }
+                        IncludeType = includeType,
+                        LibraryRange = new LibraryRange(dependency.LibraryRange) { VersionRange = version },
+                        SuppressParent = suppressParent,
+                        VersionCentrallyManaged = isCentralPackageManagementEnabled,
+                    };
+
+                    var newDependencies = frameworkInfo.Dependencies.SetItem(index, dependency);
+                    project.TargetFrameworks[originalIndex] = new TargetFrameworkInformation(frameworkInfo) { Dependencies = newDependencies };
+
+                    return dependency;
                 }
             }
 
-            return new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+            return new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
                     name: packageReferenceArgs.PackageId,

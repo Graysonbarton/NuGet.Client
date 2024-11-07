@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
 using NuGet.Commands;
+using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {
@@ -16,6 +17,16 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class WriteRestoreGraphTask : Microsoft.Build.Utilities.Task
     {
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
+
+        public WriteRestoreGraphTask()
+            : this(EnvironmentVariableWrapper.Instance)
+        {
+        }
+        internal WriteRestoreGraphTask(IEnvironmentVariableReader environmentVariableReader)
+        {
+            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
+        }
         /// <summary>
         /// DG file entries
         /// </summary>
@@ -32,13 +43,10 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-#if DEBUG
-            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_GRAPH_TASK");
-            if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(_environmentVariableReader.GetEnvironmentVariable("DEBUG_RESTORE_GRAPH_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
                 Debugger.Launch();
             }
-#endif
 
             if (RestoreGraphItems.Length < 1)
             {

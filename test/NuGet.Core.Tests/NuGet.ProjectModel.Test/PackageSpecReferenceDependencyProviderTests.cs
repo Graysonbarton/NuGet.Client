@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
 using NuGet.Commands.Test;
@@ -17,38 +19,42 @@ namespace NuGet.ProjectModel.Test
     public class PackageSpecReferenceDependencyProviderTests
     {
         [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
-        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool CentralPackageTransitivePinningEnabled)
+        [InlineData(false, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(true, true, false)]
+        [InlineData(false, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, true)]
+        public void GetSpecDependencies_AddsCentralPackageVersionsIfDefined(bool cpvmEnabled, bool CentralPackageTransitivePinningEnabled, bool useLegacyDependencyGraphResolution)
         {
             // Arrange
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+
             var dependencyFoo = new LibraryDependency(
-                libraryRange: new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
+                libraryRange: new LibraryRange("foo", versionRange: cpvmEnabled ? centralVersionFoo.VersionRange : null, LibraryDependencyTarget.Package),
                 includeType: LibraryIncludeFlags.All,
                 suppressParent: LibraryIncludeFlags.None,
-                noWarn: new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: false,
                 generatePathProperty: true,
-                versionCentrallyManaged: false,
+                versionCentrallyManaged: cpvmEnabled,
                 LibraryDependencyReferenceType.Direct,
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
-            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
-
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar }, cpvmEnabled);
-            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, CentralPackageTransitivePinningEnabled, tfi);
+            var tfi = CreateTargetFrameworkInformation([dependencyFoo], new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, CentralPackageTransitivePinningEnabled, true, tfi);
             var packSpec = dependencyGraphSpec.Projects[0];
 
-            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance);
+            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance, useLegacyDependencyGraphResolution);
             // Act
             var dependencies = dependencyProvider.GetSpecDependencies(packSpec, tfi.FrameworkName);
 
             // Assert
-            if (cpvmEnabled && CentralPackageTransitivePinningEnabled)
+            if (cpvmEnabled && CentralPackageTransitivePinningEnabled && useLegacyDependencyGraphResolution)
             {
                 Assert.Equal(2, dependencies.Count);
                 var barDep = dependencies.Where(d => d.Name == "bar").First();
@@ -76,6 +82,8 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
+        // TODO - Add a test verifying that the new algorithm *doesn't* require packages to be added as top level
+
         [Theory]
         [InlineData(null, 1)]
         [InlineData("true", 0)]
@@ -102,32 +110,24 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, bool cpvmEnabled)
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
+            var centralPackageVersions = centralVersionsDependencies.ToDictionary(cvd => cvd.Name, StringComparer.OrdinalIgnoreCase);
 
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
+                CentralPackageVersions = centralPackageVersions,
                 Warn = false,
                 FrameworkName = nugetFramework,
                 Dependencies = dependencies,
             };
 
-            foreach (var cvd in centralVersionsDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
-            }
-
-            if (cpvmEnabled)
-            {
-                LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
-            }
-
             return tfi;
         }
 
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(bool cpvmEnabled, bool tdpEnabled, params TargetFrameworkInformation[] tfis)
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(bool cpvmEnabled, bool tdpEnabled, bool legacyAlgorithmEnabled, params TargetFrameworkInformation[] tfis)
         {
             var packageSpec = new PackageSpec(tfis);
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata
@@ -135,6 +135,7 @@ namespace NuGet.ProjectModel.Test
                 ProjectUniqueName = "a",
                 CentralPackageVersionsEnabled = cpvmEnabled,
                 CentralPackageTransitivePinningEnabled = tdpEnabled,
+                UseLegacyDependencyResolver = legacyAlgorithmEnabled,
             };
             var dgSpec = new DependencyGraphSpec();
             dgSpec.AddRestore("a");
