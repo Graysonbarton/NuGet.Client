@@ -202,9 +202,7 @@ namespace NuGet.Protocol
                 if (SemanticVersion.TryParse((string)versionToken, out version) &&
                     version.Major == 3)
                 {
-                    var serviceIndex = new ServiceIndexResourceV3(json, utcNow);
-                    serviceIndex._allowInsecureConnections = source.AllowInsecureConnections;
-                    serviceIndex._sourceUri = source.Source;
+                    var serviceIndex = new ServiceIndexResourceV3(json, utcNow, source);
                     return serviceIndex;
                 }
                 else

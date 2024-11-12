@@ -10,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -24,11 +25,11 @@ namespace NuGet.Protocol
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
-        internal string _sourceUri;
-        internal bool _allowInsecureConnections; // By default, don't allow non-HTTPS service index
+        private PackageSource _source;
 
         internal ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
         {
+            _source = packageSource;
             _json = index.ToString();
             _index = MakeLookup(index, packageSource);
             _requestTime = requestTime;
@@ -118,9 +119,9 @@ namespace NuGet.Protocol
                 {
                     if (entry.ClientVersion == bestMatch.ClientVersion)
                     {
-                        if (entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_allowInsecureConnections)
+                        if (entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_source.AllowInsecureConnections && SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings)
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _sourceUri));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _source?.SourceUri));
                         }
 
                         matchingEntries.Add(entry);

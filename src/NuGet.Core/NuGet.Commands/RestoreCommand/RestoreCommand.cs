@@ -441,6 +441,9 @@ namespace NuGet.Commands
                             _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
                             SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
 
+                        // Enable new errors and warnings for the current SDK analysis level.
+                        Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = isErrorEnabled;
+                        
                         if (isErrorEnabled)
                         {
                             await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
