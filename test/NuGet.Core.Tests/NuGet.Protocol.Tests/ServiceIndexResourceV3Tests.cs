@@ -7,6 +7,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using NuGet.Protocol.Events;
+using NuGet.Configuration;
 
 namespace NuGet.Protocol.Tests
 {
@@ -98,6 +99,9 @@ namespace NuGet.Protocol.Tests
             };
 
             return obj;
+        }
+
+        [Fact]
         public void GetServiceEntries_WithResourceEndPoint_ThrowsException()
         {
             // Arrange
@@ -115,8 +119,9 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var serviceIndex = CreateServiceIndexWithHttpResources();
-            var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now);
-            resource._allowInsecureConnections = true;
+            PackageSource source = new PackageSource("https://unit.test");
+            source.AllowInsecureConnections = true;
+            var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now, source);
 
             // Act
             var searchRec = resource.GetServiceEntries("SearchQueryService").FirstOrDefault().Uri.ToString();
