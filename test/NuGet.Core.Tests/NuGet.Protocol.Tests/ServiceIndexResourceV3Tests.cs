@@ -43,9 +43,11 @@ namespace NuGet.Protocol.Tests
 
             var source = $"https://test/index.json";
             var content = CreateServiceIndexWithFourResourceTypesTwoHTTP();
+            var packageSource = new Configuration.PackageSource(source);
+            packageSource.AllowInsecureConnections = true;
 
             var expectedRequestTime = DateTime.UtcNow;
-            var resource = new ServiceIndexResourceV3(content, expectedRequestTime, new Configuration.PackageSource(source));
+            var resource = new ServiceIndexResourceV3(content, expectedRequestTime, packageSource);
 
             // Act
             var result = resource.GetServiceEntries(ServiceTypes.SearchQueryService);
@@ -102,16 +104,33 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void GetServiceEntries_WithResourceEndPoint_ThrowsException()
+        public void GetServiceEntries_WithHttpResourceEndPoint_ThrowsException()
         {
             // Arrange
             var serviceIndex = CreateServiceIndexWithHttpResources();
-            var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now);
+            PackageSource source = new PackageSource("https://test");
+            var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now, source);
+            Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = true;
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => resource.GetServiceEntries("SearchQueryService"));
             Assert.Throws<ArgumentException>(() => resource.GetServiceEntries("RegistrationsBaseUrl"));
             Assert.Throws<ArgumentException>(() => resource.GetServiceEntries("LegacyGallery"));
+        }
+
+        [Fact]
+        public void GetServiceEntries_WithHttpResourceEndPointAndUnsupportedSdkAnalysisLevel_DoesNotThrowException()
+        {
+            // Arrange
+            var serviceIndex = CreateServiceIndexWithHttpResources();
+            PackageSource source = new PackageSource("https://test");
+            var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now, source);
+            Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = false;
+
+            // Act & Assert
+            Assert.Equal(1, resource.GetServiceEntries("SearchQueryService").Count);
+            Assert.Equal(1, resource.GetServiceEntries("RegistrationsBaseUrl").Count);
+            Assert.Equal(1, resource.GetServiceEntries("LegacyGallery").Count);
         }
 
         [Fact]
