@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using NuGet.Protocol.Events;
 using NuGet.Configuration;
+using NuGet.Protocol.Plugins;
 
 namespace NuGet.Protocol.Tests
 {
@@ -113,9 +114,9 @@ namespace NuGet.Protocol.Tests
             Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = true;
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => resource.GetServiceEntries("SearchQueryService"));
-            Assert.Throws<ArgumentException>(() => resource.GetServiceEntries("RegistrationsBaseUrl"));
-            Assert.Throws<ArgumentException>(() => resource.GetServiceEntries("LegacyGallery"));
+            Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("SearchQueryService"));
+            Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("RegistrationsBaseUrl"));
+            Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("LegacyGallery"));
         }
 
         [Fact]

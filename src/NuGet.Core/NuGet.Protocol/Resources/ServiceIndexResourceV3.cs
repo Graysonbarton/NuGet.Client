@@ -10,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Protocol.Plugins;
 using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
@@ -119,9 +120,9 @@ namespace NuGet.Protocol
                 {
                     if (entry.ClientVersion == bestMatch.ClientVersion)
                     {
-                        if (entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_source.AllowInsecureConnections && SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings)
+                        if (_source != null && entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_source.AllowInsecureConnections && SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings)
                         {
-                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _source?.SourceUri));
+                            throw new ProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _source?.SourceUri));
                         }
 
                         matchingEntries.Add(entry);
