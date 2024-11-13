@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using Test.Utility;
 using Xunit;
 
@@ -128,7 +129,7 @@ namespace NuGet.Protocol.Tests
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>(CancellationToken.None));
+            await Assert.ThrowsAsync<ProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>(CancellationToken.None));
         }
 
 

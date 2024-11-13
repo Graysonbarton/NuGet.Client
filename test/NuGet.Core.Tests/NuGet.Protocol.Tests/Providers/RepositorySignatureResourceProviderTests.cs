@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using NuGet.Protocol.Tests;
 using NuGet.Protocol.Tests.Providers;
 using Test.Utility;
@@ -73,7 +74,7 @@ namespace NuGet.Protocol.Providers.Tests
             };
             var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
 
-            var exception = await Assert.ThrowsAsync<ArgumentException>(
+            var exception = await Assert.ThrowsAsync<ProtocolException>(
                 () => _repositorySignatureResourceProvider.TryCreate(sourceRepository, CancellationToken.None));
 
             Assert.Contains(serviceEntry.Uri.OriginalString, exception.Message);
