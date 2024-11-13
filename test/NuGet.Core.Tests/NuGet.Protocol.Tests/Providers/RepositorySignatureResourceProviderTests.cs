@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Plugins;
 using NuGet.Protocol.Tests;
 using NuGet.Protocol.Tests.Providers;
 using Test.Utility;
