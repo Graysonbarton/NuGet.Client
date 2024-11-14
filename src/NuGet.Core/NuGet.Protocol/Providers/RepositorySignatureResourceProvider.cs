@@ -83,10 +83,6 @@ namespace NuGet.Protocol
                             log,
                             token);
                     }
-                    catch (Plugins.ProtocolException ex)
-                    {
-                        log.LogMinimal(ExceptionUtilities.DisplayMessage(ex));
-                    }
                     catch (Exception ex) when (retry < maxRetries)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri)
@@ -98,7 +94,7 @@ namespace NuGet.Protocol
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri);
 
-                        throw new FatalProtocolException("what", ex);
+                        throw new FatalProtocolException(message, ex);
                     }
                 }
             }
