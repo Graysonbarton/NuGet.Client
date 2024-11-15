@@ -440,9 +440,6 @@ namespace NuGet.Commands
                         var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(_request.Project.RestoreMetadata.SdkAnalysisLevel,
                             _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
                             SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
-
-                        // Enable new errors and warnings for the current SDK analysis level.
-                        Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = isErrorEnabled;
                         
                         if (isErrorEnabled)
                         {
@@ -463,8 +460,8 @@ namespace NuGet.Commands
                             SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
 
                         // Enable new errors and warnings for the current SDK analysis level.
-                        Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = isErrorEnabled;
-                        Protocol.Utility.LogHttpServiceEndPoint.HttpServiceEndPointLoggerDelegate = async (string message) =>
+                        Protocol.Utility.SdkAnalysisLevelSettings.EnableNewErrorsAndWarnings = isErrorEnabled;
+                        Protocol.Utility.HttpServiceEndpointLogger.LogDelegate = async (string message) =>
                         {
                             await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302, message));
                         };

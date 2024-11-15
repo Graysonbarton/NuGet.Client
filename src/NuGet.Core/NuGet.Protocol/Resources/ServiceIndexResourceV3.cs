@@ -119,9 +119,9 @@ namespace NuGet.Protocol
                 {
                     if (entry.ClientVersion == bestMatch.ClientVersion)
                     {
-                        if (_source != null && entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_source.AllowInsecureConnections && SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings)
+                        if (_source != null && entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps && !_source.AllowInsecureConnections && SdkAnalysisLevelSettings.EnableNewErrorsAndWarnings)
                         {
-                            LogHttpServiceEndPoint.Log(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _source?.SourceUri));
+                            HttpServiceEndpointLogger.Log(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, entry.Uri, _source?.SourceUri));
                         }
 
                         matchingEntries.Add(entry);

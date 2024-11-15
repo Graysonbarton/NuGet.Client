@@ -3,11 +3,14 @@
 
 namespace NuGet.Protocol.Utility
 {
-    public static class SdkAnalysisLevelUtility
+    /// <summary>
+    /// Utility class for managing SDK analysis level settings.
+    /// </summary>
+    public static class SdkAnalysisLevelSettings
     {
         /// <summary>
-        /// Enable new errors and warnings for the current SDK analysis level.
-        /// The default value is true ).
+        /// Gets or sets a value indicating whether new errors and warnings are enabled for the current SDK analysis level.
+        /// The default value is true
         /// </summary>
         public static bool EnableNewErrorsAndWarnings = true;
     }

@@ -746,7 +746,7 @@ namespace Dotnet.Integration.Test
 
             // Act & Assert
             CommandRunnerResult listResult = _fixture.RunDotnetExpectFailure(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated", testOutputHelper: _testOutputHelper);
-            Assert.Contains("Non-HTTPS", listResult.AllOutput);
+            Assert.Contains("non-HTTPS", listResult.AllOutput);
             mockServer.Stop();
         }
 

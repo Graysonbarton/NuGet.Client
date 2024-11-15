@@ -111,7 +111,7 @@ namespace NuGet.Protocol.Tests
             var serviceIndex = CreateServiceIndexWithHttpResources();
             PackageSource source = new PackageSource("https://test");
             var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now, source);
-            Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = true;
+            Protocol.Utility.SdkAnalysisLevelSettings.EnableNewErrorsAndWarnings = true;
 
             // Act & Assert
             ProtocolException exception;
@@ -130,7 +130,7 @@ namespace NuGet.Protocol.Tests
             var serviceIndex = CreateServiceIndexWithHttpResources();
             PackageSource source = new PackageSource("https://test");
             var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now, source);
-            Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = false;
+            Protocol.Utility.SdkAnalysisLevelSettings.EnableNewErrorsAndWarnings = false;
 
             // Act & Assert
             Assert.Equal(1, resource.GetServiceEntries("SearchQueryService").Count);
