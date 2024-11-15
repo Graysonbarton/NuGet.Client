@@ -114,9 +114,13 @@ namespace NuGet.Protocol.Tests
             Protocol.Utility.SdkAnalysisLevelUtility.EnableNewErrorsAndWarnings = true;
 
             // Act & Assert
-            Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("SearchQueryService"));
-            Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("RegistrationsBaseUrl"));
-            Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("LegacyGallery"));
+            ProtocolException exception;
+            exception = Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("SearchQueryService"));
+            Assert.Contains("non-HTTPS", exception.Message);
+            exception = Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("RegistrationsBaseUrl"));
+            Assert.Contains("non-HTTPS", exception.Message);
+            exception = Assert.Throws<ProtocolException>(() => resource.GetServiceEntries("LegacyGallery"));
+            Assert.Contains("non-HTTPS", exception.Message);
         }
 
         [Fact]
