@@ -148,14 +148,14 @@ namespace NuGet.Protocol.Tests
             var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now, source);
 
             // Act
-            var searchRec = resource.GetServiceEntries("SearchQueryService").FirstOrDefault().Uri.ToString();
-            var regRec = resource.GetServiceEntries("RegistrationsBaseUrl").FirstOrDefault().Uri.ToString();
-            var legacyRec = resource.GetServiceEntries("LegacyGallery").FirstOrDefault().Uri.ToString();
+            var searchResource = resource.GetServiceEntries("SearchQueryService").FirstOrDefault().Uri.ToString();
+            var registrationResource = resource.GetServiceEntries("RegistrationsBaseUrl").FirstOrDefault().Uri.ToString();
+            var legacyResource = resource.GetServiceEntries("LegacyGallery").FirstOrDefault().Uri.ToString();
 
             // Assert
-            Assert.Equal(searchRec, "http://search/");
-            Assert.Equal(regRec, "http://reg/");
-            Assert.Equal(legacyRec, "http://legacy/");
+            Assert.Equal(searchResource, "http://search/");
+            Assert.Equal(registrationResource, "http://reg/");
+            Assert.Equal(legacyResource, "http://legacy/");
         }
 
         [Fact]
