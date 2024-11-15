@@ -166,10 +166,10 @@ namespace NuGet.Protocol.Tests
             var resource = new ServiceIndexResourceV3(serviceIndex, DateTime.Now);
 
             // Act
-            var vulnRec = resource.GetServiceEntries("VulnerabilityInfo/6.7.0").FirstOrDefault().Uri.ToString();
+            var vulnerabilityResource = resource.GetServiceEntries("VulnerabilityInfo/6.7.0").FirstOrDefault().Uri.ToString();
 
             // Assert
-            Assert.Equal(vulnRec, "https://vulnerability/");
+            Assert.Equal(vulnerabilityResource, "https://vulnerability/");
         }
 
         private static JObject CreateServiceIndex()
