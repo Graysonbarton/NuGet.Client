@@ -377,7 +377,7 @@ namespace NuGet.Commands.Restore.Utility
 
         private static PackageVulnerabilitySeverity ParseAuditLevel(TargetFrameworkInformation tfi, ILogger logger, string projectPath)
         {
-            if (string.IsNullOrWhiteSpace(tfi.RestoreAuditProperties.AuditLevel))
+            if (tfi.RestoreAuditProperties is null || string.IsNullOrWhiteSpace(tfi.RestoreAuditProperties.AuditLevel))
             {
                 return PackageVulnerabilitySeverity.Low;
             }
