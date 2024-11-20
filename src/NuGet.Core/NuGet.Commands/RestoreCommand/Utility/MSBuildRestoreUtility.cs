@@ -275,9 +275,6 @@ namespace NuGet.Commands
 
                     // Packages lock file properties
                     result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-
-                    // NuGet audit properties
-                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -295,7 +292,6 @@ namespace NuGet.Commands
                         );
                     }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -498,6 +494,8 @@ namespace NuGet.Commands
                     AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
 
                     targetFrameworkInfo.RuntimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
+
+                    targetFrameworkInfo.RestoreAuditProperties = GetRestoreAuditProperties(item, GetAuditSuppressions(items));
                 }
                 yield return targetFrameworkInfo;
             }
@@ -827,7 +825,8 @@ namespace NuGet.Commands
                         new TargetFrameworkInformation()
                         {
                             FrameworkName = NuGetFramework.Parse(tfmProperty),
-                            TargetAlias = needsAlias ? tfmProperty : string.Empty
+                            TargetAlias = needsAlias ? tfmProperty : string.Empty,
+                            RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items))
                         });
                 }
             }

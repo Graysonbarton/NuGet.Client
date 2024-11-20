@@ -453,7 +453,7 @@ namespace NuGet.Build.Tasks
                     }
                     value.Add(packageSpec.FilePath);
                 }
-                restoreAuditProperties.Add(packageSpec.FilePath, packageSpec.RestoreMetadata.RestoreAuditProperties);
+                restoreAuditProperties.Add(packageSpec.FilePath, packageSpec.TargetFrameworks[0].RestoreAuditProperties);
             }
 
             if (string.IsNullOrEmpty(repositoryPath))

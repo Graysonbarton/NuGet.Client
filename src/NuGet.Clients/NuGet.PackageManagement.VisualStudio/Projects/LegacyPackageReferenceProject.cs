@@ -453,6 +453,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
             }
 
+            projectTfi.RestoreAuditProperties = GetRestoreAuditProperties();
+
             // Apply fallback settings
             AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
@@ -556,7 +558,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled.EqualsFalse(),
                     CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
-                    RestoreAuditProperties = auditProperties,
                     SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString),
                     UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(usingNetSdk),
                     UseLegacyDependencyResolver = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreUseLegacyDependencyResolver)),

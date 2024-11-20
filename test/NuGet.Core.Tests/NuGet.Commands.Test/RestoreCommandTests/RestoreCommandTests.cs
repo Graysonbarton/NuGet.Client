@@ -2808,8 +2808,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectName = "TestProject";
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit = bool.TrueString;
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories = new HashSet<string> { "https://cve-1" };
+            packageSpec.TargetFrameworks[0].RestoreAuditProperties.EnableAudit = bool.TrueString;
+            packageSpec.TargetFrameworks[0].RestoreAuditProperties.SuppressedAdvisories = new HashSet<string> { "https://cve-1" };
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,

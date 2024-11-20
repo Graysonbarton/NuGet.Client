@@ -423,11 +423,19 @@ public class AuditUtilityTests
             await createGraphTasks[1]
         };
 
+        IList<TargetFrameworkInformation> targetFrameworks = graphs.Select(g => new TargetFrameworkInformation()
+        {
+            RestoreAuditProperties = new()
+            {
+                EnableAudit = bool.TrueString,
+            }
+        }).ToList();
+
         var log = new TestLogger();
 
         // Act
         var audit = new AuditUtility(
-            restoreAuditProperties: null,
+            targetFrameworks,
             "/path/proj.csproj",
             graphs,
             vulnerabilityProviders,
@@ -545,15 +553,21 @@ public class AuditUtilityTests
 
         public async Task<AuditUtility> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
-            RestoreAuditProperties restoreAuditProperties = new()
-            {
-                EnableAudit = Enabled,
-                AuditLevel = Level,
-                AuditMode = Mode,
-                SuppressedAdvisories = SuppressedAdvisories,
-            };
+            IList<TargetFrameworkInformation> targetFrameworks =
+                [
+                    new TargetFrameworkInformation()
+                    {
+                        RestoreAuditProperties = new()
+                        {
+                            EnableAudit = Enabled,
+                            AuditLevel = Level,
+                            AuditMode = Mode,
+                            SuppressedAdvisories = SuppressedAdvisories,
+                        }
+                    }
+                ];
 
-            bool enabled = AuditUtility.ParseEnableValue(restoreAuditProperties, ProjectFullPath, Log);
+            bool enabled = AuditUtility.ParseEnableValue(targetFrameworks[0].RestoreAuditProperties, ProjectFullPath, Log);
             if (!enabled)
             {
                 throw new InvalidOperationException($"{nameof(Enabled)} must have a value that does not disable NuGetAudit.");
@@ -569,7 +583,7 @@ public class AuditUtilityTests
 
             var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
 
-            var audit = new AuditUtility(restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, Log);
+            var audit = new AuditUtility(targetFrameworks, ProjectFullPath, graphs, vulnProviders, Log);
             await audit.CheckPackageVulnerabilitiesAsync(cancellationToken);
 
             return audit;

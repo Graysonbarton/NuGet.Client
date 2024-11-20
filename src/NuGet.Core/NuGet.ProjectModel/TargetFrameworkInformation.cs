@@ -55,6 +55,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public string RuntimeIdentifierGraphPath { get; set; }
 
+        /// <summary>
+        /// NuGetAudit settings
+        /// </summary>
+        public RestoreAuditProperties RestoreAuditProperties { get; set; }
+
         public TargetFrameworkInformation()
         {
             TargetAlias = string.Empty;
@@ -77,6 +82,7 @@ namespace NuGet.ProjectModel
             CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(cloneFrom.CentralPackageVersions, StringComparer.OrdinalIgnoreCase);
             FrameworkReferences = new HashSet<FrameworkDependency>(cloneFrom.FrameworkReferences);
             RuntimeIdentifierGraphPath = cloneFrom.RuntimeIdentifierGraphPath;
+            RestoreAuditProperties = cloneFrom.RestoreAuditProperties?.Clone();
 
             static IList<T> CloneList<T>(IList<T> source, Func<T, T> cloneFunc)
             {
@@ -111,6 +117,7 @@ namespace NuGet.ProjectModel
             }
             hashCode.AddUnorderedSequence(CentralPackageVersions.Values);
             hashCode.AddStringIgnoreCase(TargetAlias);
+            hashCode.AddObject(RestoreAuditProperties);
             return hashCode.CombinedHash;
         }
 
@@ -140,7 +147,8 @@ namespace NuGet.ProjectModel
                    EqualityUtility.OrderedEquals(FrameworkReferences, other.FrameworkReferences, e => e.Name, ComparisonUtility.FrameworkReferenceNameComparer) &&
                    EqualityUtility.OrderedEquals(CentralPackageVersions.Values, other.CentralPackageVersions.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
                    PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
-                   StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
+                   StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias) &&
+                   RestoreAuditProperties == other.RestoreAuditProperties;
         }
 
         public TargetFrameworkInformation Clone()

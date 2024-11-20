@@ -131,8 +131,6 @@ namespace NuGet.ProjectModel
 
         public bool CentralPackageTransitivePinningEnabled { get; set; }
 
-        public RestoreAuditProperties RestoreAuditProperties { get; set; }
-
         /// <summary>
         /// A unified flag to help users manage their SDK warning levels. Example: 9.0.100.
         /// When introducing a new warning or error use this property to
@@ -176,7 +174,6 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(CentralPackageFloatingVersionsEnabled);
             hashCode.AddObject(CentralPackageVersionOverrideDisabled);
             hashCode.AddObject(CentralPackageTransitivePinningEnabled);
-            hashCode.AddObject(RestoreAuditProperties);
             hashCode.AddObject(UsingMicrosoftNETSdk);
             hashCode.AddObject(SdkAnalysisLevel);
             hashCode.AddObject(UseLegacyDependencyResolver);
@@ -225,7 +222,6 @@ namespace NuGet.ProjectModel
                    EqualityUtility.EqualsWithNullCheck(CentralPackageFloatingVersionsEnabled, other.CentralPackageFloatingVersionsEnabled) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageVersionOverrideDisabled, other.CentralPackageVersionOverrideDisabled) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageTransitivePinningEnabled, other.CentralPackageTransitivePinningEnabled) &&
-                   RestoreAuditProperties == other.RestoreAuditProperties &&
                    UsingMicrosoftNETSdk == other.UsingMicrosoftNETSdk &&
                    EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel) &&
                    UseLegacyDependencyResolver == other.UseLegacyDependencyResolver;
@@ -278,7 +274,6 @@ namespace NuGet.ProjectModel
             clone.CentralPackageFloatingVersionsEnabled = CentralPackageFloatingVersionsEnabled;
             clone.CentralPackageVersionOverrideDisabled = CentralPackageVersionOverrideDisabled;
             clone.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
-            clone.RestoreAuditProperties = RestoreAuditProperties?.Clone();
             clone.SdkAnalysisLevel = SdkAnalysisLevel;
             clone.UsingMicrosoftNETSdk = UsingMicrosoftNETSdk;
             clone.UseLegacyDependencyResolver = UseLegacyDependencyResolver;

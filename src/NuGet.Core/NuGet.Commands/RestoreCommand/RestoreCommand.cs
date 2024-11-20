@@ -340,10 +340,7 @@ namespace NuGet.Commands
                     });
                 }
 
-                bool auditEnabled = AuditUtility.ParseEnableValue(
-                    _request.Project.RestoreMetadata?.RestoreAuditProperties,
-                    _request.Project.FilePath,
-                    _logger);
+                bool auditEnabled = _request.Project.TargetFrameworks.Any(tfi => AuditUtility.ParseEnableValue(tfi.RestoreAuditProperties, _request.Project.FilePath, _logger));
                 telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
                 if (auditEnabled)
                 {
@@ -519,7 +516,7 @@ namespace NuGet.Commands
         {
             telemetry.StartIntervalMeasure();
             var audit = new AuditUtility(
-                _request.Project.RestoreMetadata.RestoreAuditProperties,
+                _request.Project.TargetFrameworks,
                 _request.Project.FilePath,
                 graphs,
                 _request.DependencyProviders.VulnerabilityInfoProviders,

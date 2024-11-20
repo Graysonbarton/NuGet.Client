@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.ProjectModel.TargetFrameworkInformation.RestoreAuditProperties.get -> NuGet.ProjectModel.RestoreAuditProperties
+~NuGet.ProjectModel.TargetFrameworkInformation.RestoreAuditProperties.set -> void

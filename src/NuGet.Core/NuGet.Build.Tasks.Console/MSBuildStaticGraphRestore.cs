@@ -661,6 +661,9 @@ namespace NuGet.Build.Tasks.Console
                     LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
                 }
 
+                targetFrameworkInformation.RestoreAuditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(msBuildProjectInstance, GetAuditSuppressions(msBuildProjectInstance));
+
+
                 targetFrameworkInfos.Add(targetFrameworkInformation);
             }
 
@@ -833,8 +836,6 @@ namespace NuGet.Build.Tasks.Console
 
             (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = MSBuildRestoreUtility.GetCentralPackageManagementSettings(project, projectStyle);
 
-            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project, GetAuditSuppressions(project));
-
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
 
             List<IMSBuildProject> innerNodes = projectsByTargetFramework.Values.ToList();
@@ -847,7 +848,6 @@ namespace NuGet.Build.Tasks.Console
                 {
                     PackagesConfigPath = packagesConfigFilePath,
                     RepositoryPath = GetRepositoryPath(project, settings),
-                    RestoreAuditProperties = auditProperties,
                 };
             }
             else
@@ -871,7 +871,6 @@ namespace NuGet.Build.Tasks.Console
                     CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled,
                     CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
                     CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
-                    RestoreAuditProperties = auditProperties
                 };
             }
 

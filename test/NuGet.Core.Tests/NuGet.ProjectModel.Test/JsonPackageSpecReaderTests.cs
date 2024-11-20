@@ -4029,10 +4029,11 @@ namespace NuGet.ProjectModel.Test
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
 
             // Assert
-            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().BeNull();
+            var auditProperties = packageSpec.TargetFrameworks[0].RestoreAuditProperties;
+            auditProperties.EnableAudit.Should().Be("a");
+            auditProperties.AuditLevel.Should().Be("b");
+            auditProperties.AuditMode.Should().Be("c");
+            auditProperties.SuppressedAdvisories.Should().BeNull();
         }
 
         [Theory]
@@ -4046,12 +4047,13 @@ namespace NuGet.ProjectModel.Test
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
 
             // Assert
-            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().HaveCount(2);
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.First().Should().Be("d");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Last().Should().Be("e");
+            var auditProperties = packageSpec.TargetFrameworks[0].RestoreAuditProperties;
+            auditProperties.EnableAudit.Should().Be("a");
+            auditProperties.AuditLevel.Should().Be("b");
+            auditProperties.AuditMode.Should().Be("c");
+            auditProperties.SuppressedAdvisories.Should().HaveCount(2);
+            auditProperties.SuppressedAdvisories.First().Should().Be("d");
+            auditProperties.SuppressedAdvisories.Last().Should().Be("e");
         }
 
         [Theory]

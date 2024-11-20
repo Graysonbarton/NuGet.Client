@@ -73,6 +73,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Report all severity vulnerabilities (low severity and higher). Allowed values are: low, moderate, high, critical -->
     <NuGetAuditLevel Condition=" '$(NuGetAuditLevel)' == '' ">low</NuGetAuditLevel>
     <!-- Report known vulnerabilities on direct and transitive dependencies, unless SdkAnalysisLevel (or equalivant) is lower than 9.0.100. Allowed values are: direct, all -->
+    <NuGetAuditMode Condition="'$(NuGetAuditMode)' == ''
+                    AND '$(NuGetExeSkipSdkAnalysisLevelCheck)' != 'true'
+                    AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+                    AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '9.0'))"
+                    >all</NuGetAuditMode>
     <NuGetAuditMode Condition=" '$(NuGetAuditMode)' == '' ">direct</NuGetAuditMode>
   </PropertyGroup>
 
@@ -1146,7 +1151,14 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CLRSupport>$(CLRSupport)</CLRSupport>
         <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
         <WindowsTargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
+<<<<<<< HEAD
     </_RestoreGraphEntry>
+=======
+        <NuGetAudit>$(NuGetAudit)</NuGetAudit>
+        <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
+        <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
+      </_RestoreGraphEntry>
+>>>>>>> 2bbd7d2e1 (Move audit properties to per-tfm in dgspec)
     </ItemGroup>
   </Target>
 

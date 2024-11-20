@@ -950,7 +950,6 @@ namespace NuGet.ProjectModel
             List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
-            RestoreAuditProperties auditProperties = null;
             bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
             bool usingMicrosoftNetSdk = true;
@@ -1076,40 +1075,6 @@ namespace NuGet.ProjectModel
                         restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile, nuGetLockFilePath, restoreLockedMode);
                         break;
 
-                    case "restoreAuditProperties":
-                        string enableAudit = null, auditLevel = null, auditMode = null;
-                        HashSet<string> suppressedAdvisories = null;
-
-                        jsonReader.ReadObject(auditPropertyName =>
-                        {
-                            switch (auditPropertyName)
-                            {
-                                case "enableAudit":
-                                    enableAudit = jsonReader.ReadNextTokenAsString();
-                                    break;
-
-                                case "auditLevel":
-                                    auditLevel = jsonReader.ReadNextTokenAsString();
-                                    break;
-
-                                case "auditMode":
-                                    auditMode = jsonReader.ReadNextTokenAsString();
-                                    break;
-
-                                case "suppressedAdvisories":
-                                    suppressedAdvisories = ReadSuppressedAdvisories(jsonReader);
-                                    break;
-                            }
-                        });
-                        auditProperties = new RestoreAuditProperties()
-                        {
-                            EnableAudit = enableAudit,
-                            AuditLevel = auditLevel,
-                            AuditMode = auditMode,
-                            SuppressedAdvisories = suppressedAdvisories
-                        };
-                        break;
-
                     case "skipContentFileWrite":
                         skipContentFileWrite = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
@@ -1213,7 +1178,6 @@ namespace NuGet.ProjectModel
             msbuildMetadata.CentralPackageFloatingVersionsEnabled = centralPackageFloatingVersionsEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
-            msbuildMetadata.RestoreAuditProperties = auditProperties;
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
             msbuildMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
             msbuildMetadata.UseLegacyDependencyResolver = restoreUseLegacyDependencyResolver;
@@ -1790,6 +1754,7 @@ namespace NuGet.ProjectModel
 
             var targetFrameworkInformation = new TargetFrameworkInformation();
             NuGetFramework secondaryFramework = default;
+            RestoreAuditProperties auditProperties = null;
             jsonReader.ReadObject(propertyName =>
             {
                 switch (propertyName)
@@ -1857,6 +1822,40 @@ namespace NuGet.ProjectModel
 
                     case "warn":
                         targetFrameworkInformation.Warn = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "audit":
+                        string enableAudit = null, auditLevel = null, auditMode = null;
+                        HashSet<string> suppressedAdvisories = null;
+
+                        jsonReader.ReadObject(auditPropertyName =>
+                        {
+                            switch (auditPropertyName)
+                            {
+                                case "enableAudit":
+                                    enableAudit = jsonReader.ReadNextTokenAsString();
+                                    break;
+
+                                case "auditLevel":
+                                    auditLevel = jsonReader.ReadNextTokenAsString();
+                                    break;
+
+                                case "auditMode":
+                                    auditMode = jsonReader.ReadNextTokenAsString();
+                                    break;
+
+                                case "suppressedAdvisories":
+                                    suppressedAdvisories = ReadSuppressedAdvisories(jsonReader);
+                                    break;
+                            }
+                        });
+                        auditProperties = new RestoreAuditProperties()
+                        {
+                            EnableAudit = enableAudit,
+                            AuditLevel = auditLevel,
+                            AuditMode = auditMode,
+                            SuppressedAdvisories = suppressedAdvisories
+                        };
                         break;
                 }
             }, out frameworkLine, out frameworkColumn);

@@ -386,7 +386,6 @@ namespace NuGet.SolutionRestoreManager
                     CentralPackageFloatingVersionsEnabled = VSNominationUtilities.IsCentralPackageFloatingVersionsEnabled(targetFrameworks),
                     CentralPackageVersionOverrideDisabled = VSNominationUtilities.IsCentralPackageVersionOverrideDisabled(targetFrameworks),
                     CentralPackageTransitivePinningEnabled = VSNominationUtilities.IsCentralPackageTransitivePinningEnabled(targetFrameworks),
-                    RestoreAuditProperties = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks),
                     SdkAnalysisLevel = VSNominationUtilities.GetSdkAnalysisLevel(targetFrameworks),
                     UsingMicrosoftNETSdk = VSNominationUtilities.GetUsingMicrosoftNETSdk(targetFrameworks),
                     UseLegacyDependencyResolver = VSNominationUtilities.GetUseLegacyDependencyResolver(targetFrameworks),

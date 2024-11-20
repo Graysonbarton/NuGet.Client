@@ -179,7 +179,6 @@ namespace NuGet.ProjectModel
             SetWarningProperties(writer, msbuildMetadata);
 
             WriteNuGetLockFileProperties(writer, msbuildMetadata);
-            WriteNuGetAuditProperties(writer, msbuildMetadata.RestoreAuditProperties);
 
             if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
             {
@@ -625,6 +624,7 @@ namespace NuGet.ProjectModel
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);
+                    WriteNuGetAuditProperties(writer, framework.RestoreAuditProperties);
                     writer.WriteObjectEnd();
                 }
 

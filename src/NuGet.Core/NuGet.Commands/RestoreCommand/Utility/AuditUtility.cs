@@ -23,7 +23,7 @@ namespace NuGet.Commands.Restore.Utility
 {
     internal class AuditUtility
     {
-        private readonly ProjectModel.RestoreAuditProperties? _restoreAuditProperties;
+        private readonly IList<TargetFrameworkInformation>? _frameworks;
         private readonly string _projectFullPath;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
         private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
@@ -52,28 +52,31 @@ namespace NuGet.Commands.Restore.Utility
         internal int TotalWarningsSuppressedCount { get; private set; }
 
         public AuditUtility(
-            ProjectModel.RestoreAuditProperties? restoreAuditProperties,
+            IList<TargetFrameworkInformation> frameworks,
             string projectFullPath,
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
             ILogger logger)
         {
-            _restoreAuditProperties = restoreAuditProperties;
+            _frameworks = frameworks;
             _projectFullPath = projectFullPath;
             _targetGraphs = graphs;
             _vulnerabilityInfoProviders = vulnerabilityInformationProviders;
             _logger = logger;
 
-            MinSeverity = ParseAuditLevel();
-            AuditMode = ParseAuditMode();
+            MinSeverity = _frameworks.Max(tfi => ParseAuditLevel(tfi, _logger, _projectFullPath));
+            AuditMode = _frameworks.Min(tfi => ParseAuditMode(tfi, _logger, _projectFullPath));
 
-            if (restoreAuditProperties?.SuppressedAdvisories != null)
+            foreach (var framework in _frameworks)
             {
-                SuppressedAdvisories = new Dictionary<string, bool>(restoreAuditProperties.SuppressedAdvisories.Count);
-
-                foreach (string advisory in restoreAuditProperties.SuppressedAdvisories)
+                if (framework.RestoreAuditProperties?.SuppressedAdvisories != null)
                 {
-                    SuppressedAdvisories.Add(advisory, false);
+                    SuppressedAdvisories = new Dictionary<string, bool>(framework.RestoreAuditProperties.SuppressedAdvisories.Count);
+
+                    foreach (string advisory in framework.RestoreAuditProperties.SuppressedAdvisories)
+                    {
+                        SuppressedAdvisories.Add(advisory, false);
+                    }
                 }
             }
         }
@@ -372,34 +375,34 @@ namespace NuGet.Commands.Restore.Utility
             return knownVulnerabilities;
         }
 
-        private PackageVulnerabilitySeverity ParseAuditLevel()
+        private static PackageVulnerabilitySeverity ParseAuditLevel(TargetFrameworkInformation tfi, ILogger logger, string projectPath)
         {
-            string? auditLevel = _restoreAuditProperties?.AuditLevel?.Trim();
-
-            if (auditLevel == null)
+            if (string.IsNullOrWhiteSpace(tfi.RestoreAuditProperties.AuditLevel))
             {
                 return PackageVulnerabilitySeverity.Low;
             }
 
-            if (_restoreAuditProperties!.TryParseAuditLevel(out PackageVulnerabilitySeverity result))
+            if (tfi.RestoreAuditProperties.TryParseAuditLevel(out PackageVulnerabilitySeverity result))
             {
                 return result;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
+            string messageText = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidNuGetAuditLevelValue, tfi.RestoreAuditProperties.AuditLevel, "low, moderate, high, critical");
             RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-            _logger.Log(message);
+            message.ProjectPath = projectPath;
+            message.TargetGraphs = [tfi.TargetAlias];
+            logger.Log(message);
             return PackageVulnerabilitySeverity.Low;
         }
 
         internal enum NuGetAuditMode { Unknown, Direct, All }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation. 
-        private NuGetAuditMode ParseAuditMode()
+        private static NuGetAuditMode ParseAuditMode(TargetFrameworkInformation tfi, ILogger logger, string projectPath)
         {
-            string? auditMode = _restoreAuditProperties?.AuditMode?.Trim();
+            string? auditMode = tfi.RestoreAuditProperties?.AuditMode?.Trim();
 
-            if (auditMode == null)
+            if (string.IsNullOrWhiteSpace(auditMode))
             {
                 return NuGetAuditMode.Unknown;
             }
@@ -412,10 +415,11 @@ namespace NuGet.Commands.Restore.Utility
                 return NuGetAuditMode.All;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, all");
+            string messageText = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, all");
             RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-            message.ProjectPath = _projectFullPath;
-            _logger.Log(message);
+            message.ProjectPath = projectPath;
+            message.TargetGraphs = [tfi.TargetAlias];
+            logger.Log(message);
             return NuGetAuditMode.Unknown;
         }
 
