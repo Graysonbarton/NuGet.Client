@@ -4023,7 +4023,17 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WithRestoreAuditProperties_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
-            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\": \"a\", \"auditLevel\": \"b\", \"auditMode\": \"c\"}}}}}}";
+            var json = @"{
+                  ""frameworks"": {
+                    ""net48"": {
+                        ""audit"": {
+                            ""enableAudit"": ""a"",
+                            ""auditLevel"": ""b"",
+                            ""auditMode"": ""c""
+                        }
+                    }
+                  }
+                }";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
@@ -4041,7 +4051,18 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WithRestoreAuditPropertiesAndSuppressions_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
-            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":{{\"d\":null,\"e\":null}}}}}}}}";
+            var json = @"{
+                  ""frameworks"": {
+                    ""net48"": {
+                        ""audit"": {
+                            ""enableAudit"": ""a"",
+                            ""auditLevel"": ""b"",
+                            ""auditMode"": ""c"",
+                            ""suppressedAdvisories"":{""d"":null,""e"":null}
+                        }
+                    }
+                  }
+                }";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);

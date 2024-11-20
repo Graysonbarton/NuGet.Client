@@ -1754,7 +1754,6 @@ namespace NuGet.ProjectModel
 
             var targetFrameworkInformation = new TargetFrameworkInformation();
             NuGetFramework secondaryFramework = default;
-            RestoreAuditProperties auditProperties = null;
             jsonReader.ReadObject(propertyName =>
             {
                 switch (propertyName)
@@ -1849,7 +1848,7 @@ namespace NuGet.ProjectModel
                                     break;
                             }
                         });
-                        auditProperties = new RestoreAuditProperties()
+                        targetFrameworkInformation.RestoreAuditProperties = new RestoreAuditProperties()
                         {
                             EnableAudit = enableAudit,
                             AuditLevel = auditLevel,

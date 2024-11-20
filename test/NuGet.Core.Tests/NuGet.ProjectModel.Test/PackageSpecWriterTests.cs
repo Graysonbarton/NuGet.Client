@@ -714,12 +714,13 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var json = @"{
-                  ""restore"": {
-                    ""projectUniqueName"": ""projectUniqueName"",
-                    ""restoreAuditProperties"": {
-                        ""enableAudit"": ""true"",
-                        ""auditLevel"": ""moderate"",
-                        ""auditMode"": ""all""
+                  ""frameworks"": {
+                    ""net48"": {
+                        ""audit"": {
+                            ""enableAudit"": ""true"",
+                            ""auditLevel"": ""moderate"",
+                            ""auditMode"": ""all""
+                        }
                     }
                   }
                 }";
@@ -763,16 +764,17 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var json = @"{
-                  ""restore"": {
-                    ""projectUniqueName"": ""projectUniqueName"",
-                    ""restoreAuditProperties"": {
-                        ""enableAudit"": ""true"",
-                        ""auditLevel"": ""moderate"",
-                        ""auditMode"": ""all"",
-                        ""suppressedAdvisories"": {
-                            ""https://github.com/advisories/example-cve-1"": null,
-                            ""https://github.com/advisories/example-cve-2"": null
-                        },
+                  ""frameworks"": {
+                    ""net48"": {
+                        ""audit"": {
+                            ""enableAudit"": ""true"",
+                            ""auditLevel"": ""moderate"",
+                            ""auditMode"": ""all"",
+                            ""suppressedAdvisories"": {
+                                ""https://github.com/advisories/example-cve-1"": null,
+                                ""https://github.com/advisories/example-cve-2"": null
+                            }
+                        }
                     }
                   }
                 }";

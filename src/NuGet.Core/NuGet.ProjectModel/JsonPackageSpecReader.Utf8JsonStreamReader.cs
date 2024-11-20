@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] NuGetLockFilePathPropertyName = Encoding.UTF8.GetBytes("nuGetLockFilePath");
         private static readonly byte[] RestoreLockedModePropertyName = Encoding.UTF8.GetBytes("restoreLockedMode");
         private static readonly byte[] RestorePackagesWithLockFilePropertyName = Encoding.UTF8.GetBytes("restorePackagesWithLockFile");
-        private static readonly byte[] RestoreAuditPropertiesPropertyName = Encoding.UTF8.GetBytes("restoreAuditProperties");
+        private static readonly byte[] AuditPropertyName = Encoding.UTF8.GetBytes("audit");
         private static readonly byte[] EnableAuditPropertyName = Encoding.UTF8.GetBytes("enableAudit");
         private static readonly byte[] AuditLevelPropertyName = Encoding.UTF8.GetBytes("auditLevel");
         private static readonly byte[] AuditModePropertyName = Encoding.UTF8.GetBytes("auditMode");
@@ -945,7 +945,6 @@ namespace NuGet.ProjectModel
             IList<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
-            RestoreAuditProperties auditProperties = null;
             bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
             bool usingMicrosoftNetSdk = true;
@@ -1077,45 +1076,6 @@ namespace NuGet.ProjectModel
                             }
                         }
                         restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile, nuGetLockFilePath, restoreLockedMode);
-                    }
-                    else if (jsonReader.ValueTextEquals(RestoreAuditPropertiesPropertyName))
-                    {
-                        string enableAudit = null, auditLevel = null, auditMode = null;
-                        HashSet<string> suppressedAdvisories = null;
-
-                        if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-                        {
-                            while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                            {
-                                if (jsonReader.ValueTextEquals(EnableAuditPropertyName))
-                                {
-                                    enableAudit = jsonReader.ReadNextTokenAsString();
-                                }
-                                else if (jsonReader.ValueTextEquals(AuditLevelPropertyName))
-                                {
-                                    auditLevel = jsonReader.ReadNextTokenAsString();
-                                }
-                                else if (jsonReader.ValueTextEquals(AuditModePropertyName))
-                                {
-                                    auditMode = jsonReader.ReadNextTokenAsString();
-                                }
-                                else if (jsonReader.ValueTextEquals(AuditSuppressionsPropertyName))
-                                {
-                                    suppressedAdvisories = ReadSuppressedAdvisories(ref jsonReader);
-                                }
-                                else
-                                {
-                                    jsonReader.Skip();
-                                }
-                            }
-                        }
-                        auditProperties = new RestoreAuditProperties()
-                        {
-                            EnableAudit = enableAudit,
-                            AuditLevel = auditLevel,
-                            AuditMode = auditMode,
-                            SuppressedAdvisories = suppressedAdvisories,
-                        };
                     }
                     else if (jsonReader.ValueTextEquals(SkipContentFileWritePropertyName))
                     {
@@ -1859,6 +1819,45 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(WarnPropertyName))
                     {
                         targetFrameworkInformation.Warn = jsonReader.ReadNextTokenAsBoolOrFalse();
+                    }
+                    else if (jsonReader.ValueTextEquals(AuditPropertyName))
+                    {
+                        string enableAudit = null, auditLevel = null, auditMode = null;
+                        HashSet<string> suppressedAdvisories = null;
+
+                        if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+                        {
+                            while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                            {
+                                if (jsonReader.ValueTextEquals(EnableAuditPropertyName))
+                                {
+                                    enableAudit = jsonReader.ReadNextTokenAsString();
+                                }
+                                else if (jsonReader.ValueTextEquals(AuditLevelPropertyName))
+                                {
+                                    auditLevel = jsonReader.ReadNextTokenAsString();
+                                }
+                                else if (jsonReader.ValueTextEquals(AuditModePropertyName))
+                                {
+                                    auditMode = jsonReader.ReadNextTokenAsString();
+                                }
+                                else if (jsonReader.ValueTextEquals(AuditSuppressionsPropertyName))
+                                {
+                                    suppressedAdvisories = ReadSuppressedAdvisories(ref jsonReader);
+                                }
+                                else
+                                {
+                                    jsonReader.Skip();
+                                }
+                            }
+                        }
+                        targetFrameworkInformation.RestoreAuditProperties = new RestoreAuditProperties()
+                        {
+                            EnableAudit = enableAudit,
+                            AuditLevel = auditLevel,
+                            AuditMode = auditMode,
+                            SuppressedAdvisories = suppressedAdvisories,
+                        };
                     }
                     else
                     {
