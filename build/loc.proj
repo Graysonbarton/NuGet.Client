@@ -69,7 +69,7 @@
     <RemoveDir Directories="$(ArtifactsDirectory)localize\ResponseFiles\" />
   </Target>
 
-  <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize" DependsOnTargets="CopyUnsignedFiles">
+  <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_MoveLocalizedFiles Include="@(LocalizedUserFiles)">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))\%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
@@ -79,7 +79,7 @@
   </Target>
 
   <!-- Prepares localization folder  -->
-  <Target Name="CopyLcgFilesToArtifacts" AfterTargets="Localize" DependsOnTargets="CopyUnsignedFiles">
+  <Target Name="CopyLcgFilesToArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_LcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))\%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>
@@ -89,7 +89,7 @@
   </Target>
 
   <!-- Prepares localization artifact -->
-  <Target Name="CopyBinariesToLocalizationArtifacts" AfterTargets="Localize" DependsOnTargets="CopyUnsignedFiles">
+  <Target Name="CopyBinariesToLocalizationArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_EnglishBinaries Include="@(FilesToLocalize)">
         <DestinationPath>$(ArtifactsDirectory)\localizationArtifacts\artifacts\$([MSBuild]::MakeRelative($(ArtifactsDirectory), %(FilesToLocalize.RootDir)%(FilesToLocalize.Directory)))\%(FilesToLocalize.Filename)%(FilesToLocalize.Extension)</DestinationPath>
@@ -107,12 +107,19 @@
     <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
   </Target>
 
-  <Target Name="CopyUnsignedFiles">
+  <PropertyGroup>
+    <CopyUnsignedFilesDependsOn>MoveLocalizedFilesToProjectSpecificArtifacts;CopyLcgFilesToArtifacts;CopyBinariesToLocalizationArtifacts</CopyUnsignedFilesDependsOn>
+  </PropertyGroup>
+
+  <Target 
+    Name="CopyUnsignedFiles"
+    DependsOnTargets="$(CopyUnsignedFilesDependsOn)">
+
     <Copy SourceFiles="@(NonProjectUnsignedFilesToMove)" DestinationFiles="@(NonProjectUnsignedFilesToMove->'%(DestinationDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_SubmoduleFiles)" DestinationFiles="@(_SubmoduleFiles->'%(DestinationPath)')" />
     <Copy SourceFiles="@(_LcgFiles->'%(Identity)')" DestinationFiles="@(_LcgFiles->'%(DestinationDir)')" />
     <Copy SourceFiles="@(_EnglishBinaries)" DestinationFiles="@(_EnglishBinaries->'%(DestinationPath)')" />
     <Copy SourceFiles="@(_LocalizeFiles)" DestinationFiles="@(_LocalizeFiles->'%(DestinationPath)')" />
-  </Target>
 
+  </Target>
 </Project>
