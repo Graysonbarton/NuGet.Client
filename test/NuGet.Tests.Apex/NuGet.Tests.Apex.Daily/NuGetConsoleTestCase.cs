@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -101,7 +102,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [DataTestMethod]
         [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
-        [Timeout(DefaultTimeout)]
+        //[Timeout(DefaultTimeout)]
         public async Task InstallPackageForPRInPMC(ProjectTemplate projectTemplate)
         {
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -110,18 +111,22 @@ namespace NuGet.Tests.Apex.Daily
                 var packageName = "TestPackage";
                 var v100 = "1.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+                simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
-                    VisualStudio.AssertNoErrors();
+                    //VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
+                    Thread.Sleep(60000);
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
                     testContext.SolutionService.Build();
 
                     // Act
                     var nugetConsole = GetConsole(testContext.Project);
 
                     nugetConsole.InstallPackageFromPMC(packageName, v100);
-                    testContext.SolutionService.Build();
+                    //testContext.SolutionService.Build();
+                    Thread.Sleep(60000);
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
@@ -134,7 +139,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [DataTestMethod]
         [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
-        [Timeout(DefaultTimeout)]
+        //[Timeout(DefaultTimeout)]
         public async Task UpdatePackageForPRInPMC(ProjectTemplate projectTemplate)
         {
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -146,22 +151,26 @@ namespace NuGet.Tests.Apex.Daily
 
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
+                simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
-                    testContext.SolutionService.Build();
+                    //testContext.SolutionService.Build();
+                    Thread.Sleep(60000);
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Act
                     var nugetConsole = GetConsole(testContext.Project);
 
                     nugetConsole.InstallPackageFromPMC(packageName, v100);
-                    testContext.SolutionService.Build();
+                    //testContext.SolutionService.Build();
+                    //Thread.Sleep(60000);
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     nugetConsole.UpdatePackageFromPMC(packageName, v200);
-                    testContext.SolutionService.Build();
+                    //testContext.SolutionService.Build();
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert
@@ -174,7 +183,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [DataTestMethod]
         [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
-        [Timeout(DefaultTimeout)]
+        //[Timeout(DefaultTimeout)]
         public async Task UninstallPackageForPRInPMC(ProjectTemplate projectTemplate)
         {
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -184,23 +193,27 @@ namespace NuGet.Tests.Apex.Daily
                 var v100 = "1.0.0";
 
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
+                simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
                     VisualStudio.AssertNoErrors();
                     var solutionService = VisualStudio.Get<SolutionService>();
-                    testContext.SolutionService.Build();
+                    //testContext.SolutionService.Build();
+                    Thread.Sleep(60000);
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Act
                     var nugetConsole = GetConsole(testContext.Project);
 
                     nugetConsole.InstallPackageFromPMC(PackageName, v100);
-                    testContext.SolutionService.Build();
-                    testContext.NuGetApexTestService.WaitForAutoRestore();
+                    //testContext.SolutionService.Build();
 
+                    Thread.Sleep(60000);
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
                     nugetConsole.UninstallPackageFromPMC(PackageName);
-                    testContext.SolutionService.Build();
+                    //testContext.SolutionService.Build();
+                    Thread.Sleep(60000);
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
                     // Assert

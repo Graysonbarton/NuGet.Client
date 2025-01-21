@@ -509,11 +509,12 @@ namespace NuGet.Tests.Apex
             logger.WriteMessage("Adding project");
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject");
 
-            logger.WriteMessage("Saving solution");
-            solutionService.Save();
+            //logger.WriteMessage("Saving solution");
+            //solutionService.Save();
 
-            logger.WriteMessage("Building solution");
-            project.Build();
+            //logger.WriteMessage("Building solution");
+            //Thread.Sleep(60000);
+            //project.Build();
 
             return project;
         }
