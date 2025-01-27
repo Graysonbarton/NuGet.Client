@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Construction;
@@ -308,7 +309,9 @@ namespace NuGet.CommandLine.XPlat
             // Add packageReference to the project file only if it does not exist.
             var itemGroup = GetItemGroup(itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
 
-            if (!libraryDependency.VersionCentrallyManaged)
+            string managePackageVersionsCentrally = project.GetPropertyValue("ManagePackageVersionsCentrally");
+
+            if (!string.Equals(managePackageVersionsCentrally, bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
                 if (!existingPackageReferences.Any())
                 {
@@ -324,7 +327,7 @@ namespace NuGet.CommandLine.XPlat
             else
             {
                 // Get package version and VersionOverride if it already exists in the props file. Returns null if there is no matching package version.
-                ProjectItem packageReferenceInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_REFERENCE_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
+                ProjectItem packageReferenceInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_REFERENCE_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name, StringComparison.OrdinalIgnoreCase));
                 var versionOverrideExists = packageReferenceInProps?.Metadata.FirstOrDefault(i => i.Name.Equals("VersionOverride") && !string.IsNullOrWhiteSpace(i.EvaluatedValue));
 
                 if (!existingPackageReferences.Any())
@@ -342,7 +345,7 @@ namespace NuGet.CommandLine.XPlat
                 else
                 {
                     // Get package version if it already exists in the props file. Returns null if there is no matching package version.
-                    ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name));
+                    ProjectItem packageVersionInProps = project.Items.LastOrDefault(i => i.ItemType == PACKAGE_VERSION_TYPE_TAG && i.EvaluatedInclude.Equals(libraryDependency.Name, StringComparison.OrdinalIgnoreCase));
 
                     // If no <PackageVersion /> exists in the Directory.Packages.props file.
                     if (packageVersionInProps == null)
@@ -553,15 +556,64 @@ namespace NuGet.CommandLine.XPlat
                 var packageVersion = libraryDependency.LibraryRange.VersionRange.OriginalString ??
                     libraryDependency.LibraryRange.VersionRange.MinVersion.ToString();
 
-                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
+                ProjectMetadata metadatum = packageReferenceItem.GetMetadata(VERSION_TAG);
 
-                UpdateExtraMetadataInProjectItem(libraryDependency, packageReferenceItem);
+                // Verify that the evaluated and unevaluated values are the same, meaning it is just a plain value like:
+                // <PackageReference Include="SomePackage" Version="1.2.3" />
+                if (string.Equals(metadatum.EvaluatedValue, metadatum.UnevaluatedValue))
+                {
+                    packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
 
-                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Info_AddPkgUpdated,
-                    libraryDependency.Name,
-                    packageVersion,
-                    packageReferenceItem.Xml.ContainingProject.FullPath));
+                    UpdateExtraMetadataInProjectItem(libraryDependency, packageReferenceItem);
+
+                    Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Info_AddPkgUpdated,
+                        libraryDependency.Name,
+                        packageVersion,
+                        packageReferenceItem.Xml.ContainingProject.FullPath));
+
+                    return;
+                }
+
+                // The declared Version attribute is different after evaluation, it might be something like:
+                // <PackageReference Include="SomePackage" Version="$(SomeProperty)" />
+                var match = Regex.Match(metadatum.UnevaluatedValue, @"^\$\((?<PropertyName>[\w-]+)\)$");
+
+                if (!match.Groups["PropertyName"].Success)
+                {
+                    // The Version metadata is something other than a simple property reference.  It could be something like:
+                    // <PackageReference Include="SomePackage" Version="1.2.$(MinorVersion)" />
+                    // Setting the version in this case would be unsafe, log an error.  Maybe we could add a --force argument to override this?
+                    return;
+                }
+
+                string propertyName = match.Groups["PropertyName"].Value;
+
+                ProjectProperty property = packageReferenceItem.Project.GetProperty(propertyName);
+
+                if (property == null)
+                {
+                    // The property is not defined in the project, log an error
+                    return;
+                }
+
+                if (property.IsImported)
+                {
+                    // The property is defined in some other imported file.  It could be unsafe to edit some random .props file, maybe have a --force argument?
+                    // Otherwise, log an error
+                    return;
+                }
+
+                if (!string.Equals(property.UnevaluatedValue, property.EvaluatedValue))
+                {
+                    // The property is not just plain text and is defined in terms of other properties, log an error
+                    // <SomeProperty>$(MinorVersion)</SomeProperty>
+                    // We could see if its just another property and keep looking but that's probably too advanced, just log an error that its unsupported
+                    return;
+                }
+
+                // Update the in-memory property value, calling project.Save() will persist the change
+                packageReferenceItem.Project.SetProperty(propertyName, packageVersion);
             }
         }
 
@@ -592,14 +644,67 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="versionCLIArgument">Version that is passed in as a CLI argument.</param>
         internal void UpdatePackageVersion(Project project, ProjectItem packageVersion, string versionCLIArgument)
         {
-            // Determine where the <PackageVersion /> item is decalred
+            // Determine where the <PackageVersion /> item is declared
             ProjectItemElement packageVersionItemElement = project.GetItemProvenance(packageVersion).LastOrDefault()?.ItemElement;
 
-            // Get the Version attribute on the packageVersionItemElement.
-            ProjectMetadataElement versionAttribute = packageVersionItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase));
-            // Update the version
-            versionAttribute.Value = versionCLIArgument;
-            packageVersionItemElement.ContainingProject.Save();
+            ProjectMetadata metadatum = packageVersion.GetMetadata(VERSION_TAG);
+
+            // Verify that the evaluated and unevaluated values are the same, meaning it is just a plain value like:
+            // <PackageReference Include="SomePackage" Version="1.2.3" />
+            if (string.Equals(metadatum.EvaluatedValue, metadatum.UnevaluatedValue))
+            {
+                // Get the Version attribute on the packageVersionItemElement.
+                ProjectMetadataElement versionAttribute = packageVersionItemElement.Metadata.FirstOrDefault(i => i.Name.Equals("Version", StringComparison.OrdinalIgnoreCase));
+
+                // Update the version
+                versionAttribute.Value = versionCLIArgument;
+
+                packageVersionItemElement.ContainingProject.Save();
+
+                return;
+            }
+
+            // The declared Version attribute is different after evaluation, it might be something like:
+            // <PackageReference Include="SomePackage" Version="$(SomeProperty)" />
+            var match = Regex.Match(metadatum.UnevaluatedValue, @"^\$\((?<PropertyName>[\w-]+)\)$");
+
+            if (!match.Groups["PropertyName"].Success)
+            {
+                // The Version metadata is something other than a simple property reference.  It could be something like:
+                // <PackageReference Include="SomePackage" Version="1.2.$(MinorVersion)" />
+                // Setting the version in this case would be unsafe, log an error.  Maybe we could add a --force argument to override this?
+                return;
+            }
+
+            string propertyName = match.Groups["PropertyName"].Value;
+
+            ProjectPropertyElement propertyElement = packageVersionItemElement.ContainingProject.Properties.LastOrDefault(i => string.Equals(i.Name, propertyName, StringComparison.OrdinalIgnoreCase));
+
+            if (propertyElement == null)
+            {
+                // The property is not defined the same file as the <PackageVersion /> item, log an error
+                return;
+            }
+
+            var property = project.GetProperty(propertyName);
+
+            if (!string.Equals(property.UnevaluatedValue, property.EvaluatedValue))
+            {
+                // The property is not just plain text and is defined in terms of other properties, log an error
+                // <SomeProperty>$(MinorVersion)</SomeProperty>
+                // We could see if its just another property and keep looking but that's probably too advanced, just log an error that its unsupported
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(propertyElement.Condition))
+            {
+                // There is some condition on the property that we don't know how to handle, log an error
+                return;
+            }
+
+            propertyElement.Value = versionCLIArgument;
+
+            propertyElement.ContainingProject.Save();
         }
 
         /// <summary>
