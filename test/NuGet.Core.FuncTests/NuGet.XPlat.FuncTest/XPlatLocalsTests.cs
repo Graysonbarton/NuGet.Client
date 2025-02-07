@@ -65,19 +65,18 @@ namespace NuGet.XPlat.FuncTest
 
                 string workingDirectory;
                 try
-                    {
+                {
                     workingDirectory = Directory.GetCurrentDirectory();
-                    }
+                }
                 catch (Exception ex)
-                    {
-                    throw new InvalidOperationException(
-                        "Failed to retrieve the current working directory (getcwd failed).", ex);
-                    }
+                {
+                    throw new InvalidOperationException("Failed to retrieve the current working directory (getcwd failed).", ex);
+                }
                 
                 if (!Directory.Exists(workingDirectory))
-                     {
-                     throw new DirectoryNotFoundException($"The working directory '{workingDirectory}' does not exist.");
-                     }
+                {
+                    throw new DirectoryNotFoundException($"The working directory '{workingDirectory}' does not exist.");
+                }
 
                 // Act
                 var result = CommandRunner.Run(
