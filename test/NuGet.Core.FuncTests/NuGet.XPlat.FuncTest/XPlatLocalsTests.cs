@@ -72,7 +72,6 @@ namespace NuGet.XPlat.FuncTest
                 {
                     throw new InvalidOperationException("Failed to retrieve the current working directory (getcwd failed).", ex);
                 }
-                
                 if (!Directory.Exists(workingDirectory))
                 {
                     throw new DirectoryNotFoundException($"The working directory '{workingDirectory}' does not exist.");
