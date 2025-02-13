@@ -533,6 +533,17 @@ namespace NuGet.Build.Tasks.Console
 
                 sw.Stop();
 
+                foreach (var kvp in projects)
+                {
+                    var project = kvp.Value;
+                    if (project.OuterBuild is not null && project.TargetFrameworks.Count == 0)
+                    {
+                        // project doesn't support multi-targeting.
+                        var targetFramework = project.OuterBuild.GetProperty("TargetFramework") ?? string.Empty;
+                        project.AddTargetFramework(targetFramework, project.OuterBuild);
+                    }
+                }
+
                 MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissionCount));
 
                 if (failedBuildSubmissionCount != 0)

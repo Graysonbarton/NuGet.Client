@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Commands.Restore;
@@ -26,7 +27,7 @@ namespace NuGet.Build.Tasks.Console
 
         public IReadOnlyDictionary<string, ITargetFramework> TargetFrameworks => _targetFrameworks;
 
-        private Dictionary<string, ITargetFramework> _targetFrameworks;
+        private ConcurrentDictionary<string, ITargetFramework> _targetFrameworks;
 
         internal void AddTargetFramework(string targetFramework, ITargetFramework targetFrameworkInstance)
         {
@@ -36,7 +37,7 @@ namespace NuGet.Build.Tasks.Console
             }
             else
             {
-                _targetFrameworks.Add(targetFramework, targetFrameworkInstance);
+                _targetFrameworks.TryAdd(targetFramework, targetFrameworkInstance);
             }
         }
     }
