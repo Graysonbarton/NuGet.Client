@@ -40,5 +40,14 @@ namespace NuGet.Build.Tasks.Console
                 _targetFrameworks.TryAdd(targetFramework, targetFrameworkInstance);
             }
         }
+
+        internal void Prepare()
+        {
+            if (TargetFrameworks.Count == 0)
+            {
+                var targetFramework = OuterBuild.GetProperty("TargetFramework") ?? string.Empty;
+                _targetFrameworks.TryAdd(targetFramework, OuterBuild);
+            }
+        }
     }
 }

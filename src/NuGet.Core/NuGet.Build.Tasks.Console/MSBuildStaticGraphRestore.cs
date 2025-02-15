@@ -301,10 +301,10 @@ namespace NuGet.Build.Tasks.Console
                 var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
 
                 // Load the projects via MSBuild and create an array of them since Parallel.ForEach is optimized for arrays
-                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters)?.ToArray();
+                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters);
 
                 // If no projects were loaded, return an empty DependencyGraphSpec
-                if (projects == null || projects.Length == 0)
+                if (projects == null || projects.Count == 0)
                 {
                     return new DependencyGraphSpec();
                 }
@@ -535,13 +535,7 @@ namespace NuGet.Build.Tasks.Console
 
                 foreach (var kvp in projects)
                 {
-                    var project = kvp.Value;
-                    if (project.OuterBuild is not null && project.TargetFrameworks.Count == 0)
-                    {
-                        // project doesn't support multi-targeting.
-                        var targetFramework = project.OuterBuild.GetProperty("TargetFramework") ?? string.Empty;
-                        project.AddTargetFramework(targetFramework, project.OuterBuild);
-                    }
+                    kvp.Value.Prepare();
                 }
 
                 MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissionCount));
