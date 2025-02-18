@@ -287,20 +287,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 		eng\pipelines\templates\Tests_On_Mac.yml = eng\pipelines\templates\Tests_On_Mac.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{4497DE20-D8E5-4DCA-86F8-1993180E0EC2}"
-	ProjectSection(SolutionItems) = preProject
-		eng\common\generate-sbom-prep.ps1 = eng\common\generate-sbom-prep.ps1
-		eng\common\generate-sbom-prep.sh = eng\common\generate-sbom-prep.sh
-		eng\common\README.md = eng\common\README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{AC389B99-E1E9-42AE-97AE-9874D0EFAD25}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "steps", "steps", "{00112503-3502-4331-B6C3-FD3F2D262242}"
-	ProjectSection(SolutionItems) = preProject
-		eng\common\templates\steps\generate-sbom.yml = eng\common\templates\steps\generate-sbom.yml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-build", "dotnet-build", "{85D69893-216B-4D97-9E90-39340CA24CA4}"
 	ProjectSection(SolutionItems) = preProject
 		eng\dotnet-build\build.sh = eng\dotnet-build\build.sh
