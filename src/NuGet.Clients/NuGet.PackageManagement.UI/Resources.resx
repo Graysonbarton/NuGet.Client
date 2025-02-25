@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Action_Consolidate" xml:space="preserve">
-    <value>Consolidate</value>
-  </data>
   <data name="Button_Uninstall" xml:space="preserve">
     <value>Uninstall</value>
   </data>
@@ -1118,5 +1115,11 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="CopyMenuCommandLabel" xml:space="preserve">
     <value>_Copy</value>
+  </data>
+  <data name="Action_Consolidate" xml:space="preserve">
+    <value>Consolidate</value>
+  </data>
+  <data name="Multiple_Versions_Installed" xml:space="preserve">
+    <value>multiple versions installed</value>
   </data>
 </root>

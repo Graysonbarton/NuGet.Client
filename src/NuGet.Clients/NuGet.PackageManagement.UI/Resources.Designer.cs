@@ -1564,6 +1564,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to multiple versions installed.
+        /// </summary>
+        public static string Multiple_Versions_Installed {
+            get {
+                return ResourceManager.GetString("Multiple_Versions_Installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to (dependency of {0}).
         /// </summary>
         public static string NuGetUpgrade_PackageDependencyOf {

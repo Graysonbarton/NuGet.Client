@@ -255,6 +255,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private NuGetVersion[] _topLevelInstalledVersions;
+        public NuGetVersion[] TopLevelInstalledVersions
+        {
+            get
+            {
+                return _topLevelInstalledVersions;
+            }
+            set
+            {
+                _topLevelInstalledVersions = value;
+                OnPropertyChanged(nameof(TopLevelInstalledVersions));
+            }
+        }
+
         private List<PackageIdentity> _transitiveOrigins;
         public List<PackageIdentity> TransitiveOrigins
         {
@@ -939,9 +953,8 @@ namespace NuGet.PackageManagement.UI
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages, bool clearCache = false)
         {
             // Get the maximum version installed in any target project/solution
-            InstalledVersion = installedPackages
-                .GetPackageVersions(Id)
-                .MaxOrDefault();
+            TopLevelInstalledVersions = installedPackages.GetPackageVersions(Id);
+            InstalledVersion = TopLevelInstalledVersions.MaxOrDefault();
 
             if (clearCache && InstalledVersion != null)
             {

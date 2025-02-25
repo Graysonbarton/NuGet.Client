@@ -155,10 +155,10 @@ namespace NuGet.PackageManagement.UI
 
             _nugetPackageFileService?.Dispose();
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
-            _isReadmeTabEnabled = await nuGetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
+            _isReadmeTabEnabled = false;
             if (_isReadmeTabEnabled)
             {
-                _isReadmeTabEnabled = _packageDetail._packageDetailsTabControl.PackageReadmeControl.Initialize(editorOptionsFactoryService);
+                //_isReadmeTabEnabled = _packageDetail._packageDetailsTabControl.PackageReadmeControl.Initialize(editorOptionsFactoryService);
             }
 
             _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.Initialize(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab, _isReadmeTabEnabled);
@@ -1291,7 +1291,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.ReadmePreviewViewModel.ItemFilterChangedAsync(ActiveFilter);
+                    //await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.ReadmePreviewViewModel.ItemFilterChangedAsync(ActiveFilter);
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

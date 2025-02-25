@@ -37,7 +37,11 @@
           </Setter.Value>
         </Setter>
         <Style.Triggers>
-          <DataTrigger Binding="{Binding VulnerableVersions.Count}" Value="1">
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Binding="{Binding VulnerableVersions.Count}" Value="1"/>
+              <Condition Binding="{Binding TopLevelInstalledVersions.Count}" Value="1"/>
+            </MultiDataTrigger.Conditions>
             <Setter Property="Text">
               <Setter.Value>
                 <MultiBinding Converter="{StaticResource StringFormatConverter}">
@@ -46,7 +50,7 @@
                 </MultiBinding>
               </Setter.Value>
             </Setter>
-          </DataTrigger>
+          </MultiDataTrigger>
         </Style.Triggers>
       </Style>
       
@@ -367,13 +371,26 @@
                       VerticalAlignment="Center"
                       HorizontalAlignment="Right"
                       Visibility="{Binding IsNotInstalled, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
-                      Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}">
+          >
+                      <!--Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}"-->
           <TextBlock.ToolTip>
             <MultiBinding Converter="{StaticResource StringFormatConverter}">
               <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
               <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
             </MultiBinding>
           </TextBlock.ToolTip>
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Text" Value="{x:Static nuget:Resources.Multiple_Versions_Installed}" >
+              </Setter>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding TopLevelInstalledVersions.Count}" Value="1">
+                  <Setter Property="Text" Value="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}">
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
           <AutomationProperties.Name>
             <MultiBinding Converter="{StaticResource StringFormatConverter}">
               <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
