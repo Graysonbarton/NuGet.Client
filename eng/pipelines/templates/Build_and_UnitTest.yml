@@ -254,6 +254,21 @@ steps:
 #     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
 #     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
 
+- script: |
+    echo "Listing contents of $(Build.SourcesDirectory)"
+    ls $(Build.SourcesDirectory)
+    echo "Listing contents of $(Build.ArtifactStagingDirectory)"
+    ls $(Build.ArtifactStagingDirectory)
+    echo "Listing contents of $(Build.ArtifactStagingDirectory)/artifacts"
+    ls $(Build.ArtifactStagingDirectory)/artifacts
+    echo "Listing contents of $(Build.StagingDirectory)"
+    ls $(Build.StagingDirectory)
+    echo "Listing contents of $(Build.Repository.LocalPath)"
+    ls $(Build.Repository.LocalPath)
+    echo "Listing contents of $(Build.Repository.LocalPath)/artifacts"
+    ls $(Build.Repository.LocalPath)/artifacts
+  displayName: 'List Directory contents'
+
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
