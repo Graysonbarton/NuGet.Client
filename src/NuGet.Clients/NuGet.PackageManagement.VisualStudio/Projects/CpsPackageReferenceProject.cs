@@ -346,6 +346,9 @@ namespace NuGet.PackageManagement.VisualStudio
                         ProjectItemProperties.IncludeAssets,
                         MSBuildStringUtility.Convert(LibraryIncludeFlagUtils.GetFlagString(installationContext.IncludeType)));
                 }
+
+                // Save the project
+                await _unconfiguredProject.SaveAsync();
             }
 
             return true;
