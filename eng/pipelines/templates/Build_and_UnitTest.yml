@@ -216,6 +216,21 @@ steps:
 #     msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.PackVSIX.binlog"
 #   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
+- script: |
+    echo "Listing contents of $(Build.SourcesDirectory)"
+    ls $(Build.SourcesDirectory)
+    echo "Listing contents of $(Build.ArtifactStagingDirectory)"
+    ls $(Build.ArtifactStagingDirectory)
+    echo "Listing contents of $(Build.ArtifactStagingDirectory)/artifacts"
+    ls $(Build.ArtifactStagingDirectory)/artifacts
+    echo "Listing contents of $(Build.StagingDirectory)"
+    ls $(Build.StagingDirectory)
+    echo "Listing contents of $(Build.Repository.LocalPath)"
+    ls $(Build.Repository.LocalPath)
+    echo "Listing contents of $(Build.Repository.LocalPath)/artifacts"
+    ls $(Build.Repository.LocalPath)/artifacts
+  displayName: 'List Directory contents'
+
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
@@ -253,21 +268,6 @@ steps:
 #     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
 #     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
 #     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-
-- script: |
-    echo "Listing contents of $(Build.SourcesDirectory)"
-    ls $(Build.SourcesDirectory)
-    echo "Listing contents of $(Build.ArtifactStagingDirectory)"
-    ls $(Build.ArtifactStagingDirectory)
-    echo "Listing contents of $(Build.ArtifactStagingDirectory)/artifacts"
-    ls $(Build.ArtifactStagingDirectory)/artifacts
-    echo "Listing contents of $(Build.StagingDirectory)"
-    ls $(Build.StagingDirectory)
-    echo "Listing contents of $(Build.Repository.LocalPath)"
-    ls $(Build.Repository.LocalPath)
-    echo "Listing contents of $(Build.Repository.LocalPath)/artifacts"
-    ls $(Build.Repository.LocalPath)/artifacts
-  displayName: 'List Directory contents'
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
