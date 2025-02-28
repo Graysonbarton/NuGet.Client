@@ -216,28 +216,20 @@ steps:
 #     msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.PackVSIX.binlog"
 #   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
-- script: |
-    echo "Listing contents of $(Build.SourcesDirectory)"
-    dir /b /s $(Build.SourcesDirectory) | sort
-    echo "Listing contents of $(Build.ArtifactStagingDirectory)"
-    dir /b /s $(Build.ArtifactStagingDirectory) | sort
-    echo "Listing contents of $(Build.ArtifactStagingDirectory)/artifacts"
-    dir /b /s $(Build.ArtifactStagingDirectory)/artifacts | sort
-    echo "Listing contents of $(Build.StagingDirectory)"
-    dir /b /s $(Build.StagingDirectory) | sort
-    echo "Listing contents of $(Build.Repository.LocalPath)"
-    dir /b /s $(Build.Repository.LocalPath) | sort
-    echo "Listing contents of $(Build.Repository.LocalPath)/artifacts"
-    dir /b /s $(Build.Repository.LocalPath)/artifacts | sort
-  displayName: 'List Directory contents'  
-
 - task: MSBuild@1
-  displayName: "Generate Build Toodir /b /s | sortpackage"
+  displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\14.BuildToolsVSIX.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+- script: |
+    echo "Listing contents of $(Build.ArtifactStagingDirectory)"
+    dir /b /s $(Build.ArtifactStagingDirectory) | sort
+    echo "Listing contents of $(Build.StagingDirectory)"
+    dir /b /s $(Build.StagingDirectory) | sort
+  displayName: 'List Directory contents'  
 
 # - task: MSBuild@1
 #   displayName: "Sign Nupkgs and VSIX"
