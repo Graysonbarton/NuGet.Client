@@ -460,6 +460,39 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        public async Task InstallTransitivePackageFromUI_NoBuild_ProjectIsSaved()
+        {
+            // Arrange
+            var transitivePackageName = "Contoso.B";
+            await CommonUtility.CreateDependenciesPackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1, transitivePackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
+
+            // Act
+            uiwindow.InstallPackageFromUI(transitivePackageName, TestPackageVersionV1);
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, transitivePackageName, TestPackageVersionV1, Logger);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public async Task Uninstall_WithMultiplePackagesThatDependOnEachOther_PackageGoesFromDirectToTransitive()
         {
             // Arrange
