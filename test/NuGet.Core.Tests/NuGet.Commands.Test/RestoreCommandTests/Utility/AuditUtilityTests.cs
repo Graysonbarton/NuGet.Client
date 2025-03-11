@@ -517,7 +517,7 @@ public class AuditUtilityTests
         {
             if (tfm is null)
             {
-                tfm = FrameworkConstants.CommonFrameworks.Net80;
+                tfm = FrameworkConstants.CommonFrameworks.Net60;
             }
 
             var walkTarget = new LibraryRange("proj", V1Range, LibraryDependencyTarget.Project);

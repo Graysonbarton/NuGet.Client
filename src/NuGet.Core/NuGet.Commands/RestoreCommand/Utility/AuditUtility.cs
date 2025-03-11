@@ -70,19 +70,15 @@ namespace NuGet.Commands.Restore.Utility
             MinSeverity = ParseAuditLevel();
             AuditMode = ParseAuditMode();
 
-            int maxSuppressedAdvisoriesCount = 0;
-            for (int i = 0; i < _restoreRequest.Project.TargetFrameworks.Count; i++)
+            // SpecValidationUtility.ValidateProjectSpec should ensure that all TFMs have the same suppressions collection
+            var suppressionCount = _restoreRequest.Project.TargetFrameworks[0].NuGetAudit?.SuppressedAdvisories?.Count ?? 0;
+            if (suppressionCount > 0)
             {
-                var count = _restoreRequest.Project.TargetFrameworks[i].NuGetAudit.SuppressedAdvisories?.Count ?? 0;
-                if (count > maxSuppressedAdvisoriesCount)
+                SuppressedAdvisories = new Dictionary<string, bool>(suppressionCount);
+                foreach (var suppression in _restoreRequest.Project.TargetFrameworks[0].NuGetAudit.SuppressedAdvisories!)
                 {
-                    maxSuppressedAdvisoriesCount = count;
+                    SuppressedAdvisories.Add(suppression, false);
                 }
-            }
-
-            if (maxSuppressedAdvisoriesCount > 0)
-            {
-                SuppressedAdvisories = new Dictionary<string, bool>(maxSuppressedAdvisoriesCount);
             }
         }
 
