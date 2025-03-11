@@ -4021,16 +4021,16 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WithRestoreAuditProperties_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
-            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\": \"a\", \"auditLevel\": \"b\", \"auditMode\": \"c\"}}}}}}";
+            var json = "{\"frameworks\":{\"net8.0\":{\"nugetAudit\":{\"enableAudit\": \"a\", \"auditLevel\": \"b\", \"auditMode\": \"c\"}}}}";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
 
             // Assert
-            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().BeNull();
+            packageSpec.TargetFrameworks[0].NuGetAudit.EnableAudit.Should().Be("a");
+            packageSpec.TargetFrameworks[0].NuGetAudit.AuditLevel.Should().Be("b");
+            packageSpec.TargetFrameworks[0].NuGetAudit.AuditMode.Should().Be("c");
+            packageSpec.TargetFrameworks[0].NuGetAudit.SuppressedAdvisories.Should().BeNull();
         }
 
         [Theory]
@@ -4038,18 +4038,18 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WithRestoreAuditPropertiesAndSuppressions_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
-            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":{{\"d\":null,\"e\":null}}}}}}}}";
+            var json = "{\"frameworks\":{\"net8.0\":{\"nugetAudit\":{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":{\"d\":null,\"e\":null}}}}}";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
 
             // Assert
-            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().HaveCount(2);
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.First().Should().Be("d");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Last().Should().Be("e");
+            packageSpec.TargetFrameworks[0].NuGetAudit.EnableAudit.Should().Be("a");
+            packageSpec.TargetFrameworks[0].NuGetAudit.AuditLevel.Should().Be("b");
+            packageSpec.TargetFrameworks[0].NuGetAudit.AuditMode.Should().Be("c");
+            packageSpec.TargetFrameworks[0].NuGetAudit.SuppressedAdvisories.Should().HaveCount(2);
+            packageSpec.TargetFrameworks[0].NuGetAudit.SuppressedAdvisories.First().Should().Be("d");
+            packageSpec.TargetFrameworks[0].NuGetAudit.SuppressedAdvisories.Last().Should().Be("e");
         }
 
         [Theory]

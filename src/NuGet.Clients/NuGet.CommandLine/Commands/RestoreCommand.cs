@@ -335,7 +335,7 @@ namespace NuGet.CommandLine
                     if (packageSpec != null)
                     {
                         referenceFile = packageSpec.FilePath;
-                        restoreAuditProperties.Add(referenceFile, packageSpec.RestoreMetadata.RestoreAuditProperties);
+                        restoreAuditProperties.Add(referenceFile, packageSpec.TargetFrameworks[0].NuGetAudit);
                     }
                 }
 
@@ -519,7 +519,7 @@ namespace NuGet.CommandLine
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
-                    restoreAuditProperties.Add(project.FilePath, project.RestoreMetadata.RestoreAuditProperties);
+                    restoreAuditProperties.Add(project.FilePath, project.TargetFrameworks[0].NuGetAudit);
                 }
             }
 

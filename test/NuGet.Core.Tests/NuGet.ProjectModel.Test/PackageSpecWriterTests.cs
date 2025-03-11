@@ -713,16 +713,19 @@ namespace NuGet.ProjectModel.Test
         public void Write_RestoreAuditProperties_RoundTrips()
         {
             // Arrange
-            var json = @"{
-                  ""restore"": {
-                    ""projectUniqueName"": ""projectUniqueName"",
-                    ""restoreAuditProperties"": {
-                        ""enableAudit"": ""true"",
-                        ""auditLevel"": ""moderate"",
-                        ""auditMode"": ""all""
+            var json = """
+                {
+                    "frameworks": {
+                        "net8.0": {
+                            "nugetAudit": {
+                                "enableAudit": "true",
+                                "auditLevel": "moderate",
+                                "auditMode": "all"
+                            }
+                        }
                     }
-                  }
-                }";
+                }
+                """;
 
             // Act & Assert
             VerifyJsonPackageSpecRoundTrip(json);
@@ -762,20 +765,23 @@ namespace NuGet.ProjectModel.Test
         public void Write_RestoreAuditPropertiesWithSuppressions_RoundTrips()
         {
             // Arrange
-            var json = @"{
-                  ""restore"": {
-                    ""projectUniqueName"": ""projectUniqueName"",
-                    ""restoreAuditProperties"": {
-                        ""enableAudit"": ""true"",
-                        ""auditLevel"": ""moderate"",
-                        ""auditMode"": ""all"",
-                        ""suppressedAdvisories"": {
-                            ""https://github.com/advisories/example-cve-1"": null,
-                            ""https://github.com/advisories/example-cve-2"": null
-                        },
+            var json = """
+                {
+                  "frameworks": {
+                    "net8.0": {
+                        "nugetAudit": {
+                            "enableAudit": "true",
+                            "auditLevel": "moderate",
+                            "auditMode": "all",
+                            "suppressedAdvisories": {
+                                "https://github.com/advisories/example-cve-1": null,
+                                "https://github.com/advisories/example-cve-2": null
+                                }
+                            }
+                        }
                     }
-                  }
-                }";
+                }
+                """;
 
             // Act & Assert
             VerifyJsonPackageSpecRoundTrip(json);

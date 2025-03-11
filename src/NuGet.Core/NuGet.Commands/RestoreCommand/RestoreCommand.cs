@@ -184,10 +184,19 @@ namespace NuGet.Commands
             using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Count(e => e.IsHttp);
-                bool auditEnabled = AuditUtility.ParseEnableValue(
-                    _request.Project.RestoreMetadata?.RestoreAuditProperties,
+                bool auditEnabled = false;
+                for (int i = 0; i < _request.Project.TargetFrameworks.Count; i++)
+                {
+                    var tfi = _request.Project.TargetFrameworks[i];
+                    if (AuditUtility.ParseEnableValue(
+                    tfi?.NuGetAudit,
                     _request.Project.FilePath,
-                    _logger);
+                    _logger))
+                    {
+                        auditEnabled = true;
+                        break;
+                    }
+                }
                 InitializeTelemetry(telemetry, httpSourcesCount, auditEnabled);
 
                 var restoreTime = Stopwatch.StartNew();
@@ -661,13 +670,7 @@ namespace NuGet.Commands
         /// <returns>False if no vulnerability database could be found (so packages were not scanned for vulnerabilities), true otherwise.</returns>
         private async Task<bool> PerformAuditAsync(IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
         {
-            var audit = new AuditUtility(
-                _request.Project.RestoreMetadata.RestoreAuditProperties,
-                _request.Project.FilePath,
-                graphs,
-                _request.DependencyProviders.VulnerabilityInfoProviders,
-                _request.Project.TargetFrameworks,
-                _logger);
+            var audit = new AuditUtility(_request, graphs, _logger);
             bool auditRan = await audit.CheckPackageVulnerabilitiesAsync(token);
 
             telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;

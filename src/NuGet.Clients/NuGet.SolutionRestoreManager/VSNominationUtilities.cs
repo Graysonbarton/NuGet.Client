@@ -162,6 +162,7 @@ namespace NuGet.SolutionRestoreManager
                 TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework),
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
+                NuGetAudit = GetRestoreAuditProperties(targetFrameworkInfo),
             };
 
             return tfi;
@@ -335,12 +336,12 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreUseLegacyDependencyResolver, MSBuildStringUtility.IsTrue);
         }
 
-        internal static RestoreAuditProperties? GetRestoreAuditProperties(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+        internal static RestoreAuditProperties? GetRestoreAuditProperties(IVsTargetFrameworkInfo4 targetFrameworkInfo)
         {
-            string? enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
-            string? auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
-            string? auditMode = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditMode, s => s);
-            HashSet<string>? suppressedAdvisories = GetSuppressedAdvisories(tfms);
+            string? enableAudit = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.NuGetAudit);
+            string? auditLevel = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.NuGetAuditLevel);
+            string? auditMode = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.NuGetAuditMode);
+            HashSet<string>? suppressedAdvisories = GetSuppressedAdvisories(targetFrameworkInfo);
 
             return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel) || !string.IsNullOrEmpty(auditMode) || suppressedAdvisories is not null
                 ? new RestoreAuditProperties()
@@ -352,13 +353,10 @@ namespace NuGet.SolutionRestoreManager
                 }
                 : null;
 
-            static HashSet<string>? GetSuppressedAdvisories(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+            static HashSet<string>? GetSuppressedAdvisories(IVsTargetFrameworkInfo4 targetFrameworkInfo)
             {
-                if (tfms.Count == 0) { return null; }
-
-                // Create the hash set from the first TargetFramework
                 HashSet<string>? suppressedAdvisories = null;
-                if (tfms[0].Items?.TryGetValue(ProjectItems.NuGetAuditSuppress, out IReadOnlyList<IVsReferenceItem2>? suppressItems) ?? false)
+                if (targetFrameworkInfo?.Items?.TryGetValue(ProjectItems.NuGetAuditSuppress, out IReadOnlyList<IVsReferenceItem2>? suppressItems) ?? false)
                 {
                     if (suppressItems.Count > 0)
                     {
@@ -371,48 +369,7 @@ namespace NuGet.SolutionRestoreManager
                     }
                 }
 
-                // Validate that other TargetFrameworks use the same collection
-                for (int i = 1; i < tfms.Count; i++)
-                {
-                    if (!AreSameAdvisories(suppressedAdvisories, tfms[i].Items))
-                    {
-                        string message = string.Format(Resources.ItemValuesAreDifferentAcrossTargetFrameworks, ProjectItems.NuGetAuditSuppress);
-                        throw new InvalidOperationException(message);
-                    }
-                }
-
                 return suppressedAdvisories;
-
-                static bool AreSameAdvisories(HashSet<string>? suppressedAdvisories, IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>>? items)
-                {
-                    IReadOnlyList<IVsReferenceItem2>? suppressItems = null;
-                    _ = items?.TryGetValue(ProjectItems.NuGetAuditSuppress, out suppressItems);
-
-                    int expectedCount = suppressedAdvisories?.Count ?? 0;
-                    int actualCount = suppressItems?.Count ?? 0;
-                    if (expectedCount == 0 || actualCount == 0)
-                    {
-                        if (expectedCount == 0 && actualCount == 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-
-                    if (suppressedAdvisories!.Count != suppressItems!.Count) { return false; }
-
-                    for (int i = 0; i < suppressItems.Count; i++)
-                    {
-                        var url = suppressItems[i].Name;
-                        if (!suppressedAdvisories.Contains(url))
-                            return false;
-                    }
-
-                    return true;
-                }
             }
         }
 

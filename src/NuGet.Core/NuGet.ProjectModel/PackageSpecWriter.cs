@@ -180,7 +180,6 @@ namespace NuGet.ProjectModel
             SetWarningProperties(writer, msbuildMetadata);
 
             WriteNuGetLockFileProperties(writer, msbuildMetadata);
-            WriteNuGetAuditProperties(writer, msbuildMetadata.RestoreAuditProperties);
 
             if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
             {
@@ -240,7 +239,7 @@ namespace NuGet.ProjectModel
         {
             if (auditProperties == null) return;
 
-            writer.WriteObjectStart("restoreAuditProperties");
+            writer.WriteObjectStart("nugetAudit");
 
             SetValueIfNotNull(writer, "enableAudit", auditProperties.EnableAudit);
             SetValueIfNotNull(writer, "auditLevel", auditProperties.AuditLevel);
@@ -627,6 +626,7 @@ namespace NuGet.ProjectModel
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);
                     SetPackagesToPrune(writer, framework.PackagesToPrune, hashing);
+                    WriteNuGetAuditProperties(writer, framework.NuGetAudit);
                     writer.WriteObjectEnd();
                 }
 

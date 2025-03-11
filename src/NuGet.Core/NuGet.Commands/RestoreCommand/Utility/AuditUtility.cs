@@ -23,12 +23,9 @@ namespace NuGet.Commands.Restore.Utility
 {
     internal class AuditUtility
     {
-        private readonly RestoreAuditProperties? _restoreAuditProperties;
-        private readonly string _projectFullPath;
+        private readonly RestoreRequest _restoreRequest;
         private readonly IEnumerable<RestoreTargetGraph> _targetGraphs;
-        private readonly IReadOnlyList<IVulnerabilityInformationProvider> _vulnerabilityInfoProviders;
         private readonly ILogger _logger;
-        private readonly IList<TargetFrameworkInformation> _targetFrameworks;
 
         internal PackageVulnerabilitySeverity MinSeverity { get; }
         internal NuGetAuditMode AuditMode { get; }
@@ -62,42 +59,31 @@ namespace NuGet.Commands.Restore.Utility
         internal int InvalidSevPackageDownloadMatches { get; private set; }
 
         public AuditUtility(
-            RestoreAuditProperties? restoreAuditProperties,
-            string projectFullPath,
+            RestoreRequest restoreRequest,
             IEnumerable<RestoreTargetGraph> graphs,
-            IReadOnlyList<IVulnerabilityInformationProvider> vulnerabilityInformationProviders,
-            IList<TargetFrameworkInformation> targetFrameworks,
             ILogger logger)
         {
-            _targetFrameworks = targetFrameworks;
-            _restoreAuditProperties = restoreAuditProperties;
-            _projectFullPath = projectFullPath;
+            _restoreRequest = restoreRequest;
             _targetGraphs = graphs;
-            _vulnerabilityInfoProviders = vulnerabilityInformationProviders;
             _logger = logger;
 
             MinSeverity = ParseAuditLevel();
             AuditMode = ParseAuditMode();
 
-            if (restoreAuditProperties?.SuppressedAdvisories != null)
+            int maxSuppressedAdvisoriesCount = 0;
+            for (int i = 0; i < _restoreRequest.Project.TargetFrameworks.Count; i++)
             {
-                SuppressedAdvisories = new Dictionary<string, bool>(restoreAuditProperties.SuppressedAdvisories.Count);
-
-                foreach (string advisory in restoreAuditProperties.SuppressedAdvisories)
+                var count = _restoreRequest.Project.TargetFrameworks[i].NuGetAudit.SuppressedAdvisories?.Count ?? 0;
+                if (count > maxSuppressedAdvisoriesCount)
                 {
-                    SuppressedAdvisories.Add(advisory, false);
+                    maxSuppressedAdvisoriesCount = count;
                 }
             }
-        }
 
-        private int CountPackageDownloads()
-        {
-            int count = 0;
-            foreach (var targetFramework in _targetFrameworks.NoAllocEnumerate())
+            if (maxSuppressedAdvisoriesCount > 0)
             {
-                count += targetFramework.DownloadDependencies.Length;
+                SuppressedAdvisories = new Dictionary<string, bool>(maxSuppressedAdvisoriesCount);
             }
-            return count;
         }
 
         private void CheckPackageDownloadVulnerabilities(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
@@ -132,7 +118,7 @@ namespace NuGet.Commands.Restore.Utility
         {
             Dictionary<DownloadDependency, PackageDownloadAuditInfo>? result = null;
 
-            foreach (var targetFramework in _targetFrameworks.NoAllocEnumerate())
+            foreach (var targetFramework in _restoreRequest.Project.TargetFrameworks.NoAllocEnumerate())
             {
                 foreach (var downloadDependency in targetFramework.DownloadDependencies)
                 {
@@ -214,14 +200,19 @@ namespace NuGet.Commands.Restore.Utility
 
             bool HasPackages()
             {
-                if (CountPackageDownloads() > 0)
-                {
-                    return true;
-                }
-
-                foreach (RestoreTargetGraph graph in _targetGraphs)
+                // Any PackageReferences
+                foreach (RestoreTargetGraph graph in _targetGraphs.NoAllocEnumerate())
                 {
                     if (graph.Flattened.Any(r => r.Key.Type == LibraryType.Package))
+                    {
+                        return true;
+                    }
+                }
+
+                // Any PackageDownloads
+                foreach (var targetFramework in _restoreRequest.Project.TargetFrameworks.NoAllocEnumerate())
+                {
+                    if (targetFramework.DownloadDependencies.Length > 0)
                     {
                         return true;
                     }
@@ -379,6 +370,10 @@ namespace NuGet.Commands.Restore.Utility
 
             foreach (RestoreTargetGraph graph in _targetGraphs)
             {
+                var targetFrameworkInfo = _restoreRequest.Project.GetTargetFramework(graph.Framework);
+
+                bool auditEnabled = ParseEnableValue(targetFrameworkInfo.NuGetAudit, _restoreRequest.Project.FilePath, _logger);
+
                 GraphItem<RemoteResolveResult>? currentProject = graph.Graphs.FirstOrDefault()?.Item;
 
                 foreach (GraphItem<RemoteResolveResult>? node in graph.Flattened.Where(r => r.Key.Type == LibraryType.Package))
@@ -444,10 +439,12 @@ namespace NuGet.Commands.Restore.Utility
 
         private async Task<List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>?> GetAllVulnerabilityDataAsync(CancellationToken cancellationToken)
         {
-            var results = new Task<GetVulnerabilityInfoResult?>[_vulnerabilityInfoProviders.Count];
-            for (int i = 0; i < _vulnerabilityInfoProviders.Count; i++)
+            var vulnerabilityInfoProviders = _restoreRequest.DependencyProviders.VulnerabilityInfoProviders;
+
+            var results = new Task<GetVulnerabilityInfoResult?>[vulnerabilityInfoProviders.Count];
+            for (int i = 0; i < vulnerabilityInfoProviders.Count; i++)
             {
-                IVulnerabilityInformationProvider provider = _vulnerabilityInfoProviders[i];
+                IVulnerabilityInformationProvider provider = vulnerabilityInfoProviders[i];
                 results[i] = provider.GetVulnerabilityInformationAsync(cancellationToken);
             }
 
@@ -462,9 +459,9 @@ namespace NuGet.Commands.Restore.Utility
             {
                 GetVulnerabilityInfoResult? result = await results[i];
 
-                if (_vulnerabilityInfoProviders[i].IsAuditSource && (result?.KnownVulnerabilities is null || result.KnownVulnerabilities.Count == 0))
+                if (vulnerabilityInfoProviders[i].IsAuditSource && (result?.KnownVulnerabilities is null || result.KnownVulnerabilities.Count == 0))
                 {
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Warning_AuditSourceWithoutVulnerabilityData, _vulnerabilityInfoProviders[i].SourceName);
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Warning_AuditSourceWithoutVulnerabilityData, vulnerabilityInfoProviders[i].SourceName);
                     RestoreLogMessage logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1905, message);
                     _logger.Log(logMessage);
                 }
@@ -493,22 +490,36 @@ namespace NuGet.Commands.Restore.Utility
 
         private PackageVulnerabilitySeverity ParseAuditLevel()
         {
-            string? auditLevel = _restoreAuditProperties?.AuditLevel?.Trim();
+            PackageVulnerabilitySeverity minSeverity = PackageVulnerabilitySeverity.Critical;
 
-            if (auditLevel == null)
+            foreach (var targetFramework in _restoreRequest.Project.TargetFrameworks.NoAllocEnumerate())
             {
-                return PackageVulnerabilitySeverity.Low;
+                RestoreAuditProperties? restoreAuditProperties = targetFramework.NuGetAudit;
+
+                string? auditLevel = restoreAuditProperties?.AuditLevel?.Trim();
+                PackageVulnerabilitySeverity severity;
+
+                if (auditLevel == null)
+                {
+                    severity = PackageVulnerabilitySeverity.Low;
+                }
+                else if (restoreAuditProperties!.TryParseAuditLevel(out PackageVulnerabilitySeverity result))
+                {
+                    severity = result;
+                }
+                else
+                {
+
+                    string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
+                    RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+                    _logger.Log(message);
+                    severity = PackageVulnerabilitySeverity.Low;
+                }
+
+                if (severity < minSeverity) minSeverity = severity;
             }
 
-            if (_restoreAuditProperties!.TryParseAuditLevel(out PackageVulnerabilitySeverity result))
-            {
-                return result;
-            }
-
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
-            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-            _logger.Log(message);
-            return PackageVulnerabilitySeverity.Low;
+            return minSeverity;
         }
 
         internal enum NuGetAuditMode { Unknown, Direct, All }
@@ -516,26 +527,40 @@ namespace NuGet.Commands.Restore.Utility
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation. 
         private NuGetAuditMode ParseAuditMode()
         {
-            string? auditMode = _restoreAuditProperties?.AuditMode?.Trim();
+            NuGetAuditMode maxMode = NuGetAuditMode.Unknown;
 
-            if (auditMode == null)
+            foreach (var targetFramework in _restoreRequest.Project.TargetFrameworks.NoAllocEnumerate())
             {
-                return NuGetAuditMode.Unknown;
-            }
-            else if (string.Equals("direct", auditMode, StringComparison.OrdinalIgnoreCase))
-            {
-                return NuGetAuditMode.Direct;
-            }
-            else if (string.Equals("all", auditMode, StringComparison.OrdinalIgnoreCase))
-            {
-                return NuGetAuditMode.All;
+                RestoreAuditProperties? restoreAuditProperties = targetFramework.NuGetAudit;
+
+                string? auditMode = restoreAuditProperties?.AuditMode?.Trim();
+                NuGetAuditMode mode;
+
+                if (auditMode == null)
+                {
+                    mode = NuGetAuditMode.Unknown;
+                }
+                else if (string.Equals("direct", auditMode, StringComparison.OrdinalIgnoreCase))
+                {
+                    mode = NuGetAuditMode.Direct;
+                }
+                else if (string.Equals("all", auditMode, StringComparison.OrdinalIgnoreCase))
+                {
+                    mode = NuGetAuditMode.All;
+                }
+                else
+                {
+                    string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, all");
+                    RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+                    message.ProjectPath = _restoreRequest.Project.FilePath;
+                    _logger.Log(message);
+                    mode = NuGetAuditMode.Unknown;
+                }
+
+                if (mode > maxMode) maxMode = mode;
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditModeValue, auditMode, "direct, all");
-            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-            message.ProjectPath = _projectFullPath;
-            _logger.Log(message);
-            return NuGetAuditMode.Unknown;
+            return maxMode;
         }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.

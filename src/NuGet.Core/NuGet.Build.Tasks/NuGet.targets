@@ -72,7 +72,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NuGetAudit Condition=" '$(NuGetAudit)' == '' ">true</NuGetAudit>
     <!-- Report all severity vulnerabilities (low severity and higher). Allowed values are: low, moderate, high, critical -->
     <NuGetAuditLevel Condition=" '$(NuGetAuditLevel)' == '' ">low</NuGetAuditLevel>
-    <!-- Report known vulnerabilities on direct and transitive dependencies, unless SdkAnalysisLevel (or equalivant) is lower than 9.0.100. Allowed values are: direct, all -->
+    <!-- Report known vulnerabilities on direct and transitive dependencies for .NET 10 and higher, direct only otherwise -->
+    <NuGetAuditMode Condition=" '$(NuGetExeSkipSdkAnalysisLevelCheck)' != 'true'
+                    AND '$(TargetFrameworkIdentifier)' == '>NETCoreApp'
+                    AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">direct</NuGetAuditMode>
     <NuGetAuditMode Condition=" '$(NuGetAuditMode)' == '' ">direct</NuGetAuditMode>
   </PropertyGroup>
 
@@ -958,9 +961,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CentralPackageFloatingVersionsEnabled>$(CentralPackageFloatingVersionsEnabled)</CentralPackageFloatingVersionsEnabled>
         <CentralPackageVersionOverrideEnabled>$(CentralPackageVersionOverrideEnabled)</CentralPackageVersionOverrideEnabled>
         <CentralPackageTransitivePinningEnabled>$(CentralPackageTransitivePinningEnabled)</CentralPackageTransitivePinningEnabled>
-        <NuGetAudit>$(NuGetAudit)</NuGetAudit>
-        <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
-        <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
         <SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
         <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
         <RestoreUseLegacyDependencyResolver>$(RestoreUseLegacyDependencyResolver)</RestoreUseLegacyDependencyResolver>
@@ -1203,6 +1203,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
         <WindowsTargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
         <RestoreEnablePackagePruning>$(RestoreEnablePackagePruning)</RestoreEnablePackagePruning>
+        <NuGetAudit>$(NuGetAudit)</NuGetAudit>
+        <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
+        <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>

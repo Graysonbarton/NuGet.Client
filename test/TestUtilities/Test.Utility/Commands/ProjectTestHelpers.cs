@@ -141,19 +141,21 @@ namespace NuGet.Commands.Test
             updated.RestoreMetadata.CentralPackageVersionsEnabled = spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
             updated.RestoreMetadata.CentralPackageTransitivePinningEnabled = spec.RestoreMetadata?.CentralPackageTransitivePinningEnabled ?? false;
 
-            updated.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties()
-            {
-                EnableAudit = bool.FalseString
-            };
-
-            // Update the Target Alias.
+            // Update the Target Alias and disable NuGetAudit
             for (int i = 0; i < updated.TargetFrameworks.Count; i++)
             {
                 var framework = updated.TargetFrameworks[i];
-                if (string.IsNullOrEmpty(framework.TargetAlias))
+                string alias = string.IsNullOrEmpty(framework.TargetAlias) ? framework.FrameworkName.GetShortFolderName() : framework.TargetAlias;
+                RestoreAuditProperties auditProperties = new RestoreAuditProperties()
                 {
-                    updated.TargetFrameworks[i] = new TargetFrameworkInformation(framework) { TargetAlias = framework.FrameworkName.GetShortFolderName() };
-                }
+                    EnableAudit = bool.FalseString
+                };
+
+                updated.TargetFrameworks[i] = new TargetFrameworkInformation(framework)
+                {
+                    TargetAlias = alias,
+                    NuGetAudit = auditProperties
+                };
             }
 
             foreach (var framework in updated.TargetFrameworks)
@@ -179,14 +181,13 @@ namespace NuGet.Commands.Test
             metadata.ProjectUniqueName = msbuildProjectFilePath;
             metadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(msbuildProjectExtensionsPath);
             metadata.ConfigFilePaths = new List<string>();
-            metadata.RestoreAuditProperties = new RestoreAuditProperties()
-            {
-                EnableAudit = bool.FalseString
-            };
 
-            foreach (var framework in updated.TargetFrameworks)
+            for (int i = 0; i < updated.TargetFrameworks.Count; i++)
             {
+                TargetFrameworkInformation framework = updated.TargetFrameworks[i];
                 metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName) { });
+
+                updated.TargetFrameworks[i] = new TargetFrameworkInformation(framework) { NuGetAudit = new RestoreAuditProperties() { EnableAudit = bool.FalseString } };
             }
 
             return updated;

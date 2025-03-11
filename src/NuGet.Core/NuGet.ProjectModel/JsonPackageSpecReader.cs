@@ -313,6 +313,35 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
+        private static RestoreAuditProperties ReadNuGetAuditProperties(JsonTextReader jsonReader, string filePath)
+        {
+            RestoreAuditProperties auditProperties = new();
+            jsonReader.ReadObject(propertyName =>
+            {
+                int line = jsonReader.LineNumber;
+                int column = jsonReader.LinePosition;
+
+                if (string.Equals(propertyName, "enableAudit", StringComparison.OrdinalIgnoreCase))
+                {
+                    auditProperties.EnableAudit = jsonReader.ReadNextTokenAsString();
+                }
+                else if (string.Equals(propertyName, "auditLevel", StringComparison.OrdinalIgnoreCase))
+                {
+                    auditProperties.AuditLevel = jsonReader.ReadNextTokenAsString();
+                }
+                else if (string.Equals(propertyName, "auditMode", StringComparison.OrdinalIgnoreCase))
+                {
+                    auditProperties.AuditMode = jsonReader.ReadNextTokenAsString();
+                }
+                else if (string.Equals(propertyName, "suppressedAdvisories", StringComparison.OrdinalIgnoreCase))
+                {
+                    auditProperties.SuppressedAdvisories = ReadSuppressedAdvisories(jsonReader);
+                }
+            });
+            return auditProperties;
+        }
+
+        [Obsolete]
         private static void ReadPackagesToPrune(
             JsonTextReader jsonReader,
             IDictionary<string, PrunePackageReference> packagesToPrune,
@@ -988,7 +1017,6 @@ namespace NuGet.ProjectModel
             List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
-            RestoreAuditProperties auditProperties = null;
             bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
             bool usingMicrosoftNetSdk = true;
@@ -1114,40 +1142,6 @@ namespace NuGet.ProjectModel
                         restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile, nuGetLockFilePath, restoreLockedMode);
                         break;
 
-                    case "restoreAuditProperties":
-                        string enableAudit = null, auditLevel = null, auditMode = null;
-                        HashSet<string> suppressedAdvisories = null;
-
-                        jsonReader.ReadObject(auditPropertyName =>
-                        {
-                            switch (auditPropertyName)
-                            {
-                                case "enableAudit":
-                                    enableAudit = jsonReader.ReadNextTokenAsString();
-                                    break;
-
-                                case "auditLevel":
-                                    auditLevel = jsonReader.ReadNextTokenAsString();
-                                    break;
-
-                                case "auditMode":
-                                    auditMode = jsonReader.ReadNextTokenAsString();
-                                    break;
-
-                                case "suppressedAdvisories":
-                                    suppressedAdvisories = ReadSuppressedAdvisories(jsonReader);
-                                    break;
-                            }
-                        });
-                        auditProperties = new RestoreAuditProperties()
-                        {
-                            EnableAudit = enableAudit,
-                            AuditLevel = auditLevel,
-                            AuditMode = auditMode,
-                            SuppressedAdvisories = suppressedAdvisories
-                        };
-                        break;
-
                     case "skipContentFileWrite":
                         skipContentFileWrite = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
@@ -1251,7 +1245,6 @@ namespace NuGet.ProjectModel
             msbuildMetadata.CentralPackageFloatingVersionsEnabled = centralPackageFloatingVersionsEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
-            msbuildMetadata.RestoreAuditProperties = auditProperties;
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
             msbuildMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
             msbuildMetadata.UseLegacyDependencyResolver = restoreUseLegacyDependencyResolver;
@@ -1857,6 +1850,7 @@ namespace NuGet.ProjectModel
             string targetAlias = string.Empty;
             bool warn = false;
             Dictionary<string, PrunePackageReference> packagesToPrune = null;
+            RestoreAuditProperties auditProperties = null;
 
             NuGetFramework secondaryFramework = default;
 
@@ -1942,6 +1936,10 @@ namespace NuGet.ProjectModel
                     case "warn":
                         warn = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
+
+                    case "nugetAudit":
+                        auditProperties = ReadNuGetAuditProperties(jsonReader, packageSpec.FilePath);
+                        break;
                 }
             }, out frameworkLine, out frameworkColumn);
 
@@ -1957,6 +1955,7 @@ namespace NuGet.ProjectModel
                 TargetAlias = targetAlias,
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
+                NuGetAudit = auditProperties,
             };
 
             AddTargetFramework(packageSpec, frameworkName, secondaryFramework, targetFrameworkInformation);

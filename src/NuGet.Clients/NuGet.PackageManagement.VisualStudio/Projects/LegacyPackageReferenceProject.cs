@@ -470,6 +470,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // Get fallback settings
             (targetFramework, var imports, var assetTargetFallback, var warn) = AssetTargetFallbackUtility.GetFallbackFrameworkInformation(targetFramework, packageTargetFallback, assetTargetFallbackList);
 
+            RestoreAuditProperties auditProperties = GetRestoreAuditProperties();
+
             var projectTfi = new TargetFrameworkInformation
             {
                 AssetTargetFallback = assetTargetFallback,
@@ -479,6 +481,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 FrameworkName = targetFramework,
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
+                NuGetAudit = auditProperties,
             };
 
             // Build up runtime information.
@@ -518,8 +521,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectName = specifiedAssemblyName;
                 }
             }
-
-            RestoreAuditProperties auditProperties = GetRestoreAuditProperties();
 
             var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();
 
@@ -581,7 +582,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled.EqualsFalse(),
                     CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
-                    RestoreAuditProperties = auditProperties,
                     SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString),
                     UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(usingNetSdk),
                     UseLegacyDependencyResolver = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreUseLegacyDependencyResolver)),

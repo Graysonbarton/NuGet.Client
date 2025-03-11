@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -19,7 +18,9 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
+using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -64,7 +65,7 @@ public class AuditUtilityTests
     public async Task Check_VulnerabilityProviderWithExceptions_WarningsReplayedToLogger()
     {
         // Arrange
-        var context = new AuditTestContext();
+        using var context = new AuditTestContext();
         var exception1 = new AggregateException(new HttpRequestException("404"));
         context.WithVulnerabilityProvider().WithException(exception1);
         var exception2 = new AggregateException(new HttpRequestException("401"));
@@ -89,7 +90,7 @@ public class AuditUtilityTests
     public async Task Check_WithNoVulnerabilitySources_EarlyExitPerformance()
     {
         // Arrange
-        var context = new AuditTestContext();
+        using var context = new AuditTestContext();
         context.WithRestoreTarget().DependsOn("pkga", "1.0.0");
 
         context.PackagesDependencyProvider.Package("pkga", "1.0.0");
@@ -110,7 +111,7 @@ public class AuditUtilityTests
     public async Task Check_RestoreWithNoPackages_DoesNotFetchVulnerabilityInfoResources()
     {
         // Arrange
-        var context = new AuditTestContext();
+        using var context = new AuditTestContext();
         context.WithRestoreTarget()
             .DependsOn("classlib", "1.0.0");
         context.ProjectDependencyProvider.Package("classlib", "1.0.0", LibraryType.Project);
@@ -128,7 +129,7 @@ public class AuditUtilityTests
     public async Task Check_ProjectWithoutVulnerablePackages_NoWarnings()
     {
         // Arrange
-        var context = new AuditTestContext();
+        using var context = new AuditTestContext();
 
         var packageVulnerabilities = context.WithVulnerabilityProvider().WithPackageVulnerability("SomePackage");
         packageVulnerabilities.Add(new PackageVulnerabilityInfo(CveUrl, PackageVulnerabilitySeverity.Moderate, UpToV2));
@@ -158,8 +159,7 @@ public class AuditUtilityTests
     public async Task Check_ProjectReferencingPackageWithVulnerability_WarningLogged(PackageVulnerabilitySeverity severity, NuGetLogCode expectedCode)
     {
         // Arrange
-        var context = new AuditTestContext();
-        context.Mode = "all";
+        using var context = new AuditTestContext();
 
         var vulnerabilityProvider = context.WithVulnerabilityProvider();
         var knownVulnerabilities = vulnerabilityProvider.WithPackageVulnerability("pkga");
@@ -181,18 +181,16 @@ public class AuditUtilityTests
         context.PackagesDependencyProvider.Package("pkga", "1.0.0").DependsOn("pkgb", "1.0.0");
         context.PackagesDependencyProvider.Package("pkgb", "1.0.0");
 
-        ImmutableArray<DownloadDependency> downloadDependencies = ImmutableArray.Create<DownloadDependency>
-        (
-            new DownloadDependency("pkgDownload", VersionRange.Parse("[1.0.0]")),
-            new DownloadDependency("pkga", VersionRange.Parse("[1.0.0]")),
-            new DownloadDependency("pkgDownload12", VersionRange.Parse("[1.0.0]"))
-        );
-
-        TargetFrameworkInformation targetFramework = new()
+        context.TargetFrameworks[0].NuGetAudit.AuditMode = "all";
+        context.TargetFrameworks[0] = new TargetFrameworkInformation(context.TargetFrameworks[0])
         {
-            DownloadDependencies = downloadDependencies
+            DownloadDependencies =
+            [
+                new DownloadDependency("pkgDownload", VersionRange.Parse("[1.0.0]")),
+                new DownloadDependency("pkga", VersionRange.Parse("[1.0.0]")),
+                new DownloadDependency("pkgDownload12", VersionRange.Parse("[1.0.0]")),
+            ]
         };
-        context.TargetFrameworks.Add(targetFramework);
 
         // Act
         var auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
@@ -260,8 +258,7 @@ public class AuditUtilityTests
     public async Task Check_TwoVulnerabilityProviders_MergesKnownVulnerabilities()
     {
         // Arrange
-        var context = new AuditTestContext();
-        context.Mode = "all";
+        using var context = new AuditTestContext();
 
         PackageVulnerabilityInfo commonKnownVulnerability = new PackageVulnerabilityInfo(CveUrl, PackageVulnerabilitySeverity.Moderate, UpToV2);
         Uri cve2Url = new("https://cve.test/2");
@@ -281,6 +278,8 @@ public class AuditUtilityTests
 
         context.WithRestoreTarget().DependsOn("pkga", "1.0.0");
         context.PackagesDependencyProvider.Package("pkga", "1.0.0");
+
+        context.TargetFrameworks[0].NuGetAudit.AuditMode = "all";
 
         // Act
         var auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
@@ -306,8 +305,7 @@ public class AuditUtilityTests
     public async Task Check_RejectedTransitivePackageInGraphHasKnownVulnerability_NoWarningsOrErrors()
     {
         // Arrange
-        var context = new AuditTestContext();
-        context.Mode = "all";
+        using var context = new AuditTestContext();
 
         // project -> pkgb 1.0.0 -> pkga 1.0.0
         //         -> pkgc 1.0.0 -> pkga 2.0.0
@@ -319,6 +317,8 @@ public class AuditUtilityTests
         context.WithRestoreTarget()
             .DependsOn("pkgb", "1.0.0")
             .DependsOn("pkgc", "1.0.0");
+
+        context.TargetFrameworks[0].NuGetAudit.AuditMode = "all";
 
         var pkgaVulnerabilities = context
             .WithVulnerabilityProvider()
@@ -343,7 +343,7 @@ public class AuditUtilityTests
     public async Task Check_AuditSourceWithoutVulnerabilityData_RaisesNU1905()
     {
         // Arrange
-        var context = new AuditTestContext();
+        using var context = new AuditTestContext();
 
         context.PackagesDependencyProvider.Package("pkga", "1.0.0");
 
@@ -370,11 +370,7 @@ public class AuditUtilityTests
     public async Task Check_TransitivePackageHasKnownVulnerability_WarningInAllMode(bool auditModeAll)
     {
         // Arrange
-        var context = new AuditTestContext();
-        if (auditModeAll)
-        {
-            context.Mode = "all";
-        }
+        using var context = new AuditTestContext();
 
         string vulnerablePackage = "pkga";
         string vulnerableVersion = "1.2.3";
@@ -384,6 +380,11 @@ public class AuditUtilityTests
 
         context.WithRestoreTarget()
             .DependsOn("pkgb", "1.0.0");
+
+        if (auditModeAll)
+        {
+            context.TargetFrameworks[0].NuGetAudit.AuditMode = "all";
+        }
 
         var pkgaVulnerabilities = context
             .WithVulnerabilityProvider()
@@ -419,94 +420,47 @@ public class AuditUtilityTests
     public async Task Check_MultiTargetingProjectFile_WarningsHaveExpectedProperties()
     {
         // Arrange
+        using var context = new AuditTestContext();
 
-        DependencyProvider packageDependencyProvider = new();
-        packageDependencyProvider.Package("pkga", "1.0.0");
-        packageDependencyProvider.Package("pkgb", "1.0.0");
+        context.WithRestoreTarget(FrameworkConstants.CommonFrameworks.Net80)
+            .DependsOn("pkga", "1.0.0");
+        context.WithRestoreTarget(FrameworkConstants.CommonFrameworks.Net90)
+            .DependsOn("pkgb", "1.0.0");
 
-        Task<RestoreTargetGraph>[] createGraphTasks =
-        {
-            CreateGraphAsync(packageDependencyProvider, "pkga", FrameworkConstants.CommonFrameworks.Net60),
-            CreateGraphAsync(packageDependencyProvider, "pkgb", FrameworkConstants.CommonFrameworks.Net50)
-        };
 
-        List<VulnerabilityProviderTestContext> vulnerabilityProviderContexts = new(1)
-        {
-            new VulnerabilityProviderTestContext()
-        };
-        vulnerabilityProviderContexts[0].WithPackageVulnerability("pkga").Add(new PackageVulnerabilityInfo(CveUrl, 0, UpToV2));
-        vulnerabilityProviderContexts[0].WithPackageVulnerability("pkgb").Add(new PackageVulnerabilityInfo(CveUrl, 0, UpToV2));
+        context.PackagesDependencyProvider.Package("pkga", "1.0.0");
+        context.PackagesDependencyProvider.Package("pkgb", "1.0.0");
 
-        var vulnerabilityProviders = AuditTestContext.CreateVulnerabilityInformationProviders(vulnerabilityProviderContexts);
+        var pkgaVulnerabilities = context
+            .WithVulnerabilityProvider()
+            .WithPackageVulnerability("pkga");
+        pkgaVulnerabilities.Add(new PackageVulnerabilityInfo(CveUrl, PackageVulnerabilitySeverity.Moderate, UpToV2));
 
-        RestoreTargetGraph[] graphs =
-        {
-            await createGraphTasks[0],
-            await createGraphTasks[1]
-        };
-
-        var targetFrameworks = new List<TargetFrameworkInformation>
-        {
-            new TargetFrameworkInformation()
-            {
-                FrameworkName = FrameworkConstants.CommonFrameworks.Net60
-            },new TargetFrameworkInformation()
-            {
-                FrameworkName = FrameworkConstants.CommonFrameworks.Net50
-            }
-        };
-
-        var log = new TestLogger();
+        var pkgbVulnerabilities = context
+            .WithVulnerabilityProvider()
+            .WithPackageVulnerability("pkgb");
+        pkgaVulnerabilities.Add(new PackageVulnerabilityInfo(CveUrl, PackageVulnerabilitySeverity.Moderate, UpToV2));
 
         // Act
-        var audit = new AuditUtility(
-            restoreAuditProperties: null,
-            "/path/proj.csproj",
-            graphs,
-            vulnerabilityProviders,
-            targetFrameworks: targetFrameworks,
-            log);
-        await audit.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
+        AuditUtility auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
 
         // Assert
-        log.LogMessages.Count.Should().Be(2);
+        context.Log.LogMessages.Count.Should().Be(2);
 
-        RestoreLogMessage message = log.LogMessages.Cast<RestoreLogMessage>().Single(m => m.LibraryId == "pkga");
-        message.TargetGraphs.Should().BeEquivalentTo(new[] { "net6.0" });
+        RestoreLogMessage message = context.Log.LogMessages.Cast<RestoreLogMessage>().Single(m => m.LibraryId == "pkga");
+        message.TargetGraphs.Should().BeEquivalentTo(new[] { "net8.0" });
 
-        message = log.LogMessages.Cast<RestoreLogMessage>().Single(m => m.LibraryId == "pkgb");
-        message.TargetGraphs.Should().BeEquivalentTo(new[] { "net5.0" });
-
-        static async Task<RestoreTargetGraph> CreateGraphAsync(DependencyProvider packageProvider, string dependencyId, NuGetFramework targetFramework)
-        {
-            DependencyProvider projectProvider = new();
-            projectProvider.Package("proj", "1.0.0", LibraryType.Project).DependsOn(dependencyId, "1.0.0");
-
-            var walkContext = new TestRemoteWalkContext();
-            walkContext.LocalLibraryProviders.Add(packageProvider);
-            walkContext.ProjectLibraryProviders.Add(projectProvider);
-            var walker = new RemoteDependencyWalker(walkContext);
-
-            LibraryRange restoreTarget = new("proj", new VersionRange(NuGetVersion.Parse("1.0.0")), LibraryDependencyTarget.Project);
-
-            var walkResult = await walker.WalkAsync(restoreTarget, targetFramework, "", RuntimeGraph.Empty, true);
-
-            var graph = RestoreTargetGraph.Create(new[] { walkResult }, walkContext, NullLogger.Instance, targetFramework);
-
-            return graph;
-        }
+        message = context.Log.LogMessages.Cast<RestoreLogMessage>().Single(m => m.LibraryId == "pkgb");
+        message.TargetGraphs.Should().BeEquivalentTo(new[] { "net9.0" });
     }
 
     [Fact]
     public async Task Check_ProjectWithSuppressions_SuppressesExpectedVulnerabilities()
     {
         // Arrange
-        var context = new AuditTestContext();
+        using var context = new AuditTestContext();
         string cveUrl1 = "https://cve.test/suppressed/1";
         string cveUrl2 = "https://cve.test/suppressed/2";
-
-        context.Mode = "all";
-        context.SuppressedAdvisories = new HashSet<string> { cveUrl2 }; // suppress one of the two advisories
 
         var vulnerabilityProvider = context.WithVulnerabilityProvider();
         var knownVulnerabilities = vulnerabilityProvider.WithPackageVulnerability("pkga");
@@ -515,6 +469,9 @@ public class AuditUtilityTests
 
         context.WithRestoreTarget().DependsOn("pkga", "1.0.0");
         context.PackagesDependencyProvider.Package("pkga", "1.0.0");
+
+        context.TargetFrameworks[0].NuGetAudit.AuditMode = "all";
+        context.TargetFrameworks[0].NuGetAudit.SuppressedAdvisories = new HashSet<string> { cveUrl2 }; // suppress one of the two advisories
 
         // Act
         var auditUtility = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
@@ -530,52 +487,55 @@ public class AuditUtilityTests
         messages.Any(m => m.Message.Contains(cveUrl2)).Should().BeFalse(); // cveUrl2 should be suppressed
     }
 
-    private class AuditTestContext
+    private class AuditTestContext : IDisposable
     {
         public AuditTestContext()
         {
-            TargetFrameworks = new()
-            {
-                new TargetFrameworkInformation()
-                {
-                    FrameworkName = _framework
-                }
-            };
+            _testContext = new SimpleTestPathContext();
         }
 
         public string ProjectFullPath { get; set; } = RuntimeEnvironmentHelper.IsWindows ? @"n:\proj\proj.csproj" : "/src/proj/proj.csproj";
-        public string? Enabled { get; set; }
-        public string? Level { get; set; }
-        public string? Mode { get; set; }
-        public HashSet<string>? SuppressedAdvisories { get; set; }
-        public List<TargetFrameworkInformation> TargetFrameworks { get; set; }
+        public List<TargetFrameworkInformation> TargetFrameworks { get; } = new();
 
         public TestLogger Log { get; } = new();
 
         public DependencyProvider ProjectDependencyProvider { get; } = new();
         public DependencyProvider PackagesDependencyProvider { get; } = new();
 
-        private LibraryRange? _walkTarget;
+        private SimpleTestPathContext _testContext;
+
+        private Dictionary<NuGetFramework, LibraryRange> _walkTarget = new();
 
         private List<VulnerabilityProviderTestContext>? _vulnerabilityProviders;
 
-        private readonly NuGetFramework _framework = FrameworkConstants.CommonFrameworks.Net60;
+        private static readonly VersionRange V1Range = VersionRange.Parse("1.0.0");
 
         /// <summary>
         /// Set up the project that is being restored (not just a project reference)
         /// </summary>
-        public DependencyProvider.TestPackage WithRestoreTarget(string projectName = "proj", string version = "1.0.0")
+        public DependencyProvider.TestPackage WithRestoreTarget(NuGetFramework? tfm = null)
         {
-            if (_walkTarget != null)
+            if (tfm is null)
             {
-                throw new InvalidOperationException($"Cannot set more than 1 restore target");
+                tfm = FrameworkConstants.CommonFrameworks.Net80;
             }
 
-            var projectVersion = NuGetVersion.Parse(version);
+            var walkTarget = new LibraryRange("proj", V1Range, LibraryDependencyTarget.Project);
+            _walkTarget.Add(tfm, walkTarget);
 
-            _walkTarget = new LibraryRange(projectName, new VersionRange(projectVersion), LibraryDependencyTarget.Project);
+            var targetFrameworkInfo = new TargetFrameworkInformation()
+            {
+                FrameworkName = tfm,
+                NuGetAudit = new RestoreAuditProperties()
+                {
+                    EnableAudit = "true",
+                    AuditMode = "direct",
+                    AuditLevel = "low"
+                },
+            };
+            TargetFrameworks.Add(targetFrameworkInfo);
 
-            var testProject = ProjectDependencyProvider.Package(projectName, projectVersion, LibraryType.Project);
+            var testProject = ProjectDependencyProvider.Package(walkTarget.Name, walkTarget.VersionRange!.MinVersion, LibraryType.Project);
             return testProject;
         }
 
@@ -593,34 +553,49 @@ public class AuditUtilityTests
 
         public async Task<AuditUtility> CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
-            RestoreAuditProperties restoreAuditProperties = new()
+            if (TargetFrameworks.All(tfi => !AuditUtility.ParseEnableValue(tfi.NuGetAudit, ProjectFullPath, Log)))
             {
-                EnableAudit = Enabled,
-                AuditLevel = Level,
-                AuditMode = Mode,
-                SuppressedAdvisories = SuppressedAdvisories,
-            };
-
-            bool enabled = AuditUtility.ParseEnableValue(restoreAuditProperties, ProjectFullPath, Log);
-            if (!enabled)
-            {
-                throw new InvalidOperationException($"{nameof(Enabled)} must have a value that does not disable NuGetAudit.");
+                throw new InvalidOperationException($"NuGetAudit must be enabled.");
             }
 
-            if (_walkTarget is null)
+            if (_walkTarget.Count == 0)
             {
-                throw new InvalidOperationException($"{nameof(WithRestoreTarget)} must be called once");
+                throw new InvalidOperationException($"{nameof(WithRestoreTarget)} must be called at least once");
             }
 
+            if (_walkTarget.Count != TargetFrameworks.Count)
+            {
+                throw new InvalidOperationException($"{nameof(_walkTarget)}.Count does not match {nameof(TargetFrameworks)}.Count. At least one was incorrectly manipulated.");
+            }
 
+            var restoreRequest = CreateRestoreRequest();
             var graphs = await CreateGraphsAsync();
 
-            var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
-
-            var audit = new AuditUtility(restoreAuditProperties, ProjectFullPath, graphs, vulnProviders, targetFrameworks: TargetFrameworks, Log);
+            var audit = new AuditUtility(restoreRequest, graphs, Log);
             await audit.CheckPackageVulnerabilitiesAsync(cancellationToken);
 
             return audit;
+
+            RestoreRequest CreateRestoreRequest()
+            {
+                var packageSpec = new PackageSpec(TargetFrameworks);
+                NuGetv3LocalRepository globalPackagesRepository = new NuGetv3LocalRepository(_testContext.UserPackagesFolder);
+                var vulnProviders = CreateVulnerabilityInformationProviders(_vulnerabilityProviders);
+
+                RestoreCommandProviders providers = new RestoreCommandProviders(
+                    globalPackages: globalPackagesRepository,
+                    fallbackPackageFolders: [],
+                    localProviders: [],
+                    remoteProviders: [],
+                    packageFileCache: new LocalPackageFileCache(),
+                    vulnerabilityInformationProviders: vulnProviders);
+
+                var sourceCacheContext = new SourceCacheContext();
+                var lockFileBuilderCache = new LockFileBuilderCache();
+                var request = new RestoreRequest(packageSpec, providers, sourceCacheContext, null, null, Log, lockFileBuilderCache);
+
+                return request;
+            }
 
             async Task<RestoreTargetGraph[]> CreateGraphsAsync()
             {
@@ -629,12 +604,13 @@ public class AuditUtilityTests
                 walkContext.ProjectLibraryProviders.Add(ProjectDependencyProvider);
                 var walker = new RemoteDependencyWalker(walkContext);
 
-                var graph = await walker.WalkAsync(_walkTarget, _framework, "", RuntimeGraph.Empty, true);
-
-                RestoreTargetGraph[] graphs = new[]
+                RestoreTargetGraph[] graphs = new RestoreTargetGraph[TargetFrameworks.Count];
+                for (int i = 0; i < TargetFrameworks.Count; i++)
                 {
-                    RestoreTargetGraph.Create(new[] { graph }, walkContext, NullLogger.Instance, _framework)
-                };
+                    var tfm = TargetFrameworks[i].FrameworkName;
+                    GraphNode<RemoteResolveResult> graphNode = await walker.WalkAsync(_walkTarget[tfm], tfm, "", RuntimeGraph.Empty, true);
+                    graphs[i] = RestoreTargetGraph.Create([graphNode], walkContext, NullLogger.Instance, tfm);
+                }
 
                 return graphs;
             }
@@ -655,6 +631,11 @@ public class AuditUtilityTests
             }
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            _testContext.Dispose();
         }
     }
 

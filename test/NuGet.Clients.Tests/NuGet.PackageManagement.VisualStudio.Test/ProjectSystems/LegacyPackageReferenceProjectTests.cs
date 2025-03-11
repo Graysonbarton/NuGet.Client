@@ -1618,7 +1618,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var actualRestoreSpec = packageSpecs.Single();
             SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
 
-            var auditProperties = actualRestoreSpec.RestoreMetadata.RestoreAuditProperties;
+            var auditProperties = actualRestoreSpec.TargetFrameworks[0].NuGetAudit;
             auditProperties.SuppressedAdvisories.Should().NotBeNull();
             auditProperties.SuppressedAdvisories.Should().BeEquivalentTo(["https://cve.test/1"]);
         }

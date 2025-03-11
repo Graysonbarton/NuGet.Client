@@ -112,6 +112,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public string RuntimeIdentifierGraphPath { get; init; }
 
+        /// <summary>
+        /// NuGetAudit properties
+        /// </summary>
+        public RestoreAuditProperties NuGetAudit { get; init; }
+
         public TargetFrameworkInformation()
         {
             TargetAlias = string.Empty;
@@ -136,6 +141,7 @@ namespace NuGet.ProjectModel
             FrameworkReferences = cloneFrom.FrameworkReferences;
             RuntimeIdentifierGraphPath = cloneFrom.RuntimeIdentifierGraphPath;
             PackagesToPrune = cloneFrom.PackagesToPrune;
+            NuGetAudit = cloneFrom.NuGetAudit;
         }
 
         public override string ToString()
@@ -161,6 +167,10 @@ namespace NuGet.ProjectModel
             hashCode.AddUnorderedSequence(CentralPackageVersions.Values);
             hashCode.AddUnorderedSequence(PackagesToPrune.Values);
             hashCode.AddStringIgnoreCase(TargetAlias);
+            if (NuGetAudit != null)
+            {
+                hashCode.AddObject(NuGetAudit);
+            }
             return hashCode.CombinedHash;
         }
 
@@ -191,7 +201,8 @@ namespace NuGet.ProjectModel
                    EqualityUtility.OrderedEquals(CentralPackageVersions.Values, other.CentralPackageVersions.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.OrderedEquals(PackagesToPrune.Values, other.PackagesToPrune.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
                    PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
-                   StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
+                   StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias) &&
+                   NuGetAudit == other.NuGetAudit;
         }
     }
 }

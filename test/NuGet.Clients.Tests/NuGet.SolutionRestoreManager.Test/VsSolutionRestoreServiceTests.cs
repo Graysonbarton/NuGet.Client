@@ -2518,7 +2518,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VsSolutionRestoreService.ToPackageSpec(projectName, pri);
 
             // Assert
-            RestoreAuditProperties auditProperties = actual.RestoreMetadata.RestoreAuditProperties;
+            RestoreAuditProperties auditProperties = actual.TargetFrameworks[0].NuGetAudit;
             string actualUrl = Assert.Single(auditProperties.SuppressedAdvisories);
             actualUrl.Should().Be(cveUrl);
         }

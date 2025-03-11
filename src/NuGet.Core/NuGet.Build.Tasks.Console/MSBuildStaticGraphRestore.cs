@@ -699,10 +699,11 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets the target framework information for the specified project.  This includes the package references, package downloads, and framework references.
         /// </summary>
+        /// <param name="projectStyle">The project's <see cref="ProjectStyle"/></param>
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(ProjectStyle projectStyle, IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
@@ -925,7 +926,7 @@ namespace NuGet.Build.Tasks.Console
 
             RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project, GetAuditSuppressions(project));
 
-            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
+            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectStyle, projectsByTargetFramework, isCentralPackageManagementEnabled);
 
             List<IMSBuildProject> innerNodes = projectsByTargetFramework.Values.ToList();
 
@@ -937,7 +938,6 @@ namespace NuGet.Build.Tasks.Console
                 {
                     PackagesConfigPath = packagesConfigFilePath,
                     RepositoryPath = GetRepositoryPath(project, settings),
-                    RestoreAuditProperties = auditProperties,
                 };
             }
             else
@@ -961,7 +961,6 @@ namespace NuGet.Build.Tasks.Console
                     CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled,
                     CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
                     CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
-                    RestoreAuditProperties = auditProperties
                 };
             }
 

@@ -280,9 +280,6 @@ namespace NuGet.Commands
 
                     // Packages lock file properties
                     result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-
-                    // NuGet audit properties
-                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -300,7 +297,6 @@ namespace NuGet.Commands
                         );
                     }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -505,6 +501,13 @@ namespace NuGet.Commands
                     runtimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
                 }
 
+                RestoreAuditProperties auditProperties = null;
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.PackagesConfig)
+                {
+                    auditProperties = GetRestoreAuditProperties(item, GetAuditSuppressions(items));
+                }
+
                 var targetFrameworkInfo = new TargetFrameworkInformation()
                 {
                     AssetTargetFallback = assetTargetFallback,
@@ -512,7 +515,8 @@ namespace NuGet.Commands
                     Imports = imports,
                     RuntimeIdentifierGraphPath = runtimeIdentifierGraphPath,
                     TargetAlias = targetAlias,
-                    Warn = warn
+                    Warn = warn,
+                    NuGetAudit = auditProperties,
                 };
 
                 yield return targetFrameworkInfo;
@@ -920,11 +924,17 @@ namespace NuGet.Commands
                 if (!string.IsNullOrEmpty(tfmProperty))
                 {
                     var needsAlias = projectStyle == ProjectStyle.DotnetCliTool;
+                    RestoreAuditProperties auditProperties = null;
+                    if (projectStyle == ProjectStyle.PackagesConfig)
+                    {
+                        auditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
+                    }
                     spec.TargetFrameworks.Add(
                         new TargetFrameworkInformation()
                         {
                             FrameworkName = NuGetFramework.Parse(tfmProperty),
-                            TargetAlias = needsAlias ? tfmProperty : string.Empty
+                            TargetAlias = needsAlias ? tfmProperty : string.Empty,
+                            NuGetAudit = auditProperties,
                         });
                 }
             }
