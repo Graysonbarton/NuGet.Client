@@ -23,7 +23,7 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class ListPackageCommandRunner : IListPackageCommandRunner
+    internal class ListPackageCommandRunner : ImplicitRestoringCommand, IListPackageCommandRunner
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
@@ -64,13 +64,14 @@ namespace NuGet.CommandLine.XPlat
             var projectsPaths =
                 (Path.GetExtension(listPackageArgs.Path).Equals(".sln", PathUtility.GetStringComparisonBasedOnOS()) ||
                      Path.GetExtension(listPackageArgs.Path).Equals(".slnx", PathUtility.GetStringComparisonBasedOnOS())) ?
-                           (await MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path, listPackageArgs.CancellationToken)).Where(f => File.Exists(f)) :
+                           (await MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path, listPackageArgs.CancellationToken)).Where(f => File.Exists(f)).ToList() :
                            new List<string>(new string[] { listPackageArgs.Path });
 
             MSBuildAPIUtility msBuild = listPackageReportModel.MSBuildAPIUtility;
 
             foreach (string projectPath in projectsPaths)
             {
+                await RunRestore(projectPath, listPackageArgs.Logger);
                 await GetProjectMetadataAsync(projectPath, listPackageReportModel, msBuild, listPackageArgs);
             }
 
