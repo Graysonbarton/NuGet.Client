@@ -316,6 +316,8 @@ namespace NuGet.PackageManagement.UI
                         knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
                     }
 
+                    var packageModel = PackageModelFactory.Create(metadataContextInfo, null, null, );
+
                     var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
                     {
                         Id = metadataContextInfo.Identity.Id,
