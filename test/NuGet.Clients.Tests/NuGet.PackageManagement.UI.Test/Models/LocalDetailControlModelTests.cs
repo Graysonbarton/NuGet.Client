@@ -9,6 +9,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -31,7 +32,16 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _testData = testData;
             var testVersion = new NuGetVersion(0, 0, 1);
             var searchService = new Mock<INuGetSearchService>();
-            _testViewModel = new PackageItemViewModel(searchService.Object)
+
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+            var vulnerableCapability = new Mock<IVulnerable>();
+            var embeddedResourceCapability = new Mock<IEmbeddedResources>();
+            var packagePath = "C:\\TestPackage";
+
+            // Act
+            var packageModel = new LocalPackageModel(identity, packagePath, vulnerableCapability.Object, embeddedResourceCapability.Object);
+
+            _testViewModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
             {
                 Id = "package",
                 PackagePath = _testData.TestData.PackagePath,
@@ -162,14 +172,18 @@ namespace NuGet.PackageManagement.UI.Test.Models
             NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
 
             var searchService = new Mock<INuGetSearchService>();
+            var identity = new PackageIdentity("TestPackage", new NuGetVersion("1.0.0"));
+            var packageModel = new LocalPackageModel(identity, null, null, null);
+            var packageItemModel = new PackageItemViewModel(searchService.Object, packageModel: packageModel)
+            {
+                InstalledVersion = installedVersion,
+                Version = installedVersion
+            };
+
+
 
             await model.SetCurrentPackageAsync(
-                new PackageItemViewModel(searchService.Object)
-                {
-                    Id = "package",
-                    InstalledVersion = installedVersion,
-                    Version = installedVersion
-                },
+                packageItemModel,
                 ItemFilter.All,
                 () => null);
 

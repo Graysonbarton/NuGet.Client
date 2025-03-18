@@ -38,11 +38,15 @@ namespace NuGet.PackageManagement.UI
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
 
-        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService = default)
+        private readonly PackageModel _packageModel;
+
+        public PackageItemViewModel(INuGetSearchService searchService, IPackageVulnerabilityService vulnerabilityService = default, PackageModel packageModel = null)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
+
+            _packageModel = packageModel;
         }
 
         // same URIs can reuse the bitmapImage that we've already used.
@@ -56,9 +60,9 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Id { get; set; }
+        public string Id => _packageModel.Id;
 
-        public NuGetVersion Version { get; set; }
+        public NuGetVersion Version => _packageModel.Version;
 
         public VersionRange AllowedVersions { get; set; }
 
@@ -70,21 +74,21 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; internal set; }
 
-        public string Owner { get; internal set; }
+        public string Owner => _packageModel.OwnersList.FirstOrDefault();
 
-        private string _author;
         public string Author
         {
             get
             {
-                return _author;
+                return _packageModel.Authors;
             }
-            set
-            {
-                _author = value;
-                OnPropertyChanged(nameof(Author));
-                OnPropertyChanged(nameof(ByAuthor));
-            }
+            //set
+            //{
+            //    // Why there is a need to update the Author?
+            //    //_author = value;
+            //    OnPropertyChanged(nameof(Author));
+            //    OnPropertyChanged(nameof(ByAuthor));
+            //}
         }
 
         /// <summary>
@@ -115,7 +119,7 @@ namespace NuGet.PackageManagement.UI
                     return string.Empty;
                 }
 
-                return string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, Owner);
+                return string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _packageModel.OwnersList);
             }
         }
 
@@ -123,7 +127,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return !string.IsNullOrWhiteSpace(_author) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _author) : null;
+                return !string.IsNullOrWhiteSpace(_packageModel.Authors) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _packageModel.Authors) : null;
             }
         }
 
@@ -134,7 +138,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return ByOwner ?? ByAuthor;
+                return ByOwner ?? _packageModel.Authors;
             }
         }
 
@@ -471,7 +475,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageVulnerable
         {
-            get => VulnerabilityMaxSeverity > -1;
+            get => (_packageModel as IVulnerable).IsVulnerable;
         }
 
         private int _vulnerabilityMaxSeverity = -1;

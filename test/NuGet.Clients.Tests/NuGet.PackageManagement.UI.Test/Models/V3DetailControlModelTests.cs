@@ -60,6 +60,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             _mockNuGetUIContext.Setup(_ => _.PackageSourceMapping).Returns(_mockPackageSourceMapping.Object);
             _mockNuGetUI.Setup(_ => _.UIContext).Returns(_mockNuGetUIContext.Object);
 
+            // pass PackageSearchMetadataContextInfo to a factory to create the PackageItemViewModel
             var searchService = new Mock<INuGetSearchService>();
             _testViewModel = new PackageItemViewModel(searchService.Object)
             {
