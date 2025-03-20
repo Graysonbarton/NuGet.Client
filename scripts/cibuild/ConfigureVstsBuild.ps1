@@ -4,8 +4,7 @@ Sets build variables during a CI build dynamically.
 
 .DESCRIPTION
 This script is used to dynamically set some build variables during CI build.
-Specifically, this script determines the build number of the artifacts,
-also it sets the $(NupkgOutputDir) based on whether $(BuildRTM) is true or false.
+Some variables are based on whether $(BuildRTM) is true or false.
 
 .PARAMETER BuildRTM
 True/false depending on whether nupkgs are being with or without the release labels.
@@ -170,16 +169,34 @@ if ($BuildRTM -eq $true)
 else
 {
     Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15"
-    $newBuildCounter = $BuildNumber
     $VsTargetBranch = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetBranch) | Out-String).Trim()
     $NuGetSdkVsVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetNuGetSdkVsSemanticVersion) | Out-String).Trim()
     $VsTargetChannel = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetChannel) | Out-String).Trim()
     $VsTargetMajorVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetMajorVersion) | Out-String).Trim()
     $GetNuGetVsVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetNuGetVsVersion) | Out-String).Trim()
 
-    Write-Host "VS target branch: $VsTargetBranch"
+    Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$BuildNumber"
+    Write-Host "BuildNumber (output): $BuildNumber"
+
+    Write-Host "CommitHash: $CommitHash"
+    Write-Host "BuildBranch: $BranchName"
+    Write-Host "LocalizationRepositoryBranch: $NuGetLocalizationRepoBranch"
+    Write-Host "LocalizationRepositoryCommitHash: $LocalizationRepoCommitHash"
+
+    Write-Host "##vso[task.setvariable variable=VsTargetBranch;isOutput=true]$VsTargetBranch"
+    Write-Host "VsTargetBranch: $VsTargetBranch"
+
+    Write-Host "VsTargetChannel: $VstargetChannel"
+    Write-Host "VsTargetMajorVersion: $VsTargetMajorVersion"
+
+    Write-Host "##vso[task.setvariable variable=NuGetSdkVsVersion;isOutput=true]$NuGetSdkVsVersion"
+    Write-Host "NuGetSdkVsVersion (output): $NuGetSdkVsVersion"
+
+    Write-Host "##vso[task.setvariable variable=NuGetVsVersion;isOutput=true]$GetNuGetVsVersion"
+    Write-Host "NuGetVsVersion (output): $GetNuGetVsVersion"
+
     $jsonRepresentation = @{
-        BuildNumber = $newBuildCounter
+        BuildNumber = $BuildNumber
         CommitHash = $CommitHash
         BuildBranch = $BranchName
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
@@ -191,7 +208,7 @@ else
         NuGetVsVersion = $GetNuGetVsVersion
     }
 
-    # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
+    # First create the file locally so that we can later publish it as a build artifact from a local source file instead of a remote source file.
     $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$RepositoryPath\artifacts", 'buildinfo.json')
 
     New-Item $localBuildInfoJsonFilePath -Force | Out-Null
