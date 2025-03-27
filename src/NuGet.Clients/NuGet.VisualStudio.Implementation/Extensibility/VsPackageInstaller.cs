@@ -472,7 +472,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
                 var packageManagementFormat = new PackageManagementFormat(_settings);
                 // 1 means PackageReference
-                var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
+                var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat.Value == 1;
 
                 // Check if default package format is set to `PackageReference` and project has no
                 // package installed yet then upgrade it to `PackageReference` based project.

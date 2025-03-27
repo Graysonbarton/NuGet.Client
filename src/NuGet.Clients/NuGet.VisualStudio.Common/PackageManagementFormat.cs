@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.VisualStudio.Common.Configuration;
 
 namespace NuGet.VisualStudio
 {
@@ -13,15 +14,21 @@ namespace NuGet.VisualStudio
     {
         private const string PackageReferenceDoc = "https://aka.ms/packagereferencesupport";
 
-        private readonly Configuration.ISettings _settings;
+        private readonly ISettings _settings;
 
         // keep track of current value for selected package format
-        private int _selectedPackageFormat = -1;
+        private NuGetConfigValue<int> _selectedPackageFormat;
 
         // keep track of current value for show dialog checkbox
         private bool? _showDialogValue;
 
-        public PackageManagementFormat(Configuration.ISettings settings)
+        private readonly bool _applyChangesForDefaultValue;
+
+        public PackageManagementFormat(ISettings settings)
+            : this(settings, applyChangesForDefaultValue: true)
+        { }
+
+        public PackageManagementFormat(ISettings settings, bool applyChangesForDefaultValue)
         {
             if (settings == null)
             {
@@ -29,6 +36,8 @@ namespace NuGet.VisualStudio
             }
 
             _settings = settings;
+            _applyChangesForDefaultValue = applyChangesForDefaultValue;
+            _selectedPackageFormat = new NuGetConfigValue<int>(value: 0, isDefault: true);
 
             PackageRefUri = new Uri(PackageReferenceDoc);
         }
@@ -77,23 +86,23 @@ namespace NuGet.VisualStudio
             set => _showDialogValue = value;
         }
 
-        public int SelectedPackageManagementFormat
+        public NuGetConfigValue<int> SelectedPackageManagementFormat
         {
             get
             {
-                if (_selectedPackageFormat != -1)
+                if (_selectedPackageFormat.IsInitialized)
                 {
                     return _selectedPackageFormat;
                 }
 
                 var packageManagmentSection = _settings.GetSection(ConfigurationConstants.PackageManagementSection);
-                var defautFormatItem = packageManagmentSection?.GetFirstItemWithAttribute<AddItem>(
+                var defaultFormatItem = packageManagmentSection?.GetFirstItemWithAttribute<AddItem>(
                     ConfigurationConstants.KeyAttribute,
                     ConfigurationConstants.DefaultPackageManagementFormatKey);
 
-                var settingsValue = defautFormatItem?.Value ?? string.Empty;
+                var settingsValue = defaultFormatItem?.Value ?? string.Empty;
 
-                _selectedPackageFormat = ParseValue(settingsValue, defaultValue: 0);
+                _selectedPackageFormat.Value = ParseValue(settingsValue, defaultValue: 0);
                 return _selectedPackageFormat;
             }
 
@@ -102,10 +111,11 @@ namespace NuGet.VisualStudio
 
         public void ApplyChanges()
         {
-            if (_selectedPackageFormat != -1)
+            if ((!_selectedPackageFormat.IsDefault || _applyChangesForDefaultValue)
+                && _selectedPackageFormat.Value != -1)
             {
                 _settings.AddOrUpdate(ConfigurationConstants.PackageManagementSection,
-                    new AddItem(ConfigurationConstants.DefaultPackageManagementFormatKey, _selectedPackageFormat.ToString(CultureInfo.InvariantCulture)));
+                    new AddItem(ConfigurationConstants.DefaultPackageManagementFormatKey, _selectedPackageFormat.Value.ToString(CultureInfo.InvariantCulture)));
             }
 
             if (_showDialogValue.HasValue)
@@ -147,5 +157,6 @@ namespace NuGet.VisualStudio
 
             return result;
         }
+
     }
 }

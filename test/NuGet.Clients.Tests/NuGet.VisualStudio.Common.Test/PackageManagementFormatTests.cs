@@ -58,7 +58,7 @@ namespace NuGet.VisualStudio.Common.Test
         public void ApplyChanges_WhenSelectedPackageManagementFormatIsSet_SavesAndDoesNotThrow()
         {
             // Arrange
-            _packageManagementFormat.SelectedPackageManagementFormat = 0;
+            _packageManagementFormat.SelectedPackageManagementFormat.Value = 0;
             string expectedIntegerAsString = 0.ToString(CultureInfo.InvariantCulture);
 
             // Act

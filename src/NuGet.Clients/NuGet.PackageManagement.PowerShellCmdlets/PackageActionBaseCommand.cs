@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
 
                 // The "Default Package Management Format" setting is PackageReference, so we can migrate this NuGet Project.
-                if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                if (packageManagementFormat.SelectedPackageManagementFormat.Value == 1)
                 {
                     var newProject = await VsSolutionManager.UpgradeProjectToPackageReferenceAsync(Project);
 

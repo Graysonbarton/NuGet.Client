@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Options
 
                     // package management format selection
                     var packageManagement = new PackageManagementFormat(_settings);
-                    defaultPackageManagementFormatItems.SelectedIndex = packageManagement.SelectedPackageManagementFormat;
+                    defaultPackageManagementFormatItems.SelectedIndex = packageManagement.SelectedPackageManagementFormat.Value;
                     showPackageManagementChooser.Checked = packageManagement.Enabled;
                 }
                 // Thrown during creating or saving NuGet.Config.
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.UI.Options
 
                 // package management format selection
                 var packageManagement = new PackageManagementFormat(_settings);
-                packageManagement.SelectedPackageManagementFormat = defaultPackageManagementFormatItems.SelectedIndex;
+                packageManagement.SelectedPackageManagementFormat.Value = defaultPackageManagementFormatItems.SelectedIndex;
                 packageManagement.Enabled = showPackageManagementChooser.Checked;
                 packageManagement.ApplyChanges();
             }

@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             {
                 if (_packageManagementFormat is null)
                 {
-                    _packageManagementFormat = new PackageManagementFormat(_settings);
+                    _packageManagementFormat = new PackageManagementFormat(_settings, applyChangesForDefaultValue: false);
                 }
 
                 return _packageManagementFormat;
@@ -127,7 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 case MonikerAllowRestoreDownload: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsGrantedInSettings);
                 case MonikerPackageRestoreAutomatic: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsAutomatic);
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
-                case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(() => PackageManagementFormat.SelectedPackageManagementFormat);
+                case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(() => PackageManagementFormat.SelectedPackageManagementFormat.Value);
                 case MonikerShowPackageManagementChooser: return ConvertValueOrThrow<T>(PackageManagementFormat.Enabled);
                 default: break;
             }
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                     {
                         if (value is string strValue)
                         {
-                            PackageManagementFormat.SelectedPackageManagementFormat = strValue switch
+                            PackageManagementFormat.SelectedPackageManagementFormat.Value = strValue switch
                             {
                                 MonikerPackagesConfig => 0,
                                 MonikerPackageReference => 1,

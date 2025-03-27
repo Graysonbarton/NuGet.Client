@@ -774,7 +774,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // user disabled this prompt either through Tools->options or previous interaction of this dialog.
                     // now check for default package format, if its set to PackageReference then update the project.
-                    if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                    if (packageManagementFormat.SelectedPackageManagementFormat.Value == 1)
                     {
                         await uiService.UpgradeProjectsToPackageReferenceAsync(upgradeableProjects);
                     }
@@ -800,7 +800,7 @@ namespace NuGet.PackageManagement.UI
                 bool result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
 
                 // update nuget projects if user selected PackageReference option
-                if (result && packageManagementFormat.SelectedPackageManagementFormat == 1)
+                if (result && packageManagementFormat.SelectedPackageManagementFormat.Value == 1)
                 {
                     await uiService.UpgradeProjectsToPackageReferenceAsync(upgradeableProjects);
                 }
