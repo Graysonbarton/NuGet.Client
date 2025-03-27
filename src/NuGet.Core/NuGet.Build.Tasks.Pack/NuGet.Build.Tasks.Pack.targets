@@ -29,7 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
-    <GenerateNuspecDependsOn>_LoadPackInputItems; _GetTargetFrameworksOutput; _WalkEachTargetPerFramework; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>_LoadPackInputItems; _GetTargetFrameworksOutput; _WalkEachTargetPerFramework; _GetPackageFilesToExclude; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
     <PackageDescription Condition="'$(PackageDescription)'==''">$(Description)</PackageDescription>
     <PackageDescription Condition="'$(PackageDescription)'==''">Package Description</PackageDescription>
     <IsPackable Condition="'$(IsPackable)'=='' AND '$(IsTestProject)'=='true'">false</IsPackable>
@@ -376,7 +376,25 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_PackageFiles"/>
     </MSBuild>
+    
+    <MSBuild
+      Projects="@(_ProjectsWithTFM)"
+      Targets="_GetPackageFiles"
+      Condition="'$(TargetFrameworks)' != ''"
+      BuildInParallel="$(BuildInParallel)">
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_GetPackageFilesResults"/>
+    </MSBuild>
 
+    <RemoveDuplicates
+      Inputs="@(_GetPackageFilesResults)">
+      <Output
+          TaskParameter="Filtered"
+          ItemName="_PackageFiles" />
+    </RemoveDuplicates>
+
+  
     <MSBuild
       Condition="'$(IncludeBuildOutput)' == 'true'"
       Projects="@(_ProjectsWithTFM)"
@@ -491,10 +509,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     Entry point for generating the project to project references.
     ============================================================
   -->
-  <Target Name="_GetPackageFiles" Condition="$(IncludeContentInPack) == 'true'">
+  <Target Name="_GetPackageFilesToExclude" 
+    Condition="$(IncludeContentInPack) == 'true'"
+    Returns="@(_PackageFilesToExclude)">
     <ItemGroup>
       <_PackageFilesToExclude Include="@(Content)" Condition="'%(Content.Pack)' == 'false'"/>
     </ItemGroup>
+  </Target>
+  
+  <Target Name="_GetPackageFiles" 
+    Condition="$(IncludeContentInPack) == 'true'"
+    Returns="@(_PackageFiles)">
     <!-- Include PackageFiles and Content of the project being packed -->
     <ItemGroup>
       <_PackageFiles Include="@(Content)" Condition=" %(Content.Pack) != 'false' ">
