@@ -213,13 +213,20 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)"
           DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions;_InitializeNuspecRepositoryInformationProperties">
 
+    <RemoveDuplicates
+      Inputs="@(_PackageFiles)">
+      <Output
+          TaskParameter="Filtered"
+          ItemName="_DeDupedPackageFiles" />
+    </RemoveDuplicates>
+
     <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
     </ConvertToAbsolutePath>
 
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
-              PackageFiles="@(_PackageFiles)"
+              PackageFiles="@(_DeDupedPackageFiles)"
               PackageFilesToExclude="@(_PackageFilesToExclude)"
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
@@ -384,16 +391,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       BuildInParallel="$(BuildInParallel)">
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="_GetPackageFilesResults"/>
+          ItemName="_PackageFiles"/>
     </MSBuild>
-
-    <RemoveDuplicates
-      Inputs="@(_GetPackageFilesResults)">
-      <Output
-          TaskParameter="Filtered"
-          ItemName="_PackageFiles" />
-    </RemoveDuplicates>
-
   
     <MSBuild
       Condition="'$(IncludeBuildOutput)' == 'true'"
