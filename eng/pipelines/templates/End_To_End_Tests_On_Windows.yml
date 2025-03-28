@@ -25,6 +25,8 @@ parameters:
   values:
   - delete
   - stop
+- name: QBuildSessionId
+  type: string
 
 stages:
 - template: stages\visual-studio\agent.yml@DartLabTemplates
@@ -180,4 +182,3 @@ stages:
         mergeTestResults: "true"
         testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
       condition: "succeededOrFailed()"
-
