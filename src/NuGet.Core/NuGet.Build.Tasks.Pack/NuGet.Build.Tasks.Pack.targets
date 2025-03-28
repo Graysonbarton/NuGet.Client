@@ -217,7 +217,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Inputs="@(_PackageFiles)">
       <Output
           TaskParameter="Filtered"
-          ItemName="_DeDupedPackageFiles" />
+          ItemName="_TfmSpecificPackageFiles" />
     </RemoveDuplicates>
 
     <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
@@ -226,7 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
-              PackageFiles="@(_DeDupedPackageFiles)"
+              PackageFiles="@(_TfmSpecificPackageFiles)"
               PackageFilesToExclude="@(_PackageFilesToExclude)"
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
@@ -381,7 +381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="_PackageFiles"/>
+          ItemName="_TfmSpecificPackageFiles"/>
     </MSBuild>
     
     <MSBuild

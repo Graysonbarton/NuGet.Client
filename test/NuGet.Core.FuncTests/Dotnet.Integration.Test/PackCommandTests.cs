@@ -5373,6 +5373,7 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
+
         public void PackCommand_PackageReadmeFile_BasicFunc_Succeeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
