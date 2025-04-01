@@ -521,6 +521,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="$(IncludeContentInPack) == 'true'"
     Returns="@(_PackageFiles)">
     <!-- Include PackageFiles and Content of the project being packed -->
+    <!-- Adding NuGetRecursiveDir as a workaround due to this msbuild bug https://github.com/Microsoft/msbuild/issues/3121 -->
     <ItemGroup>
       <_PackageFiles Include="@(Content)" Condition=" %(Content.Pack) != 'false' ">
         <NuGetRecursiveDir>%(Content.RecursiveDir)</NuGetRecursiveDir>
