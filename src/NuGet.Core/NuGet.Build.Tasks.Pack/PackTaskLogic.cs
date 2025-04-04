@@ -683,11 +683,17 @@ namespace NuGet.Build.Tasks.Pack
                 if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar)
                 || setOfTargetPaths.Remove("contentFiles"))
                 {
+                    var nuGetTfm = packageFile.GetProperty("NuGetTfm");
+                    var packageFramework = string.IsNullOrEmpty(nuGetTfm) ? null : NuGetFramework.Parse(nuGetTfm);
+
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
-                        setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
-                            Path.Combine("contentFiles", language, framework.GetShortFolderName()
-                            )));
+                        if (packageFramework == null || string.Equals(framework.DotNetFrameworkName, packageFramework.DotNetFrameworkName))
+                        {
+                            setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
+                                Path.Combine("contentFiles", language, framework.GetShortFolderName()
+                                )));
+                        }
                     }
                 }
             }
