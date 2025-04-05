@@ -153,7 +153,8 @@ namespace NuGet.Commands
 
         private bool AddFileToBuilder(ManifestFile packageFile)
         {
-            if (!Files.Any(p => packageFile.Target.Equals(p.Target, StringComparison.CurrentCultureIgnoreCase)))
+            var file = Files.FirstOrDefault(p => packageFile.Target.Equals(p.Target, StringComparison.CurrentCultureIgnoreCase));
+            if (file == null)
             {
                 var fileExtension = Path.GetExtension(packageFile.Source);
 
@@ -168,6 +169,10 @@ namespace NuGet.Commands
                     Files.Add(packageFile);
                     return true;
                 }
+            }
+            else if (file.Source.Equals(packageFile.Source, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return false;
             }
             else
             {

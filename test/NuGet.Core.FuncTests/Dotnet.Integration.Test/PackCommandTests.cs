@@ -87,7 +87,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_FileWithFrameworkCondition_FilesIncludedInNuspec()
+        public void PackCommand_FileWithFrameworkConditionAndPackagePath_FilesIncludedInNuspec()
         {
             // Arrange
             using (var testDirectory = _dotnetFixture.CreateTestDirectory())
@@ -138,6 +138,66 @@ namespace Dotnet.Integration.Test
                     Assert.DoesNotContain($"content/abc.txt", files);
                     Assert.Contains($"build/abc.props", files);
                     Assert.Contains($"lib/abc.dll", files);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_FileWithFrameworkConditionNoPackagePath_FilesIncludedInNuspec()
+        {
+            // Arrange
+            using (var testDirectory = _dotnetFixture.CreateTestDirectory())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "hello world");
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.props"), "<project />");
+                File.WriteAllText(Path.Combine(workingDirectory, "abc.dll"), "");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var anotherFrameworkItemGroup = @"<ItemGroup Condition="" '$(TargetFramework)' == 'net46' "">
+                    <Content Include=""abc.txt"" Pack=""True"" />
+                    </ItemGroup>";
+                    var netStandardItemGroup = @"<ItemGroup Condition="" '$(TargetFramework)' == 'netstandard1.4' "">
+                    <None Update=""abc.props"" Pack=""True"" />
+                    </ItemGroup>";
+                    var projectFrameworkItemGroup = @$"<ItemGroup Condition="" '$(TargetFramework)' == '{Constants.ProjectTargetFramework}' "">
+                    <None Include=""abc.dll"" Pack=""True""  />
+                    </ItemGroup>";
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", $"netstandard1.4;{Constants.ProjectTargetFramework}");
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, anotherFrameworkItemGroup);
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, netStandardItemGroup);
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, projectFrameworkItemGroup);
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+                var results = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", testOutputHelper: _testOutputHelper);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                Assert.DoesNotContain("NU5118", results.AllOutput);
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var files = nupkgReader.GetFiles();
+                    Assert.DoesNotContain($"content/abc.txt", files);
+                    Assert.DoesNotContain($"contentFiles/any/{Constants.ProjectTargetFramework}/abc.props", files);
+                    Assert.Contains(@"contentFiles/any/netstandard1.4/abc.props", files);
+                    Assert.Contains(@"content/abc.props", files);
+                    Assert.DoesNotContain($"contentFiles/any/netstandard1.4/abc.dll", files);
+                    Assert.Contains($"contentFiles/any/{Constants.ProjectTargetFramework}/abc.dll", files);
+                    Assert.Contains(@"content/abc.dll", files);
                 }
             }
         }

@@ -1384,12 +1384,15 @@ namespace NuGet.CommandLine
 
         private void AddFileToBuilder(PackageBuilder builder, PhysicalPackageFile packageFile)
         {
-            if (!builder.Files.Any(p => packageFile.Path.Equals(p.Path, StringComparison.OrdinalIgnoreCase)))
+            var file = builder.Files.FirstOrDefault(p => packageFile.Path.Equals(p.Path, StringComparison.OrdinalIgnoreCase));
+            if (file == null)
             {
                 WriteDetail(LocalizedResourceManager.GetString("AddFileToPackage"), packageFile.SourcePath, packageFile.TargetPath);
                 builder.Files.Add(packageFile);
+                return;
             }
-            else
+            var physicalFile = file as PhysicalPackageFile;
+            if (physicalFile == null || string.Equals(physicalFile.SourcePath, packageFile.SourcePath, StringComparison.OrdinalIgnoreCase))
             {
                 Logger.Log(PackagingLogMessage.CreateWarning(string.Format(
                         CultureInfo.CurrentCulture,

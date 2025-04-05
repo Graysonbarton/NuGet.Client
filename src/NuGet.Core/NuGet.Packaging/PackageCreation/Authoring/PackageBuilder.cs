@@ -689,10 +689,17 @@ namespace NuGet.Packaging
         private void ValidateFilesUnique(IEnumerable<IPackageFile> files)
         {
             var seen = new HashSet<string>(StringComparer.Ordinal);
+            var sourceToTargetSeen = new HashSet<string>(StringComparer.Ordinal);
             var duplicates = new HashSet<string>(StringComparer.Ordinal);
-            foreach (string destination in files.Where(t => t.Path != null).Select(t => PathUtility.GetPathWithDirectorySeparator(t.Path)))
+            foreach (var file in files.Where(t => t.Path != null))
             {
-                if (!seen.Add(destination))
+                var destination = PathUtility.GetPathWithDirectorySeparator(file.Path);
+                var sourceToTargetDuplicate = false;
+                if (file is PhysicalPackageFile physicalPackageFile)
+                {
+                    sourceToTargetDuplicate = !sourceToTargetSeen.Add($"{physicalPackageFile.SourcePath}{physicalPackageFile.TargetPath}");
+                }
+                if (!seen.Add(destination) && !sourceToTargetDuplicate)
                 {
                     duplicates.Add(destination);
                 }
