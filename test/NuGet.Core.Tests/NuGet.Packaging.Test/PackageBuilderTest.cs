@@ -1430,7 +1430,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void AddingDuplicateFiles_Throws()
+        public void Save_DuplicateFilesDifferentSource_ThrowsPackingException()
         {
             // Arrange
             var builder = new PackageBuilder
@@ -1440,8 +1440,33 @@ namespace NuGet.Packaging.Test
                 Description = "Test",
             };
             builder.Authors.Add("Test");
-            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Foo.dll" });
-            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\one\Foo.dll", TargetPath = @"lib\net5.0\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\two\Foo.dll", TargetPath = @"lib\net5.0\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\one\Bar.dll", TargetPath = @"lib\net5.0\Bar.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\two\Bar.dll", TargetPath = @"lib\net5.0\Bar.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\three\Bar.dll", TargetPath = @"lib\net5.0\Baz.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\one\Foo2.dll", TargetPath = @"lib\net5.0\Foo2.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\one\Foo2.dll", TargetPath = @"lib\net5.0\Foo2.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Bar2.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Bar2.dll" });
+            builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Baz2.dll" });
+
+            ExceptionAssert.Throws<PackagingException>(() => builder.Save(new MemoryStream()), $@"Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: lib{Path.DirectorySeparatorChar}net5.0{Path.DirectorySeparatorChar}Foo.dll, lib{Path.DirectorySeparatorChar}net5.0{Path.DirectorySeparatorChar}Bar.dll");
+        }
+
+        [Fact]
+        public void Save_DuplicateFilesSameSource_DoesNotThrow()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Test",
+            };
+            builder.Authors.Add("Test");
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\one\Foo.dll", TargetPath = @"lib\net5.0\Foo.dll" });
+            builder.Files.Add(new PhysicalPackageFile { SourcePath = @"a\source\one\Foo.dll", TargetPath = @"lib\net5.0\Foo.dll" });
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Bar.dll" });
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Bar.dll" });
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\net5.0\Baz.dll" });
