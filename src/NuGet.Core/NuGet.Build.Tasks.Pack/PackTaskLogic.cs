@@ -694,7 +694,7 @@ namespace NuGet.Build.Tasks.Pack
 
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
-                        if (packageFramework == null || string.Equals(framework.DotNetFrameworkName, packageFramework.DotNetFrameworkName))
+                        if (packageFramework == null || framework == packageFramework)
                         {
                             setOfTargetPaths.Add(PathUtility.EnsureTrailingSlash(
                                 Path.Combine("contentFiles", language, framework.GetShortFolderName()
