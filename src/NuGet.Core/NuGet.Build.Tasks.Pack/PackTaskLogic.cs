@@ -100,7 +100,7 @@ namespace NuGet.Build.Tasks.Pack
                     packArgs.Symbols = request.IncludeSource;
                 }
 
-                var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
+                var contentFiles = ProcessContentToIncludeInPackage(request, packArgs, aliases);
                 packArgs.PackTargetArgs.ContentFiles = contentFiles;
             }
 
@@ -508,6 +508,17 @@ namespace NuGet.Build.Tasks.Pack
             return assemblies;
         }
 
+        private static NuGetFramework ParseFramework(string targetFramework, IDictionary<string, string> aliases)
+        {
+            string translated = null;
+            var succeeded = aliases.TryGetValue(targetFramework, out translated);
+            if (succeeded)
+            {
+                targetFramework = translated;
+            }
+            return NuGetFramework.Parse(targetFramework);
+        }
+
         private ISet<NuGetFramework> ParseFrameworks(IPackTaskRequest<IMSBuildItem> request, IDictionary<string, string> aliases)
         {
             var nugetFrameworks = new HashSet<NuGetFramework>();
@@ -515,13 +526,7 @@ namespace NuGet.Build.Tasks.Pack
             {
                 nugetFrameworks = new HashSet<NuGetFramework>(request.TargetFrameworks.Select(targetFramework =>
                 {
-                    string translated = null;
-                    var succeeded = aliases.TryGetValue(targetFramework, out translated);
-                    if (succeeded)
-                    {
-                        targetFramework = translated;
-                    }
-                    return NuGetFramework.Parse(targetFramework);
+                    return ParseFramework(targetFramework, aliases);
                 }));
             }
 
@@ -589,7 +594,8 @@ namespace NuGet.Build.Tasks.Pack
 
         private Dictionary<string, IEnumerable<ContentMetadata>> ProcessContentToIncludeInPackage(
             IPackTaskRequest<IMSBuildItem> request,
-            PackArgs packArgs)
+            PackArgs packArgs,
+            IDictionary<string, string> aliases)
         {
             // This maps from source path on disk to target path inside the nupkg.
             var fileModel = new Dictionary<string, IEnumerable<ContentMetadata>>();
@@ -604,7 +610,7 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
-                    var totalContentMetadata = GetContentMetadata(packageFile, sourcePath, packArgs, request.ContentTargetFolders);
+                    var totalContentMetadata = GetContentMetadata(packageFile, sourcePath, packArgs, request.ContentTargetFolders, aliases);
 
                     if (fileModel.ContainsKey(sourcePath))
                     {
@@ -626,7 +632,7 @@ namespace NuGet.Build.Tasks.Pack
         // The targetpaths returned from this function contain the directory in the nuget package where the file would go to. The filename is added later on to the target path.
         // whether or not the filename is added later on is dependent upon the fact that does the targetpath resolved here ends with a directory separator char or not.
         private IEnumerable<ContentMetadata> GetContentMetadata(IMSBuildItem packageFile, string sourcePath,
-            PackArgs packArgs, string[] contentTargetFolders)
+            PackArgs packArgs, string[] contentTargetFolders, IDictionary<string, string> aliases)
         {
             var targetPaths = contentTargetFolders
                 .Select(PathUtility.EnsureTrailingSlash)
@@ -684,7 +690,7 @@ namespace NuGet.Build.Tasks.Pack
                 || setOfTargetPaths.Remove("contentFiles"))
                 {
                     var nuGetTfm = packageFile.GetProperty("NuGetTfm");
-                    var packageFramework = string.IsNullOrEmpty(nuGetTfm) ? null : NuGetFramework.Parse(nuGetTfm);
+                    var packageFramework = string.IsNullOrEmpty(nuGetTfm) ? null : ParseFramework(nuGetTfm, aliases);
 
                     foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                     {
