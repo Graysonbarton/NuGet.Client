@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,6 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
                 case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(() => PackageManagementFormat.SelectedPackageManagementFormat);
                 case MonikerShowPackageManagementChooser: return ConvertValueOrThrow<T>(PackageManagementFormat.Enabled);
+                case "configurationFiles": return LoadConfigurationFilePathsOrThrow<T>(_settings!);
                 default: break;
             }
 
@@ -245,6 +247,35 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             catch (Exception ex)
             {
                 result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerDefaultPackageManagementFormat + "')");
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            return Task.FromResult(result);
+        }
+
+        private static Task<ExternalSettingOperationResult<T>> LoadConfigurationFilePathsOrThrow<T>(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            ExternalSettingOperationResult<T> result;
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                List<string> configPaths = settings.GetConfigFilePaths().ToList();
+                if (configPaths is null)
+                {
+                    throw new InvalidOperationException("Cannot get config paths");
+                }
+
+                T castedConfigPaths = (T)(object)configPaths;
+                result = ExternalSettingOperationResult.SuccessResult(castedConfigPaths);
+            }
+            catch (Exception ex)
+            {
+                result = CreateSettingErrorResult<T>(ex.Message + " ('config files')");
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 

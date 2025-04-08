@@ -75,6 +75,71 @@
           "title": "@PackageManagement;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
         }
       }
+    },
+    "nuGetPackageManager.configurationFiles.externalSettings": {
+      "type": "external",
+      "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+
+      // callback has two members, packageId and serviceId.  Both are GUIDs.  Either or both may be supplied.  If only packageId is supplied,
+      // the package must implement IExternalSettingsProvider itself.  If only serviceId is supplied, the package must proffer a globally
+      // visible service with that GUID which implements IExternalSettingsProvider.  If both are supplied, the package may proffer a private
+      // service (i.e. with promote:false) instead of a public one.  In managed code, the GUID of a service is derived from the service type,
+      // and is typically specified with an explicit [Guid] attribute on it.
+      "callback": {
+        "packageId": "5fcc8577-4feb-4d04-ad72-d6c629b083cc",
+        "serviceId": "6C09BBE2-4537-48B4-87D8-01BF5EB75901"
+      },
+
+      // This should be true if the external settings provider can monitor the backing store for changes and raise SettingValuesChanged when
+      // they occur.  If the backing store cannot be efficiently monitored for changes, the provider should set this to false and implement
+      // ICachingExternalSettingsProvider.
+      //"realtimeNotifications": true,
+
+      // Settings within this external settings region.  Unlike "normal" settings, these have no registered default values.
+      // Their values are retrieved via IExternalSettingsProvider.GetValueAsync; when the user edits them, the new values are passed to
+      // IExternalSettingsProvider.SetValueAsync.
+      "properties": {
+        "configurationFiles": {
+          "type": "array",
+          "title": "Example Setting",
+
+          // Metadata about items in this array
+          "items": {
+
+            // Indicates the array contains items that each have multiple properties
+            "type": "object",
+
+            // The properties of items in this array
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "title": "First"
+              },
+              "lastName": {
+                "type": "string",
+                "title": "Last"
+              },
+              "title": {
+                "type": "string",
+                "title": "Title"
+              }
+            }
+          },
+
+          // The actual items that appear by default; in most cases, you'd leave this array empty.
+          "default": [
+            {
+              "firstName": "Scrooge",
+              "lastName": "McDuck",
+              "title": "CEO"
+            }
+          ],
+
+          "migrationCallback": {
+            "serviceId": "6C09BBE2-4537-48B4-87D8-01BF5EB75901"
+          }
+        }
+      }
     }
   },
   "categories": {
@@ -93,6 +158,10 @@
           }
         }
       ]
+    },
+    "nuGetPackageManager.configurationFiles": {
+      "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "legacyOptionPageId": "C17B308A-00BB-446E-9212-2D14E1005985"
     }
   }
 }
