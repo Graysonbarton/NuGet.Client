@@ -101,7 +101,7 @@
       "properties": {
         "configurationFiles": {
           "type": "array",
-          "title": "Example Setting",
+          "title": "Configuration Files",
 
           // Metadata about items in this array
           "items": {
@@ -111,17 +111,9 @@
 
             // The properties of items in this array
             "properties": {
-              "firstName": {
+              "filePath": {
                 "type": "string",
-                "title": "First"
-              },
-              "lastName": {
-                "type": "string",
-                "title": "Last"
-              },
-              "title": {
-                "type": "string",
-                "title": "Title"
+                "title": "NuGet.Config Path"
               }
             }
           },
@@ -129,9 +121,6 @@
           // The actual items that appear by default; in most cases, you'd leave this array empty.
           "default": [
             {
-              "firstName": "Scrooge",
-              "lastName": "McDuck",
-              "title": "CEO"
             }
           ],
 

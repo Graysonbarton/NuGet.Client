@@ -264,13 +264,22 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                List<string> configPaths = settings.GetConfigFilePaths().ToList();
-                if (configPaths is null)
+                List<string> configPathsList = settings.GetConfigFilePaths().ToList();
+
+                List<Dictionary<string, object>> configPathsDictionary = new List<Dictionary<string, object>>(capacity: configPathsList.Count);
+
+                // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
+                foreach (string configPath in configPathsList)
                 {
-                    throw new InvalidOperationException("Cannot get config paths");
+                    var dict = new Dictionary<string, object>(capacity: 1)
+                    {
+                        { "filePath", configPath }
+                    };
+
+                    configPathsDictionary.Add(dict);
                 }
 
-                T castedConfigPaths = (T)(object)configPaths;
+                T castedConfigPaths = (T)(object)configPathsDictionary;
                 result = ExternalSettingOperationResult.SuccessResult(castedConfigPaths);
             }
             catch (Exception ex)
