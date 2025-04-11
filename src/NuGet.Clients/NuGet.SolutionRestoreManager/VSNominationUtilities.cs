@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
+using NuGet.Commands.Restore;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -591,9 +592,9 @@ namespace NuGet.SolutionRestoreManager
             ImmutableArray<NuGetLogCode> noWarn = noWarnString is not null ? MSBuildStringUtility.GetNuGetLogCodes(noWarnString) : [];
 
             (var includeType, var suppressParent) = MSBuildRestoreUtility.GetLibraryDependencyIncludeFlags(
-                includeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.IncludeAssets),
-                excludeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludeAssets),
-                privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets));
+                includeAssets: GetPropertyValueOrNull(item, ProjectItemProperties.IncludeAssets),
+                excludeAssets: GetPropertyValueOrNull(item, ProjectItemProperties.ExcludeAssets),
+                privateAssets: GetPropertyValueOrNull(item, ProjectItemProperties.PrivateAssets));
 
             var dependency = new LibraryDependency()
             {
@@ -666,7 +667,7 @@ namespace NuGet.SolutionRestoreManager
 
         private static FrameworkDependency ToFrameworkDependency(IVsReferenceItem2 item)
         {
-            var privateAssets = GetFrameworkDependencyFlags(item, ProjectBuildProperties.PrivateAssets);
+            var privateAssets = GetFrameworkDependencyFlags(item, ProjectItemProperties.PrivateAssets);
             return new FrameworkDependency(item.Name, privateAssets);
         }
 
@@ -685,9 +686,9 @@ namespace NuGet.SolutionRestoreManager
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,
-                includeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.IncludeAssets),
-                excludeAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.ExcludeAssets),
-                privateAssets: GetPropertyValueOrNull(item, ProjectBuildProperties.PrivateAssets));
+                includeAssets: GetPropertyValueOrNull(item, ProjectItemProperties.IncludeAssets),
+                excludeAssets: GetPropertyValueOrNull(item, ProjectItemProperties.ExcludeAssets),
+                privateAssets: GetPropertyValueOrNull(item, ProjectItemProperties.PrivateAssets));
 
             return dependency;
         }

@@ -15,7 +15,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
-using NuGet.ProjectManagement;
+using NuGet.Commands.Restore;
 using NuGet.VisualStudio.Common;
 
 #pragma warning disable CA1062 // Validate arguments of public methods

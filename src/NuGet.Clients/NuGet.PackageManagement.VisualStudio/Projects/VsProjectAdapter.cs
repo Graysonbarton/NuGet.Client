@@ -12,8 +12,8 @@ using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
+using NuGet.Commands.Restore;
 using NuGet.Frameworks;
-using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio

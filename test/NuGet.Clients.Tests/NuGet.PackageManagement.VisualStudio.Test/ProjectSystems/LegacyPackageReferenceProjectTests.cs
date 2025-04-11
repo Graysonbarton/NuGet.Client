@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
+using NuGet.Commands.Restore;
 using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;

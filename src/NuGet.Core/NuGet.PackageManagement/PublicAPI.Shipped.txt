@@ -632,9 +632,6 @@ NuGet.ProjectManagement.Preprocessor
 NuGet.ProjectManagement.Preprocessor.Preprocessor() -> void
 ~NuGet.ProjectManagement.Preprocessor.RevertFileAsync(System.Func<System.Threading.Tasks.Task<System.IO.Stream>> streamTaskFactory, string targetPath, System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.InternalZipFileInfo> matchingFiles, NuGet.ProjectManagement.IMSBuildProjectSystem projectSystem, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 ~NuGet.ProjectManagement.Preprocessor.TransformFileAsync(System.Func<System.Threading.Tasks.Task<System.IO.Stream>> streamTaskFactory, string targetPath, NuGet.ProjectManagement.IMSBuildProjectSystem projectSystem, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
-NuGet.ProjectManagement.ProjectBuildProperties
-NuGet.ProjectManagement.ProjectItemProperties
-NuGet.ProjectManagement.ProjectItems
 NuGet.ProjectManagement.Projects.BuildIntegratedNuGetProject
 NuGet.ProjectManagement.Projects.BuildIntegratedNuGetProject.BuildIntegratedNuGetProject() -> void
 NuGet.ProjectManagement.Projects.INuGetIntegratedProject
@@ -687,76 +684,6 @@ NuGet.ProjectManagement.XmlUtility
 ~const NuGet.ProjectManagement.NuGetProjectMetadataKeys.SupportedFrameworks = "SupportedFrameworks" -> string
 ~const NuGet.ProjectManagement.NuGetProjectMetadataKeys.TargetFramework = "TargetFramework" -> string
 ~const NuGet.ProjectManagement.NuGetProjectMetadataKeys.UniqueName = "UniqueName" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.AssemblyName = "AssemblyName" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.AssetTargetFallback = "AssetTargetFallback" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.CentralPackageFloatingVersionsEnabled = "CentralPackageFloatingVersionsEnabled" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.CentralPackageTransitivePinningEnabled = "CentralPackageTransitivePinningEnabled" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.CentralPackageVersionOverrideEnabled = "CentralPackageVersionOverrideEnabled" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.Clear = "Clear" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.DotnetCliToolTargetFramework = "DotnetCliToolTargetFramework" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.ExcludeAssets = "ExcludeAssets" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.IncludeAssets = "IncludeAssets" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.MSBuildProjectExtensionsPath = "MSBuildProjectExtensionsPath" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.ManagePackageVersionsCentrally = "ManagePackageVersionsCentrally" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.NoWarn = "NoWarn" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.NuGetAudit = "NuGetAudit" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.NuGetAuditLevel = "NuGetAuditLevel" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.NuGetAuditMode = "NuGetAuditMode" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.NuGetLockFilePath = "NuGetLockFilePath" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.PackageId = "PackageId" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.PackageTargetFallback = "PackageTargetFallback" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.PackageVersion = "PackageVersion" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.PrivateAssets = "PrivateAssets" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.ProjectTypeGuids = "ProjectTypeGuids" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.ReferenceOutputAssembly = "ReferenceOutputAssembly" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders = "RestoreAdditionalProjectFallbackFolders" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreAdditionalProjectFallbackFoldersExcludes = "RestoreAdditionalProjectFallbackFoldersExcludes" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreAdditionalProjectSources = "RestoreAdditionalProjectSources" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreEnablePackagePruning = "RestoreEnablePackagePruning" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreFallbackFolders = "RestoreFallbackFolders" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreLockedMode = "RestoreLockedMode" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestorePackagesPath = "RestorePackagesPath" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestorePackagesWithLockFile = "RestorePackagesWithLockFile" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreProjectStyle = "RestoreProjectStyle" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreSources = "RestoreSources" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RestoreUseLegacyDependencyResolver = "RestoreUseLegacyDependencyResolver" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeIdentifier = "RuntimeIdentifier" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeIdentifierGraphPath = "RuntimeIdentifierGraphPath" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeIdentifiers = "RuntimeIdentifiers" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.RuntimeSupports = "RuntimeSupports" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.SdkAnalysisLevel = "SdkAnalysisLevel" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetFramework = "TargetFramework" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkIdentifier = "TargetFrameworkIdentifier" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkMoniker = "TargetFrameworkMoniker" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkProfile = "TargetFrameworkProfile" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworkVersion = "TargetFrameworkVersion" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetFrameworks = "TargetFrameworks" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformIdentifier = "TargetPlatformIdentifier" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMinVersion = "TargetPlatformMinVersion" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformMoniker = "TargetPlatformMoniker" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TargetPlatformVersion = "TargetPlatformVersion" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.TreatWarningsAsErrors = "TreatWarningsAsErrors" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.UsingMicrosoftNETSdk = "UsingMicrosoftNETSdk" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.Version = "Version" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.WarningsAsErrors = "WarningsAsErrors" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.WarningsNotAsErrors = "WarningsNotAsErrors" -> string
-~const NuGet.ProjectManagement.ProjectBuildProperties.WindowsTargetPlatformMinVersion = "WindowsTargetPlatformMinVersion" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.Aliases = "Aliases" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.ExcludeAssets = "ExcludeAssets" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.GeneratePathProperty = "GeneratePathProperty" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.IncludeAssets = "IncludeAssets" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.IsImplicitlyDefined = "IsImplicitlyDefined" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.NoWarn = "NoWarn" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.PrivateAssets = "PrivateAssets" -> string
-~const NuGet.ProjectManagement.ProjectItemProperties.VersionOverride = "VersionOverride" -> string
-~const NuGet.ProjectManagement.ProjectItems.FrameworkReference = "FrameworkReference" -> string
-~const NuGet.ProjectManagement.ProjectItems.NuGetAuditSuppress = "NuGetAuditSuppress" -> string
-~const NuGet.ProjectManagement.ProjectItems.PackageDownload = "PackageDownload" -> string
-~const NuGet.ProjectManagement.ProjectItems.PackageReference = "PackageReference" -> string
-~const NuGet.ProjectManagement.ProjectItems.PackageVersion = "PackageVersion" -> string
-~const NuGet.ProjectManagement.ProjectItems.ProjectReference = "ProjectReference" -> string
-~const NuGet.ProjectManagement.ProjectItems.PrunePackageReference = "PrunePackageReference" -> string
 ~override NuGet.PackageManagement.IDEExecutionContext.OpenFile(string fullPath) -> System.Threading.Tasks.Task
 ~override NuGet.PackageManagement.ProjectContextLogger.Log(NuGet.Common.ILogMessage message) -> void
 ~override NuGet.PackageManagement.ProjectContextLogger.LogAsync(NuGet.Common.ILogMessage message) -> System.Threading.Tasks.Task

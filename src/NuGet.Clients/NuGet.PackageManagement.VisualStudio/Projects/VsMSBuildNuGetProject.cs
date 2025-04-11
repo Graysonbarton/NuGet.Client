@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Commands.Restore;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 

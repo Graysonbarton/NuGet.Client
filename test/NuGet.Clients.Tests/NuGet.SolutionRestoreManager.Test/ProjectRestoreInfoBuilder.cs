@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using NuGet.Commands.Restore;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 
 namespace NuGet.SolutionRestoreManager.Test

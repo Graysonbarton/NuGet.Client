@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using NuGet.ProjectManagement;
+using NuGet.Commands.Restore;
 
 namespace NuGet.SolutionRestoreManager
 {

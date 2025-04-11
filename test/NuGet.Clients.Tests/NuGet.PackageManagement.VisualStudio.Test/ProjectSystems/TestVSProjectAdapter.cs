@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
+using NuGet.Commands.Restore;
 using NuGet.Frameworks;
-using NuGet.ProjectManagement;
 using NuGet.RuntimeModel;
 using NuGet.VisualStudio;
 

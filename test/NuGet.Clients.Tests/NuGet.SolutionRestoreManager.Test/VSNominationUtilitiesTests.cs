@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
+using NuGet.Commands.Restore;
 using NuGet.Common;
-using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Xunit;
 

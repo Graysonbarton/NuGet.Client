@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands.Restore;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;

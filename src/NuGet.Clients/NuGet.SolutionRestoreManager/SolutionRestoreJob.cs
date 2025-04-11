@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
+using NuGet.Commands.Restore;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;

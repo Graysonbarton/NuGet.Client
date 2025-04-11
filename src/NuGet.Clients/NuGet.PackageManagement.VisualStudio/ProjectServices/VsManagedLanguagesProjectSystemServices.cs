@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
+using NuGet.Commands.Restore;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;

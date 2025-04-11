@@ -1,4 +1,69 @@
 #nullable enable
+const NuGet.Commands.Restore.ProjectBuildProperties.AssemblyName = "AssemblyName" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.AssetTargetFallback = "AssetTargetFallback" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.CentralPackageFloatingVersionsEnabled = "CentralPackageFloatingVersionsEnabled" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.CentralPackageTransitivePinningEnabled = "CentralPackageTransitivePinningEnabled" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.CentralPackageVersionOverrideEnabled = "CentralPackageVersionOverrideEnabled" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.Clear = "Clear" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.CLRSupport = "CLRSupport" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.DotnetCliToolTargetFramework = "DotnetCliToolTargetFramework" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.ManagePackageVersionsCentrally = "ManagePackageVersionsCentrally" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.MSBuildProjectExtensionsPath = "MSBuildProjectExtensionsPath" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.MSBuildProjectName = "MSBuildProjectName" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.MSBuildStartupDirectory = "MSBuildStartupDirectory" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.NoWarn = "NoWarn" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.NuGetAudit = "NuGetAudit" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.NuGetAuditLevel = "NuGetAuditLevel" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.NuGetAuditMode = "NuGetAuditMode" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.NuGetLockFilePath = "NuGetLockFilePath" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.PackageId = "PackageId" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.PackageTargetFallback = "PackageTargetFallback" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.PackageVersion = "PackageVersion" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.ProjectTypeGuids = "ProjectTypeGuids" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.ReferenceOutputAssembly = "ReferenceOutputAssembly" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders = "RestoreAdditionalProjectFallbackFolders" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreAdditionalProjectFallbackFoldersExcludes = "RestoreAdditionalProjectFallbackFoldersExcludes" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreAdditionalProjectSources = "RestoreAdditionalProjectSources" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreEnablePackagePruning = "RestoreEnablePackagePruning" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreFallbackFolders = "RestoreFallbackFolders" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreLockedMode = "RestoreLockedMode" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreOutputPath = "RestoreOutputPath" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestorePackagesPath = "RestorePackagesPath" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestorePackagesWithLockFile = "RestorePackagesWithLockFile" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreProjectStyle = "RestoreProjectStyle" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreRepositoryPath = "RestoreRepositoryPath" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreSources = "RestoreSources" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RestoreUseLegacyDependencyResolver = "RestoreUseLegacyDependencyResolver" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RuntimeIdentifier = "RuntimeIdentifier" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RuntimeIdentifierGraphPath = "RuntimeIdentifierGraphPath" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RuntimeIdentifiers = "RuntimeIdentifiers" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.RuntimeSupports = "RuntimeSupports" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.SdkAnalysisLevel = "SdkAnalysisLevel" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetFramework = "TargetFramework" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetFrameworkIdentifier = "TargetFrameworkIdentifier" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetFrameworkMoniker = "TargetFrameworkMoniker" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetFrameworkProfile = "TargetFrameworkProfile" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetFrameworks = "TargetFrameworks" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetFrameworkVersion = "TargetFrameworkVersion" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetPlatformIdentifier = "TargetPlatformIdentifier" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetPlatformMinVersion = "TargetPlatformMinVersion" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetPlatformMoniker = "TargetPlatformMoniker" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TargetPlatformVersion = "TargetPlatformVersion" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.TreatWarningsAsErrors = "TreatWarningsAsErrors" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.UsingMicrosoftNETSdk = "UsingMicrosoftNETSdk" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.ValidateRuntimeIdentifierCompatibility = "ValidateRuntimeIdentifierCompatibility" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.Version = "Version" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.WarningsAsErrors = "WarningsAsErrors" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.WarningsNotAsErrors = "WarningsNotAsErrors" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties.WindowsTargetPlatformMinVersion = "WindowsTargetPlatformMinVersion" -> string!
+const NuGet.Commands.Restore.ProjectBuildProperties._CentralPackageVersionsEnabled = "_CentralPackageVersionsEnabled" -> string!
+const NuGet.Commands.Restore.ProjectItems.FrameworkReference = "FrameworkReference" -> string!
+const NuGet.Commands.Restore.ProjectItems.NuGetAuditSuppress = "NuGetAuditSuppress" -> string!
+const NuGet.Commands.Restore.ProjectItems.PackageDownload = "PackageDownload" -> string!
+const NuGet.Commands.Restore.ProjectItems.PackageReference = "PackageReference" -> string!
+const NuGet.Commands.Restore.ProjectItems.PackageVersion = "PackageVersion" -> string!
+const NuGet.Commands.Restore.ProjectItems.ProjectReference = "ProjectReference" -> string!
+const NuGet.Commands.Restore.ProjectItems.PrunePackageReference = "PrunePackageReference" -> string!
 NuGet.Commands.Restore.IItem
 NuGet.Commands.Restore.IItem.GetMetadata(string! name) -> string!
 NuGet.Commands.Restore.IItem.Identity.get -> string!
@@ -10,5 +75,18 @@ NuGet.Commands.Restore.IProject.TargetFrameworks.get -> System.Collections.Gener
 NuGet.Commands.Restore.ITargetFramework
 NuGet.Commands.Restore.ITargetFramework.GetItems(string! itemType) -> System.Collections.Generic.IReadOnlyList<NuGet.Commands.Restore.IItem!>!
 NuGet.Commands.Restore.ITargetFramework.GetProperty(string! propertyName) -> string!
+NuGet.Commands.Restore.ProjectBuildProperties
+NuGet.Commands.Restore.ProjectItems
 NuGet.Commands.Restore.Utility.PackageSpecFactory
+NuGet.ProjectManagement.ProjectItemProperties
 static NuGet.Commands.Restore.Utility.PackageSpecFactory.GetPackageSpec(NuGet.Commands.Restore.IProject! project, NuGet.Configuration.ISettings! settings) -> NuGet.ProjectModel.PackageSpec?
+~const NuGet.ProjectManagement.ProjectItemProperties.Aliases = "Aliases" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.ExcludeAssets = "ExcludeAssets" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.FullPath = "FullPath" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.GeneratePathProperty = "GeneratePathProperty" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.IncludeAssets = "IncludeAssets" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.IsImplicitlyDefined = "IsImplicitlyDefined" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.NoWarn = "NoWarn" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.PrivateAssets = "PrivateAssets" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.Version = "Version" -> string
+~const NuGet.ProjectManagement.ProjectItemProperties.VersionOverride = "VersionOverride" -> string

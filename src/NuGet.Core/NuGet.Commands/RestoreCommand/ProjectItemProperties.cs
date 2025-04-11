@@ -9,13 +9,15 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public static class ProjectItemProperties
     {
-        public const string IncludeAssets = nameof(IncludeAssets);
+        public const string Aliases = nameof(Aliases);
         public const string ExcludeAssets = nameof(ExcludeAssets);
-        public const string PrivateAssets = nameof(PrivateAssets);
+        public const string FullPath = nameof(FullPath);
+        public const string GeneratePathProperty = nameof(GeneratePathProperty);
+        public const string IncludeAssets = nameof(IncludeAssets);
         public const string IsImplicitlyDefined = nameof(IsImplicitlyDefined);
         public const string NoWarn = nameof(NoWarn);
-        public const string GeneratePathProperty = nameof(GeneratePathProperty);
-        public const string Aliases = nameof(Aliases);
+        public const string PrivateAssets = nameof(PrivateAssets);
+        public const string Version = nameof(Version);
         public const string VersionOverride = nameof(VersionOverride);
     }
 }

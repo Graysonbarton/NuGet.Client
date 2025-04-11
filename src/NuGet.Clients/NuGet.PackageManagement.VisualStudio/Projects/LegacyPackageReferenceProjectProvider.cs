@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.Commands.Restore;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
