@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-//using Microsoft.VisualStudio.Text.Editor.Commanding.Commands;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
@@ -18,7 +17,7 @@ using NuGet.VisualStudio;
 namespace NuGet.PackageManagement.VisualStudio.Services
 {
     [Guid("6C09BBE2-4537-48B4-87D8-01BF5EB75901")]
-    public sealed class ExternalSettingsProviderService : IExternalSettingsProvider
+    public sealed class ExternalSettingsProviderService : IExternalSettingsProvider, IExternalArrayItemCommandsProvider
     {
         private const string MonikerAllowRestoreDownload = "packageRestore.allowRestoreDownload";
         private const string MonikerPackageRestoreAutomatic = "packageRestore.packageRestoreAutomatic";
@@ -299,6 +298,18 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 isTransient: true);
 
             return failure;
+        }
+
+        /// <summary>
+        /// Both of these operations take the contents of the selected array item as a Dictionary<string, object>
+        /// where the keys are array property monikers and the values are the corresponding property values for that item.
+        /// </summary>
+        /// <param name="arraySettingMoniker"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<IReadOnlyList<IArrayItemCommand>> GetArrayItemCommandsAsync(string arraySettingMoniker, CancellationToken cancellationToken)
+        {
+            IArrayItemCommand
         }
     }
 }
