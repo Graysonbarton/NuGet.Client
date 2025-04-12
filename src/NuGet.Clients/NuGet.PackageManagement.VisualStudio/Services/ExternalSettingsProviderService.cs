@@ -26,6 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         private const string MonikerPackageReference = "package-reference";
         private const string MonikerPackagesConfig = "packages-config";
         private const string MonikerShowPackageManagementChooser = "packageManagement.showPackageManagementChooser";
+        private const string MonikerConfigurationFiles = "configurationFiles";
 
         private readonly ISettings? _settings;
         private readonly VSSettings? _vsSettings;
@@ -129,7 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
                 case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(() => PackageManagementFormat.SelectedPackageManagementFormat);
                 case MonikerShowPackageManagementChooser: return ConvertValueOrThrow<T>(PackageManagementFormat.Enabled);
-                case "configurationFiles": return LoadConfigurationFilePathsOrThrow<T>(_settings!);
+                case MonikerConfigurationFiles: return LoadConfigurationFilePathsOrThrow<T>(_settings!);
                 default: break;
             }
 
@@ -300,16 +301,14 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             return failure;
         }
 
-        /// <summary>
-        /// Both of these operations take the contents of the selected array item as a Dictionary<string, object>
-        /// where the keys are array property monikers and the values are the corresponding property values for that item.
-        /// </summary>
-        /// <param name="arraySettingMoniker"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         public Task<IReadOnlyList<IArrayItemCommand>> GetArrayItemCommandsAsync(string arraySettingMoniker, CancellationToken cancellationToken)
         {
-            IArrayItemCommand
+            if (arraySettingMoniker == MonikerConfigurationFiles)
+            {
+                return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([new OpenFileService()]);
+            }
+
+            return Task.FromResult<IReadOnlyList<IArrayItemCommand>>(Array.Empty<IArrayItemCommand>());
         }
     }
 }

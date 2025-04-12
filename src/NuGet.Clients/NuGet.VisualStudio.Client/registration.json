@@ -101,7 +101,7 @@
       "properties": {
         "configurationFiles": {
           "type": "array",
-          "title": "Configuration Files",
+          "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
           // Metadata about items in this array
           "items": {
@@ -113,7 +113,7 @@
             "properties": {
               "filePath": {
                 "type": "string",
-                "title": "NuGet.Config Path"
+                "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
               }
             }
           },
@@ -132,7 +132,16 @@
             "serviceId": "6C09BBE2-4537-48B4-87D8-01BF5EB75901"
           }
         }
-      }
+      },
+
+      "messages": [
+        {
+          "text": "@Text_ConfigurationFiles_Priority;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+        },
+        {
+          "text": "@Text_ConfigurationFiles_CommonLink;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+        }
+      ]
     }
   },
   "categories": {

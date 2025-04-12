@@ -284,5 +284,23 @@ namespace NuGetVSExtension {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/).
+        /// </summary>
+        internal static string Text_ConfigurationFiles_CommonLink {
+            get {
+                return ResourceManager.GetString("Text_ConfigurationFiles_CommonLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration files are listed in order from highest to lowest priority.
+        /// </summary>
+        internal static string Text_ConfigurationFiles_Priority {
+            get {
+                return ResourceManager.GetString("Text_ConfigurationFiles_Priority", resourceCulture);
+            }
+        }
     }
 }
