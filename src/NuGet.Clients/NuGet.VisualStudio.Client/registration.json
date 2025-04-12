@@ -3,6 +3,7 @@
     "nuGetPackageManager.general.externalSettings": {
       "type": "external",
       "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "order": 0,
 
       "backingStoreDescription": "@SettingsStoredInNuGetConfiguration;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
@@ -79,6 +80,8 @@
     "nuGetPackageManager.configurationFiles.externalSettings": {
       "type": "external",
       "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "order": 1,
+      "backingStoreDescription": "@Text_ConfigurationFiles_Priority;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
       // callback has two members, packageId and serviceId.  Both are GUIDs.  Either or both may be supplied.  If only packageId is supplied,
       // the package must implement IExternalSettingsProvider itself.  If only serviceId is supplied, the package must proffer a globally
@@ -123,9 +126,7 @@
             {
             }
           ],
-
           "allowItemEditing": false,
-
           "allowAdditionsAndRemovals": false,
 
           "migrationCallback": {
@@ -135,9 +136,6 @@
       },
 
       "messages": [
-        {
-          "text": "@Text_ConfigurationFiles_Priority;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
-        },
         {
           "text": "@Text_ConfigurationFiles_CommonLink;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
         }
