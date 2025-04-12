@@ -413,7 +413,6 @@ namespace NuGet.Commands.Restore.Utility
         {
             var packagesPath = GetValue(
                 () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty(ProjectBuildProperties.RestorePackagesPath)),
-                () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty(ProjectBuildProperties.RestorePackagesPath)),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
 
             // GetValue doesn't understand that the last func will always provide a non-null value.
@@ -744,7 +743,6 @@ namespace NuGet.Commands.Restore.Utility
         {
             var path = GetValue(
                 () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty(ProjectBuildProperties.RestoreRepositoryPath)),
-                () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty(ProjectBuildProperties.RestoreRepositoryPath)),
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
                 {
@@ -795,18 +793,16 @@ namespace NuGet.Commands.Restore.Utility
                 project.OuterBuild.GetProperty("OriginalMSBuildStartupDirectory"),
                 project.Directory,
                 project.OuterBuild.SplitPropertyValueOrNull(ProjectBuildProperties.RestoreSources),
-                project.OuterBuild.SplitPropertyValueOrNull(ProjectBuildProperties.RestoreSources),
                 project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty(ProjectBuildProperties.RestoreAdditionalProjectSources))),
                 settings)
                 .Select(i => new PackageSource(i))
                 .ToList();
         }
 
-        private static string[] GetSources(string startupDirectory, string projectDirectory, string[]? sources, string[]? sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
+        private static string[] GetSources(string startupDirectory, string projectDirectory, string[]? sources, IEnumerable<string> additionalProjectSources, ISettings settings)
         {
             // Sources
             var currentSources = GetValue(
-                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
                 () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? Array.Empty<string>() : null,
                 () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
                 () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
