@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             }
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult<T>(ex.Message + " ('config files')");
+                result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerConfigurationFiles + "')");
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
