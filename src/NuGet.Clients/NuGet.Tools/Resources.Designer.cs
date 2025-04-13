@@ -295,7 +295,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration files are listed in order from highest to lowest priority.zzzz..
+        ///   Looks up a localized string similar to Configuration files are listed in order from highest to lowest priority..
         /// </summary>
         internal static string Text_ConfigurationFiles_Priority {
             get {
