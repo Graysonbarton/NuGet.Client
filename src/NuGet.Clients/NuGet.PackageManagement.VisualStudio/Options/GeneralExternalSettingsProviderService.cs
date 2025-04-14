@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ using NuGet.VisualStudio;
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
     [Guid("6C09BBE2-4537-48B4-87D8-01BF5EB75901")]
-    public sealed class GeneralExternalSettingsProviderService : IExternalSettingsProvider, IExternalArrayItemCommandsProvider
+    public sealed class GeneralExternalSettingsProviderService : IExternalSettingsProvider
     {
         private const string MonikerAllowRestoreDownload = "packageRestore.allowRestoreDownload";
         private const string MonikerPackageRestoreAutomatic = "packageRestore.packageRestoreAutomatic";
@@ -26,7 +25,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         private const string MonikerPackageReference = "package-reference";
         private const string MonikerPackagesConfig = "packages-config";
         private const string MonikerShowPackageManagementChooser = "packageManagement.showPackageManagementChooser";
-        private const string MonikerConfigurationFiles = "configurationFiles";
 
         private readonly ISettings? _settings;
         private readonly VSSettings? _vsSettings;
@@ -130,7 +128,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
                 case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(() => PackageManagementFormat.SelectedPackageManagementFormat);
                 case MonikerShowPackageManagementChooser: return ConvertValueOrThrow<T>(PackageManagementFormat.Enabled);
-                case MonikerConfigurationFiles: return LoadConfigurationFilePathsOrThrow<T>(_settings!);
                 default: break;
             }
 
@@ -246,69 +243,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerDefaultPackageManagementFormat + "')");
+                result = ExternalSettingsUtility.CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerDefaultPackageManagementFormat + "')");
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
             return Task.FromResult(result);
-        }
-
-        private static Task<ExternalSettingOperationResult<T>> LoadConfigurationFilePathsOrThrow<T>(ISettings settings)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            ExternalSettingOperationResult<T> result;
-#pragma warning disable CA1031 // Do not catch general exception types
-            try
-            {
-                var configPathsList = settings.GetConfigFilePaths().ToList();
-
-                var configPathsDictionary = new List<Dictionary<string, object>>(capacity: configPathsList.Count);
-
-                // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
-                foreach (var configPath in configPathsList)
-                {
-                    var dict = new Dictionary<string, object>(capacity: 1)
-                    {
-                        { "filePath", configPath }
-                    };
-
-                    configPathsDictionary.Add(dict);
-                }
-
-                var castedConfigPaths = (T)(object)configPathsDictionary;
-                result = ExternalSettingOperationResult.SuccessResult(castedConfigPaths);
-            }
-            catch (Exception ex)
-            {
-                result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerConfigurationFiles + "')");
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
-
-            return Task.FromResult(result);
-        }
-
-        private static ExternalSettingOperationResult<T> CreateSettingErrorResult<T>(string errorMessage)
-        {
-            var failure = new ExternalSettingOperationResult<T>.Failure(
-                errorMessage,
-                scope: ExternalSettingsErrorScope.SingleSettingOnly,
-                isTransient: true);
-
-            return failure;
-        }
-
-        public Task<IReadOnlyList<IArrayItemCommand>> GetArrayItemCommandsAsync(string arraySettingMoniker, CancellationToken cancellationToken)
-        {
-            if (arraySettingMoniker == MonikerConfigurationFiles)
-            {
-                return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([new OpenFileArrayItemCommand()]);
-            }
-
-            return Task.FromResult<IReadOnlyList<IArrayItemCommand>>(Array.Empty<IArrayItemCommand>());
         }
     }
 }

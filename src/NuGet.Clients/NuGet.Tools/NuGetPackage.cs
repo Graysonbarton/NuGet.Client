@@ -87,6 +87,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideService(typeof(GeneralExternalSettingsProviderService), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
+    [ProvideService(typeof(ConfigurationFilesExternalSettingsProviderService), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -201,6 +202,9 @@ namespace NuGetVSExtension
 
             AddService(typeof(GeneralExternalSettingsProviderService),
                 (container, ct, serviceType) => Task.FromResult<object>(new GeneralExternalSettingsProviderService()),
+                promote: true);
+            AddService(typeof(ConfigurationFilesExternalSettingsProviderService),
+                (container, ct, serviceType) => Task.FromResult<object>(new ConfigurationFilesExternalSettingsProviderService()),
                 promote: true);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
