@@ -9,9 +9,9 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using Resx = NuGet.PackageManagement.VisualStudio.Strings;
 
-namespace NuGet.PackageManagement.VisualStudio.Services
+namespace NuGet.PackageManagement.VisualStudio.Options
 {
-    internal class OpenFileService : IArrayItemCommand
+    internal class OpenFileArrayItemCommand : IArrayItemCommand
     {
         public const string FILE_PATH = "filePath";
 
@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 
         public void Invoke(IDictionary<string, object> arrayItemContent)
         {
-            string path = arrayItemContent[FILE_PATH] as string;
+            var path = arrayItemContent[FILE_PATH] as string;
             VsShellUtilities.OpenDocument(ServiceProvider.GlobalProvider, path);
         }
 

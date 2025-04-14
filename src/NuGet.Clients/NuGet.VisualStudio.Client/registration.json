@@ -111,16 +111,9 @@
           },
 
           // The actual items that appear by default; in most cases, you'd leave this array empty.
-          "default": [
-            {
-            }
-          ],
+          "default": [],
           "allowItemEditing": false,
-          "allowAdditionsAndRemovals": false,
-
-          "migrationCallback": {
-            "serviceId": "6C09BBE2-4537-48B4-87D8-01BF5EB75901"
-          }
+          "allowAdditionsAndRemovals": false
         }
       }
     }

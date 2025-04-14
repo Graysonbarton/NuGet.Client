@@ -8,24 +8,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.Sdk.TestFramework;
-using NuGet.PackageManagement.VisualStudio.Services;
+using NuGet.PackageManagement.VisualStudio.Options;
 using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.PackageManagement.VisualStudio.Test.Services
+namespace NuGet.PackageManagement.VisualStudio.Test.Options
 {
     [Collection(MockedVS.Collection)]
-    public class OpenFileServiceTests : MockedVSCollectionTests, IClassFixture<TextFileFixture>
+    public class OpenFileArrayItemCommandTests : MockedVSCollectionTests, IClassFixture<TextFileFixture>
     {
-        private readonly OpenFileService _service;
+        private readonly OpenFileArrayItemCommand _service;
         private readonly string _validFilePath;
 
         //Write tests for the OpenFileService class
-        public OpenFileServiceTests(GlobalServiceProvider globalServiceProvider, TextFileFixture textFileFixture)
+        public OpenFileArrayItemCommandTests(GlobalServiceProvider globalServiceProvider, TextFileFixture textFileFixture)
             : base(globalServiceProvider)
         {
             globalServiceProvider.Reset();
-            _service = new OpenFileService();
+            _service = new OpenFileArrayItemCommand();
             _validFilePath = textFileFixture.FullPath;
         }
 
@@ -33,9 +33,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Services
         public async Task IsEnabledAsync_WhenFilePathProvided_ShouldBeTrueAsync()
         {
             // Arrange
-            Dictionary<string, object> dictionaryFilePaths = new Dictionary<string, object>
+            var dictionaryFilePaths = new Dictionary<string, object>
             {
-                { OpenFileService.FILE_PATH, _validFilePath }
+                { OpenFileArrayItemCommand.FILE_PATH, _validFilePath }
             };
 
             // Act
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Services
         public async Task IsEnabledAsync_WhenMissingFilePathKey_ShouldBeFalseAsync()
         {
             // Arrange
-            Dictionary<string, object> dictionaryFilePaths = new Dictionary<string, object>
+            var dictionaryFilePaths = new Dictionary<string, object>
             {
                 { "invalidKey", _validFilePath }
             };
@@ -65,10 +65,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Services
         public async Task IsEnabledAsync_WhenFilePathDoesNotExist_ShouldBeFalseAsync()
         {
             // Arrange
-            string invalidPath = "pathDoesNotExist/NuGet.Config";
-            Dictionary<string, object> dictionaryFilePaths = new Dictionary<string, object>
+            var invalidPath = "pathDoesNotExist/NuGet.Config";
+            var dictionaryFilePaths = new Dictionary<string, object>
             {
-                { OpenFileService.FILE_PATH, invalidPath }
+                { OpenFileArrayItemCommand.FILE_PATH, invalidPath }
             };
 
             // Act

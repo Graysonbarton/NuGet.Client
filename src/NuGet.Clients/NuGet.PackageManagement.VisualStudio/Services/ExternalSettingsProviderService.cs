@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio.Options;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio.Services
@@ -305,7 +306,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         {
             if (arraySettingMoniker == MonikerConfigurationFiles)
             {
-                return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([new OpenFileService()]);
+                return Task.FromResult<IReadOnlyList<IArrayItemCommand>>([new OpenFileArrayItemCommand()]);
             }
 
             return Task.FromResult<IReadOnlyList<IArrayItemCommand>>(Array.Empty<IArrayItemCommand>());
