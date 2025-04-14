@@ -20,7 +20,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         private readonly OpenFileArrayItemCommand _service;
         private readonly string _validFilePath;
 
-        //Write tests for the OpenFileService class
         public OpenFileArrayItemCommandTests(GlobalServiceProvider globalServiceProvider, TextFileFixture textFileFixture)
             : base(globalServiceProvider)
         {
