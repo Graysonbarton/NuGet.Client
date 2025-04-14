@@ -23,7 +23,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackageManagement.VisualStudio.Services;
+using NuGet.PackageManagement.VisualStudio.Options;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Tools.Commands;
@@ -86,7 +86,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
-    [ProvideService(typeof(ExternalSettingsProviderService), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
+    [ProvideService(typeof(GeneralExternalSettingsProviderService), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
@@ -199,8 +199,8 @@ namespace NuGetVSExtension
                 },
                 ThreadHelper.JoinableTaskFactory);
 
-            AddService(typeof(ExternalSettingsProviderService),
-                (container, ct, serviceType) => Task.FromResult<object>(new ExternalSettingsProviderService()),
+            AddService(typeof(GeneralExternalSettingsProviderService),
+                (container, ct, serviceType) => Task.FromResult<object>(new GeneralExternalSettingsProviderService()),
                 promote: true);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);

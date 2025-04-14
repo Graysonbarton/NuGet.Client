@@ -12,13 +12,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio.Options;
 using NuGet.VisualStudio;
 
-namespace NuGet.PackageManagement.VisualStudio.Services
+namespace NuGet.PackageManagement.VisualStudio.Options
 {
     [Guid("6C09BBE2-4537-48B4-87D8-01BF5EB75901")]
-    public sealed class ExternalSettingsProviderService : IExternalSettingsProvider, IExternalArrayItemCommandsProvider
+    public sealed class GeneralExternalSettingsProviderService : IExternalSettingsProvider, IExternalArrayItemCommandsProvider
     {
         private const string MonikerAllowRestoreDownload = "packageRestore.allowRestoreDownload";
         private const string MonikerPackageRestoreAutomatic = "packageRestore.packageRestoreAutomatic";
@@ -36,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         private BindingRedirectBehavior? _bindingRedirectBehavior;
         private PackageManagementFormat? _packageManagementFormat;
 
-        public ExternalSettingsProviderService()
+        public GeneralExternalSettingsProviderService()
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _settings = componentModel.GetService<ISettings>();
@@ -75,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             {
                 if (_packageRestoreConsent is null)
                 {
-                    _packageRestoreConsent = new PackageManagement.PackageRestoreConsent(_settings);
+                    _packageRestoreConsent = new PackageRestoreConsent(_settings);
                 }
 
                 return _packageRestoreConsent;
@@ -232,7 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                int inputValue = input();
+                var inputValue = input();
                 T strValue = inputValue switch
                 {
                     0 => (T)(object)MonikerPackagesConfig,
@@ -265,12 +264,12 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                List<string> configPathsList = settings.GetConfigFilePaths().ToList();
+                var configPathsList = settings.GetConfigFilePaths().ToList();
 
-                List<Dictionary<string, object>> configPathsDictionary = new List<Dictionary<string, object>>(capacity: configPathsList.Count);
+                var configPathsDictionary = new List<Dictionary<string, object>>(capacity: configPathsList.Count);
 
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
-                foreach (string configPath in configPathsList)
+                foreach (var configPath in configPathsList)
                 {
                     var dict = new Dictionary<string, object>(capacity: 1)
                     {
@@ -280,7 +279,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                     configPathsDictionary.Add(dict);
                 }
 
-                T castedConfigPaths = (T)(object)configPathsDictionary;
+                var castedConfigPaths = (T)(object)configPathsDictionary;
                 result = ExternalSettingOperationResult.SuccessResult(castedConfigPaths);
             }
             catch (Exception ex)
