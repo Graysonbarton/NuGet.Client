@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
             catch (Exception ex)
             {
-                result = ExternalSettingsUtility.CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerConfigurationFiles + "')");
+                result = NuGetExternalSettingsProvider.CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerConfigurationFiles + "')");
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
