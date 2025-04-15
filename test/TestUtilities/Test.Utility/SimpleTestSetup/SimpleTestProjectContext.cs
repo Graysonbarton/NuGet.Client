@@ -35,8 +35,9 @@ namespace NuGet.Test.Utility
                 throw new ArgumentException(nameof(solutionRoot));
             }
 
+            SolutionRoot = solutionRoot;
             ProjectName = projectName;
-            ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
+            ProjectPath = Path.Combine(projectName, $"{projectName}{ProjectExt}");
             ProjectExtensionsPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
             if (Type == ProjectStyle.PackageReference)
@@ -123,6 +124,8 @@ namespace NuGet.Test.Utility
         /// If true TargetFramework will be used instead of TargetFrameworks
         /// </summary>
         public bool SingleTargetFramework { get; set; }
+
+        public string SolutionRoot { get; set; }
 
         public bool SetMSBuildProjectExtensionsPath { get; set; } = true;
 
@@ -334,7 +337,7 @@ namespace NuGet.Test.Utility
 
         public void Save()
         {
-            Save(ProjectPath);
+            Save(Path.Combine(SolutionRoot ?? Path.GetDirectoryName(ProjectPath), ProjectPath));
         }
 
         public void Save(string path)
