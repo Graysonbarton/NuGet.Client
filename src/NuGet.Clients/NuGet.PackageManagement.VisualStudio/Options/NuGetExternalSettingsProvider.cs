@@ -24,11 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _settings = componentModel.GetService<ISettings>();
             _vsSettings = _settings as VSSettings;
+            AddVsSettingsChangedEventHandler();
             Debug.Assert(_settings != null);
-        }
-        protected virtual void VsSettings_SettingsChanged(object sender, EventArgs e)
-        {
-            SettingValuesChanged?.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
         }
 
         public event EventHandler<ExternalSettingsChangedEventArgs>? SettingValuesChanged;
@@ -42,6 +39,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         public abstract Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken) where T : notnull;
         public abstract Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken) where T : notnull;
 
+        protected virtual void VsSettings_SettingsChanged(object sender, EventArgs e)
+        {
+            SettingValuesChanged?.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
+        }
+
         public virtual Task<string> GetMessageTextAsync(string messageId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -53,24 +55,22 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             optionsPageActivator.ActivatePage(OptionsPage.ConfigurationFiles, closeCallback: null);
             return Task.CompletedTask;
         }
+
         public Task SuspendAsync(CancellationToken cancellationToken)
         {
-            Dispose();
+            // Stop listening for changes to NuGet.Config.
+            if (_vsSettings != null)
+            {
+                _vsSettings.SettingsChanged -= VsSettings_SettingsChanged;
+            }
             return Task.CompletedTask;
         }
 
         public Task ResumeAsync(CancellationToken cancellationToken)
         {
             AddVsSettingsChangedEventHandler();
+            VsSettings_SettingsChanged(this, EventArgs.Empty);
             return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            if (_vsSettings != null)
-            {
-                _vsSettings.SettingsChanged -= VsSettings_SettingsChanged;
-            }
         }
 
         private void AddVsSettingsChangedEventHandler()
