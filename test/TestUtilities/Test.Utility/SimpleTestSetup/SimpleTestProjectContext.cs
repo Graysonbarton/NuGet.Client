@@ -37,7 +37,7 @@ namespace NuGet.Test.Utility
 
             SolutionRoot = solutionRoot;
             ProjectName = projectName;
-            ProjectPath = Path.Combine(projectName, $"{projectName}{ProjectExt}");
+            ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
             ProjectExtensionsPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
             if (Type == ProjectStyle.PackageReference)
@@ -337,7 +337,7 @@ namespace NuGet.Test.Utility
 
         public void Save()
         {
-            Save(Path.Combine(SolutionRoot ?? Path.GetDirectoryName(ProjectPath), ProjectPath));
+            Save(ProjectPath);
         }
 
         public void Save(string path)

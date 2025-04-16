@@ -76,7 +76,7 @@ namespace NuGet.Test.Utility
                 foreach (var project in Projects)
                 {
                     sb.AppendLine("Project(\"{" + "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC" + "}"
-                        + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
+                        + $"\") = \"{project.ProjectName}\", " + "\"" + GetRelativePath(project.SolutionRoot, project.ProjectPath) + "\", \"{" + project.ProjectGuid.ToString().ToUpperInvariant() + "}\"");
                     sb.AppendLine("EndProject");
                 }
 
@@ -112,7 +112,7 @@ namespace NuGet.Test.Utility
                 sb.AppendLine("<Solution>");
                 foreach (var project in Projects)
                 {
-                    sb.AppendLine($"<Project Path=\"{project.ProjectPath}\" />");
+                    sb.AppendLine($"<Project Path=\"{GetRelativePath(project.SolutionRoot, project.ProjectPath)}\" />");
                 }
                 sb.AppendLine("</Solution>");
 
@@ -164,5 +164,13 @@ namespace NuGet.Test.Utility
         }
 
         public CentralPackageVersionsManagementFile CentralPackageVersionsManagementFile { get; set; }
+
+        private static string GetRelativePath(string basePath, string targetPath)
+        {
+            var baseUri = new Uri(Path.GetFullPath(basePath) + Path.DirectorySeparatorChar);
+            var targetUri = new Uri(Path.GetFullPath(targetPath));
+            var relativeUri = baseUri.MakeRelativeUri(targetUri);
+            return Uri.UnescapeDataString(relativeUri.ToString().Replace('/', Path.DirectorySeparatorChar));
+        }
     }
 }
