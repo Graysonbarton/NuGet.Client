@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.UI.Test
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var deprecatedCapability = new Mock<IDeprecationCapable>();
             var packageModel = PackageModelCreationTestHelper.CreateRemotePackageModel(packageIdentity, vulnerableCapability.Object, deprecatedCapability.Object, embeddedResource.Object);
-
+            var packageModelVersions = new PackageModelVersions(searchService.Object, packageModel);
             var currentStatus = LoadingStatus.Loading;
 
             stateMock.Setup(x => x.LoadingStatus)
@@ -310,7 +310,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
             loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object, packageModel: packageModel)));
+                .Returns(() => searchItems.Select(x => new PackageItemViewModel(searchService.Object, packageModel, packageModelVersions)));
 
             list.LoadItemsCompleted += (sender, args) =>
             {

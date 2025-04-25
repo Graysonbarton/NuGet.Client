@@ -305,7 +305,6 @@ namespace NuGet.PackageManagement.UI
                             }
                             autoReferenced = reference.IsAutoReferenced;
                         }
-
                         allowedVersions = allowedVersionsRange.FirstOrDefault() ?? VersionRange.All;
                         versionOverride = versionOverrides.FirstOrDefault();
                     }
@@ -321,8 +320,10 @@ namespace NuGet.PackageManagement.UI
 
                     _packageModelFactory ??= new PackageModelFactory(_searchService, _packageFileService, _packageVulnerabilityService, _includePrerelease, _packageSources);
                     PackageModel packageModel = _packageModelFactory.Create(metadataContextInfo, _itemFilter);
+                    var packageVersions = new PackageModelVersions(_searchService, packageModel);
 
-                    var listItem = new PackageItemViewModel(_searchService, packageModel, _packageVulnerabilityService)
+
+                    var listItem = new PackageItemViewModel(_searchService, packageModel, packageVersions, _packageVulnerabilityService)
                     {
                         KnownOwnerViewModels = knownOwnerViewModels,
                         AllowedVersions = allowedVersions,
