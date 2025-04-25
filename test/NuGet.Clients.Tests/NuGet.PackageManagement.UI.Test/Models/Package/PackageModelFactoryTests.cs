@@ -154,5 +154,67 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             // Assert
             Assert.IsType<TransitivelyReferencedPackageModel>(result);
         }
+
+        [Fact]
+        public void Create_VersionInfoContextInfoWithPath_ReturnsLocalPackageModel()
+        {
+            // Arrange
+            var packageSearchMetadata = new PackageSearchMetadataContextInfo()
+            {
+                Identity = new PackageIdentity("TestPackage", NuGetVersion.Parse("4.3.0")),
+                PackagePath = "path",
+            };
+
+            var versionInfoContext = new VersionInfoContextInfo(NuGetVersion.Parse("4.3.0"))
+            {
+                PackageSearchMetadata = packageSearchMetadata,
+                PackageDeprecationMetadata = null,
+            };
+
+            // Act
+            var result = _factory.Create("TestPackage", versionInfoContext);
+
+            // Assert
+            Assert.IsType<LocalPackageModel>(result);
+        }
+
+
+        [Fact]
+        public void Create_VersionInfoContextInfoNoPath_ReturnsRemotePackageModel()
+        {
+            // Arrange
+            var packageSearchMetadata = new PackageSearchMetadataContextInfo()
+            {
+                Identity = new PackageIdentity("TestPackage", NuGetVersion.Parse("4.3.0")),
+            };
+
+            var versionInfoContext = new VersionInfoContextInfo(NuGetVersion.Parse("4.3.0"))
+            {
+                PackageSearchMetadata = packageSearchMetadata,
+                PackageDeprecationMetadata = null,
+            };
+
+            // Act
+            var result = _factory.Create("TestPackage", versionInfoContext);
+
+            // Assert
+            Assert.IsType<RemotePackageModel>(result);
+        }
+
+        [Fact]
+        public void Create_NoPackageSearchMetadata_ReturnsRemotePackageModel()
+        {
+            // Arrange
+            var versionInfoContext = new VersionInfoContextInfo(NuGetVersion.Parse("4.3.0"))
+            {
+                PackageDeprecationMetadata = null,
+            };
+
+            // Act
+            var result = _factory.Create("TestPackage", versionInfoContext);
+
+            // Assert
+            Assert.IsType<RemotePackageModel>(result);
+        }
     }
 }

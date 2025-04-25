@@ -1,13 +1,16 @@
 // Updated PackageModelFactory class
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    internal class PackageModelFactory
+    public class PackageModelFactory : IPackageModelFactory
     {
         private readonly INuGetSearchService _searchService;
         private readonly INuGetPackageFileService _packageFileService;
@@ -22,6 +25,25 @@ namespace NuGet.PackageManagement.UI.Models.Package
             _packageVulnerabilityService = packageVulnerabilityService ?? throw new ArgumentNullException(nameof(_packageVulnerabilityService));
             _includePrerelease = includePrerelease;
             _packageSources = packageSources ?? throw new ArgumentNullException(nameof(_packageSources));
+        }
+
+        public PackageModel Create(string identity, VersionInfoContextInfo version)
+        {
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+            var versionPackageSearchMetadata = version.PackageSearchMetadata;
+            if (version.PackageSearchMetadata != null)
+            {
+                return Create(version);
+            }
+            var packageIdentity = new PackageIdentity(identity, version.Version);
+            var packageSearchMetadata = PackageSearchMetadataContextInfo.Create(new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
+            {
+                Identity = packageIdentity,
+            });
+            return Create(packageSearchMetadata, ContractItemFilter.All);
         }
 
         public PackageModel Create(PackageSearchMetadataContextInfo metadata, ContractItemFilter itemFilter)
@@ -68,6 +90,26 @@ namespace NuGet.PackageManagement.UI.Models.Package
                 }
             }
         }
+
+        private PackageModel Create(VersionInfoContextInfo version)
+        {
+            EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, version.PackageSearchMetadata.Identity!, version.PackageSearchMetadata.ReadmeUrl);
+
+            if (version.PackageSearchMetadata.PackagePath != null)
+            {
+                return CreateLocalPackageModel(version.PackageSearchMetadata,
+                     new VulnerablePreloadedCapability(version.PackageSearchMetadata.Vulnerabilities?.ToList()),
+                     embeddedResources);
+            }
+            else
+            {
+                return CreateRemotePackageModel(version.PackageSearchMetadata,
+                     new VulnerablePreloadedCapability(version.PackageSearchMetadata.Vulnerabilities?.ToList()),
+                     new DeprecationPreloadedCapability(version.PackageDeprecationMetadata),
+                     embeddedResources);
+            }
+        }
+
 
         private static LocalPackageModel CreateLocalPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, EmbeddedResourcesCapability embeddedResources)
         {

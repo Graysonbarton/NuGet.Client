@@ -39,12 +39,14 @@ namespace NuGet.PackageManagement.UI
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
         private readonly PackageModel _packageModel;
+        private readonly PackageModelVersions _packageModelVersions;
         private List<NuGetVersion> _transitiveInstalledVersions;
         private List<PackageIdentity> _transitiveOrigins;
 
-        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, IPackageVulnerabilityService vulnerabilityService = default)
+        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, PackageModelVersions packageModelVersions, IPackageVulnerabilityService vulnerabilityService = default)
         {
             _cancellationTokenSource = new CancellationTokenSource();
+            _packageModelVersions = packageModelVersions;
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
             _packageModel = packageModel;
@@ -492,16 +494,12 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
         {
-            var identity = new PackageIdentity(Id, Version);
-            var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, _cancellationTokenSource.Token);
+            return await GetVersionsAsync(null);
         }
 
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
         {
-            var identity = new PackageIdentity(Id, Version);
-            var isTransitive = PackageLevel == PackageLevel.Transitive;
-            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
+            return await _packageModelVersions.GetPackageVersionsAsync(Sources, IncludePrerelease, projects, _cancellationTokenSource.Token);
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
