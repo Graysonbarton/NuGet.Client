@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
@@ -39,11 +40,11 @@ namespace NuGet.PackageManagement.UI
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
         private readonly PackageModel _packageModel;
-        private readonly PackageModelVersions _packageModelVersions;
+        private readonly PackageVersionsModel _packageModelVersions;
         private List<NuGetVersion> _transitiveInstalledVersions;
         private List<PackageIdentity> _transitiveOrigins;
 
-        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, PackageModelVersions packageModelVersions, IPackageVulnerabilityService vulnerabilityService = default)
+        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, PackageVersionsModel packageModelVersions, IPackageVulnerabilityService vulnerabilityService = default)
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _packageModelVersions = packageModelVersions;
@@ -492,14 +493,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
-        {
-            return await GetVersionsAsync(null);
-        }
-
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
         {
-            return await _packageModelVersions.GetPackageVersionsAsync(Sources, IncludePrerelease, projects, _cancellationTokenSource.Token);
+            await _packageModelVersions.PopulateDataAsync(Sources, IncludePrerelease, projects, _cancellationTokenSource.Token);
+            return _packageModelVersions.Versions;
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
@@ -688,7 +685,8 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = await GetVersionsAsync();
+                await _packageModelVersions.PopulateDataAsync(Sources, IncludePrerelease, null, _cancellationTokenSource.Token);
+                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = _packageModelVersions.Versions;
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
