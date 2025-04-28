@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.UI.Test
             var vulnerableCapability = new Mock<IVulnerableCapable>();
             var deprecatedCapability = new Mock<IDeprecationCapable>();
             var packageModel = PackageModelCreationTestHelper.CreateRemotePackageModel(packageIdentity, vulnerableCapability.Object, deprecatedCapability.Object, embeddedResource.Object);
-            var packageModelVersions = new PackageModelVersions(searchService.Object, packageModel);
+            var packageModelVersions = new PackageVersionsModel(searchService.Object, packageModel);
             var currentStatus = LoadingStatus.Loading;
 
             stateMock.Setup(x => x.LoadingStatus)
