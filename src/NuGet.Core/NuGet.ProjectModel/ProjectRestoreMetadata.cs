@@ -163,7 +163,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(PackagesPath, osStringComparer);
             hashCode.AddUnorderedSequence(ConfigFilePaths, osStringComparer);
             hashCode.AddUnorderedSequence(FallbackFolders, osStringComparer);
-            hashCode.AddUnorderedSequence(TargetFrameworks);
+            //hashCode.AddUnorderedSequence(TargetFrameworks);
             hashCode.AddUnorderedSequence(OriginalTargetFrameworks, StringComparer.OrdinalIgnoreCase);
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
@@ -269,7 +269,7 @@ namespace NuGet.ProjectModel
             clone.ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null;
             clone.OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null;
             clone.Sources = Sources?.Select(c => c.Clone()).ToList();
-            clone.TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList();
+            //clone.TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList();
             clone.Files = Files?.Select(c => c.Clone()).ToList();
             clone.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
             clone.RestoreLockProperties = RestoreLockProperties?.Clone();

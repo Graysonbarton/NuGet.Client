@@ -153,7 +153,8 @@ namespace NuGet.SolutionRestoreManager
                     projectRestoreReferences = projectReferences
                             .Where(IsReferenceOutputAssemblyTrueOrEmpty)
                             .Select(item => ToProjectRestoreReference(item, projectDirectory))
-                            .Distinct(ProjectRestoreReferenceComparer.Default).ToImmutableArray();
+                            .Distinct(ProjectRestoreReferenceComparer.Default)
+                            .ToImmutableArray();
                 }
             }
 

@@ -153,7 +153,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(FrameworkName);
             hashCode.AddObject(AssetTargetFallback);
             hashCode.AddUnorderedSequence(Dependencies);
-            hashCode.AddSequence(ProjectReferences);
+            hashCode.AddUnorderedSequence(ProjectReferences);
             hashCode.AddSequence((IReadOnlyList<NuGetFramework>)Imports);
             hashCode.AddObject(Warn);
             hashCode.AddUnorderedSequence(DownloadDependencies);
