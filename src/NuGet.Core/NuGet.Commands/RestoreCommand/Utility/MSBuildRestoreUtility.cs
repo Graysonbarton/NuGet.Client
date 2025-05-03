@@ -600,11 +600,7 @@ namespace NuGet.Commands
             foreach (KeyValuePair<string, List<ProjectRestoreReference>> frameworkPair in aliasGroups)
             {
                 TargetFrameworkInformation targetFrameworkInformation = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(frameworkPair.Key, StringComparison.Ordinal));
-                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInformation.FrameworkName)
-                {
-                    ProjectReferences = frameworkPair.Value,
-                    TargetAlias = targetFrameworkInformation.TargetAlias
-                });
+                targetFrameworkInformation.ProjectReferences = frameworkPair.Value;
             }
         }
 

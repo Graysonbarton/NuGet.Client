@@ -231,14 +231,14 @@ namespace NuGet.ProjectModel
             var dependencies = GetSpecDependencies(packageSpec, targetFramework);
 
             // Get the nearest framework
-            var referencesForFramework = packageSpec.GetRestoreMetadataFramework(targetFramework);
+            var referencesForFramework = packageSpec.GetTargetFramework(targetFramework);
 
             if (!_useLegacyAssetTargetFallbackBehavior)
             {
                 if (referencesForFramework.FrameworkName == null &&
                       targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
                 {
-                    referencesForFramework = packageSpec.GetRestoreMetadataFramework(assetTargetFallbackFramework.AsFallbackFramework());
+                    referencesForFramework = packageSpec.GetTargetFramework(assetTargetFallbackFramework.AsFallbackFramework());
                 }
             }
 
