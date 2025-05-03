@@ -1470,7 +1470,7 @@ namespace NuGet.ProjectModel
                 TargetAlias = targetAlias,
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
-                ProjectReferences = projectRestoreReferences.ToImmutableArray(),
+                ProjectReferences = projectRestoreReferences != null ? projectRestoreReferences.ToImmutableArray() : [],
             };
 
             AddTargetFramework(packageSpec, frameworkName, secondaryFramework, targetFrameworkInformation);

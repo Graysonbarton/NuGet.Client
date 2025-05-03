@@ -109,7 +109,6 @@ namespace NuGet.ProjectModel
         internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
             var packageSpec = new PackageSpec();
-
             List<CompatibilityProfile> compatibilityProfiles = null;
             List<RuntimeDescription> runtimeDescriptions = null;
             string filePath = name == null ? null : Path.GetFullPath(packageSpecPath);
@@ -1477,7 +1476,7 @@ namespace NuGet.ProjectModel
                 PackagesToPrune = packagesToPrune,
                 TargetAlias = targetAlias,
                 Warn = warn,
-                ProjectReferences = projectRestoreReferences.ToImmutableArray()
+                ProjectReferences = projectRestoreReferences != null ? projectRestoreReferences.ToImmutableArray() : []
             };
 
 #pragma warning disable CS0612 // Type or member is obsolete
