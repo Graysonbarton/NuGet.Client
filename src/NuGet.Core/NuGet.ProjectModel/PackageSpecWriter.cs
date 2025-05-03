@@ -247,61 +247,6 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
-        private static void WriteMetadataTargetFrameworks(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
-        {
-            if (msbuildMetadata.TargetFrameworks?.Count > 0)
-            {
-                writer.WriteObjectStart("frameworks");
-
-                var frameworkNames = new HashSet<string>();
-                var frameworkSorter = NuGetFrameworkSorter.Instance;
-                foreach (var framework in msbuildMetadata.TargetFrameworks.OrderBy(c => c.FrameworkName, frameworkSorter))
-                {
-                    var frameworkName = framework.FrameworkName.GetShortFolderName();
-
-                    if (!frameworkNames.Contains(frameworkName))
-                    {
-                        frameworkNames.Add(frameworkName);
-
-                        writer.WriteObjectStart(frameworkName);
-
-                        SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
-
-                        writer.WriteObjectStart("projectReferences");
-
-                        foreach (var project in framework.ProjectReferences.OrderBy(e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS()))
-                        {
-                            writer.WriteObjectStart(project.ProjectUniqueName);
-
-                            writer.WriteNameValue("projectPath", project.ProjectPath);
-
-                            if (project.IncludeAssets != LibraryIncludeFlags.All)
-                            {
-                                writer.WriteNameValue("includeAssets", LibraryIncludeFlagUtils.GetFlagString(project.IncludeAssets));
-                            }
-
-                            if (project.ExcludeAssets != LibraryIncludeFlags.None)
-                            {
-                                writer.WriteNameValue("excludeAssets", LibraryIncludeFlagUtils.GetFlagString(project.ExcludeAssets));
-                            }
-
-                            if (project.PrivateAssets != LibraryIncludeFlagUtils.DefaultSuppressParent)
-                            {
-                                writer.WriteNameValue("privateAssets", LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets));
-                            }
-
-                            writer.WriteObjectEnd();
-                        }
-
-                        writer.WriteObjectEnd();
-                        writer.WriteObjectEnd();
-                    }
-                }
-
-                writer.WriteObjectEnd();
-            }
-        }
-
         private static void WriteMetadataFiles(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
         {
             if (msbuildMetadata.Files?.Count > 0)
@@ -566,6 +511,33 @@ namespace NuGet.ProjectModel
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);
                     SetPackagesToPrune(writer, framework.PackagesToPrune, hashing);
+                    writer.WriteObjectStart("projectReferences");
+
+                    foreach (var project in framework.ProjectReferences.OrderBy(e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS()))
+                    {
+                        writer.WriteObjectStart(project.ProjectUniqueName);
+
+                        writer.WriteNameValue("projectPath", project.ProjectPath);
+
+                        if (project.IncludeAssets != LibraryIncludeFlags.All)
+                        {
+                            writer.WriteNameValue("includeAssets", LibraryIncludeFlagUtils.GetFlagString(project.IncludeAssets));
+                        }
+
+                        if (project.ExcludeAssets != LibraryIncludeFlags.None)
+                        {
+                            writer.WriteNameValue("excludeAssets", LibraryIncludeFlagUtils.GetFlagString(project.ExcludeAssets));
+                        }
+
+                        if (project.PrivateAssets != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                        {
+                            writer.WriteNameValue("privateAssets", LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets));
+                        }
+
+                        writer.WriteObjectEnd();
+                    }
+
+                    writer.WriteObjectEnd();
                     writer.WriteObjectEnd();
                 }
 

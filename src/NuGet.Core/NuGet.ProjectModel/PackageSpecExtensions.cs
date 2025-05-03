@@ -23,24 +23,5 @@ namespace NuGet.ProjectModel
 
             return frameworkInfo ?? new TargetFrameworkInformation();
         }
-
-        /// <summary>
-        /// Get restore metadata framework. This is based on the project's target frameworks, then an 
-        /// exact match is found under restore metadata.
-        /// </summary>
-        public static ProjectRestoreMetadataFrameworkInfo GetRestoreMetadataFramework(this PackageSpec project, NuGetFramework targetFramework)
-        {
-            ProjectRestoreMetadataFrameworkInfo frameworkInfo = null;
-
-            var projectFrameworkInfo = GetTargetFramework(project, targetFramework);
-
-            if (projectFrameworkInfo.FrameworkName != null)
-            {
-                frameworkInfo = project.RestoreMetadata?.TargetFrameworks
-                    .FirstOrDefault(f => f.FrameworkName.Equals(projectFrameworkInfo.FrameworkName));
-            }
-
-            return frameworkInfo ?? new ProjectRestoreMetadataFrameworkInfo();
-        }
     }
 }

@@ -18,7 +18,6 @@ namespace Test.Utility.Commands
                 packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation() { FrameworkName = nugetFramework });
                 if (packageSpec.RestoreMetadata != null)
                 {
-                    packageSpec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo() { FrameworkName = nugetFramework });
                     packageSpec.RestoreMetadata.OriginalTargetFrameworks.Add(frameworkName);
                     packageSpec.RestoreMetadata.CrossTargeting = packageSpec.RestoreMetadata.OriginalTargetFrameworks.Count > 1;
                 }
@@ -39,9 +38,6 @@ namespace Test.Utility.Commands
 
                 if (packageSpec.RestoreMetadata != null)
                 {
-                    // Assume that it has to be here.
-                    var projectRestoreMetadataFrameworkInfoToRemove = packageSpec.RestoreMetadata.TargetFrameworks.First(e => e.FrameworkName.Equals(nugetFramework));
-                    packageSpec.RestoreMetadata.TargetFrameworks.Remove(projectRestoreMetadataFrameworkInfoToRemove);
                     packageSpec.RestoreMetadata.OriginalTargetFrameworks.Remove(frameworkName);
                     packageSpec.RestoreMetadata.CrossTargeting = packageSpec.RestoreMetadata.OriginalTargetFrameworks.Count > 1;
                 }

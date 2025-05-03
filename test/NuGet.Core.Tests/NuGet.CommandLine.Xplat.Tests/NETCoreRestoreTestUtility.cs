@@ -56,7 +56,6 @@ namespace NuGet.CommandLine.XPlat.Tests
             spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
-            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName) { TargetAlias = framework });
 
             return spec;
         }

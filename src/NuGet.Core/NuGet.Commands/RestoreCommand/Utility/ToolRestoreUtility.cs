@@ -57,14 +57,6 @@ namespace NuGet.Commands
                     OriginalTargetFrameworks = {
                         frameworkShortFolderName
                     },
-                    TargetFrameworks =
-                    {
-                        new ProjectRestoreMetadataFrameworkInfo
-                        {
-                            TargetAlias = frameworkShortFolderName,
-                            FrameworkName = framework,
-                        }
-                    },
                     ProjectWideWarningProperties = projectWideWarningProperties ?? new WarningProperties()
                 }
             };

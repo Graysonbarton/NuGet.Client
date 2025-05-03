@@ -635,7 +635,6 @@ static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction
 ~static NuGet.ProjectModel.LockFileItem.implicit operator NuGet.ProjectModel.LockFileItem(string path) -> NuGet.ProjectModel.LockFileItem
 ~static NuGet.ProjectModel.LockFileUtilities.GetLockFile(string lockFilePath, NuGet.Common.ILogger logger) -> NuGet.ProjectModel.LockFile
 ~static NuGet.ProjectModel.LockFileUtilities.GetLockFile(string lockFilePath, NuGet.Common.ILogger logger, NuGet.ProjectModel.LockFileReadFlags flags) -> NuGet.ProjectModel.LockFile
-~static NuGet.ProjectModel.PackageSpecExtensions.GetRestoreMetadataFramework(this NuGet.ProjectModel.PackageSpec project, NuGet.Frameworks.NuGetFramework targetFramework) -> NuGet.ProjectModel.ProjectRestoreMetadataFrameworkInfo
 ~static NuGet.ProjectModel.PackageSpecExtensions.GetTargetFramework(this NuGet.ProjectModel.PackageSpec project, NuGet.Frameworks.NuGetFramework targetFramework) -> NuGet.ProjectModel.TargetFrameworkInformation
 ~static NuGet.ProjectModel.PackageSpecOperations.AddOrUpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageDependency dependency) -> void
 ~static NuGet.ProjectModel.PackageSpecOperations.AddOrUpdateDependency(NuGet.ProjectModel.PackageSpec spec, NuGet.Packaging.Core.PackageDependency dependency, System.Collections.Generic.IEnumerable<NuGet.Frameworks.NuGetFramework> frameworksToAdd) -> void

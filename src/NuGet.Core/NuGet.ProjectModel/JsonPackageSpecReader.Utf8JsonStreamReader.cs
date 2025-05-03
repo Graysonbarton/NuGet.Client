@@ -1307,99 +1307,6 @@ namespace NuGet.ProjectModel
             return targetFlagsValue;
         }
 
-        private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(ref Utf8JsonStreamReader jsonReader)
-        {
-            List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
-
-            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-            {
-                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                {
-                    var frameworkPropertyName = jsonReader.GetString();
-                    NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
-                    var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(framework);
-
-                    if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-                    {
-                        while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                        {
-                            if (jsonReader.ValueTextEquals(ProjectReferencesPropertyName))
-                            {
-                                if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-                                {
-                                    while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                                    {
-                                        var projectReferencePropertyName = jsonReader.GetString();
-                                        string excludeAssets = null;
-                                        string includeAssets = null;
-                                        string privateAssets = null;
-                                        string projectReferenceProjectPath = null;
-
-                                        if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
-                                        {
-                                            while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
-                                            {
-                                                if (jsonReader.ValueTextEquals(ExcludeAssetsPropertyName))
-                                                {
-                                                    excludeAssets = jsonReader.ReadNextTokenAsString();
-                                                }
-                                                else if (jsonReader.ValueTextEquals(IncludeAssetsPropertyName))
-                                                {
-                                                    includeAssets = jsonReader.ReadNextTokenAsString();
-                                                }
-                                                else if (jsonReader.ValueTextEquals(PrivateAssetsPropertyName))
-                                                {
-                                                    privateAssets = jsonReader.ReadNextTokenAsString();
-                                                }
-                                                else if (jsonReader.ValueTextEquals(ProjectPathPropertyName))
-                                                {
-                                                    projectReferenceProjectPath = jsonReader.ReadNextTokenAsString();
-                                                }
-                                                else
-                                                {
-                                                    jsonReader.Skip();
-                                                }
-
-                                            }
-                                        }
-
-                                        frameworkGroup.ProjectReferences.Add(new ProjectRestoreReference()
-                                        {
-                                            ProjectUniqueName = projectReferencePropertyName,
-                                            ProjectPath = projectReferenceProjectPath,
-
-                                            IncludeAssets = LibraryIncludeFlagUtils.GetFlags(
-                                                flags: includeAssets,
-                                                defaultFlags: LibraryIncludeFlags.All),
-
-                                            ExcludeAssets = LibraryIncludeFlagUtils.GetFlags(
-                                                flags: excludeAssets,
-                                                defaultFlags: LibraryIncludeFlags.None),
-
-                                            PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
-                                                flags: privateAssets,
-                                                defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
-                                        });
-                                    }
-                                }
-                            }
-                            else if (jsonReader.ValueTextEquals(TargetAliasPropertyName))
-                            {
-                                frameworkGroup.TargetAlias = jsonReader.ReadNextTokenAsString();
-                            }
-                            else
-                            {
-                                jsonReader.Skip();
-                            }
-                        }
-                        targetFrameworks ??= [];
-                        targetFrameworks.Add(frameworkGroup);
-                    }
-                }
-            }
-            return targetFrameworks;
-        }
-
         private static void ReadTargetFrameworks(PackageSpec packageSpec, ref Utf8JsonStreamReader jsonReader)
         {
             var frameworkName = NuGetFramework.Parse(jsonReader.GetString());
@@ -1414,6 +1321,7 @@ namespace NuGet.ProjectModel
             string targetAlias = string.Empty;
             bool warn = false;
             Dictionary<string, PrunePackageReference> packagesToPrune = null;
+            List<ProjectRestoreReference> projectRestoreReferences = null;
 
             NuGetFramework secondaryFramework = default;
 
@@ -1475,6 +1383,66 @@ namespace NuGet.ProjectModel
                             frameworkReferences,
                             packageSpec.FilePath);
                     }
+                    else if (jsonReader.ValueTextEquals(ProjectReferencesPropertyName))
+                    {
+                        if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+                        {
+                            while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                            {
+                                var projectReferencePropertyName = jsonReader.GetString();
+                                string excludeAssets = null;
+                                string includeAssets = null;
+                                string privateAssets = null;
+                                string projectReferenceProjectPath = null;
+
+                                if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+                                {
+                                    while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                                    {
+                                        if (jsonReader.ValueTextEquals(ExcludeAssetsPropertyName))
+                                        {
+                                            excludeAssets = jsonReader.ReadNextTokenAsString();
+                                        }
+                                        else if (jsonReader.ValueTextEquals(IncludeAssetsPropertyName))
+                                        {
+                                            includeAssets = jsonReader.ReadNextTokenAsString();
+                                        }
+                                        else if (jsonReader.ValueTextEquals(PrivateAssetsPropertyName))
+                                        {
+                                            privateAssets = jsonReader.ReadNextTokenAsString();
+                                        }
+                                        else if (jsonReader.ValueTextEquals(ProjectPathPropertyName))
+                                        {
+                                            projectReferenceProjectPath = jsonReader.ReadNextTokenAsString();
+                                        }
+                                        else
+                                        {
+                                            jsonReader.Skip();
+                                        }
+
+                                    }
+                                }
+
+                                projectRestoreReferences.Add(new ProjectRestoreReference()
+                                {
+                                    ProjectUniqueName = projectReferencePropertyName,
+                                    ProjectPath = projectReferenceProjectPath,
+
+                                    IncludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                                        flags: includeAssets,
+                                        defaultFlags: LibraryIncludeFlags.All),
+
+                                    ExcludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                                        flags: excludeAssets,
+                                        defaultFlags: LibraryIncludeFlags.None),
+
+                                    PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
+                                        flags: privateAssets,
+                                        defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
+                                });
+                            }
+                        }
+                    }
                     else if (jsonReader.ValueTextEquals(ImportsPropertyName))
                     {
                         imports ??= new List<NuGetFramework>();
@@ -1518,7 +1486,8 @@ namespace NuGet.ProjectModel
                 RuntimeIdentifierGraphPath = runtimeIdentifierGraphPath,
                 PackagesToPrune = packagesToPrune,
                 TargetAlias = targetAlias,
-                Warn = warn
+                Warn = warn,
+                ProjectReferences = projectRestoreReferences.ToImmutableArray()
             };
 
 #pragma warning disable CS0612 // Type or member is obsolete

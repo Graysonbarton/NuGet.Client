@@ -99,8 +99,6 @@ namespace Test.Utility.Commands
                 CentralPackageTransitivePinningEnabled = _centralPackageTransitivePinningEnabled,
             };
 
-            packageSpec.RestoreMetadata.TargetFrameworks.AddRange(packageSpec.TargetFrameworks.Select(e => new ProjectRestoreMetadataFrameworkInfo { FrameworkName = e.FrameworkName }));
-
             return packageSpec;
         }
     }

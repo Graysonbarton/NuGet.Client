@@ -332,7 +332,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
                 library.Path = ConvertWindowsPathToUnix(library.Path);
             }
 
-            var packageSpecTargets = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks;
+            var packageSpecTargets = assetsFile.PackageSpec.TargetFrameworks;
 
             foreach (var target in packageSpecTargets)
             {

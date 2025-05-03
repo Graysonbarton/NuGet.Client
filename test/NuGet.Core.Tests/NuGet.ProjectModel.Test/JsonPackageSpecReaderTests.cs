@@ -2389,19 +2389,6 @@ namespace NuGet.ProjectModel.Test
 
         [Theory]
         [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        public void GetPackageSpec_WhenRestoreFrameworksFrameworkNameValueIsValid_ReturnsFrameworks(IEnvironmentVariableReader environmentVariableReader)
-        {
-            var expectedResult = new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.ParseFolder("net472"));
-            var json = $"{{\"restore\":{{\"frameworks\":{{\"{expectedResult.FrameworkName.GetShortFolderName()}\":{{}}}}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
-
-            Assert.Collection(
-                packageSpec.RestoreMetadata.TargetFrameworks,
-                actualResult => Assert.Equal(expectedResult, actualResult));
-        }
-
-        [Theory]
-        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void GetPackageSpec_WhenRestoreFrameworksFrameworkValueHasProjectReferenceWithoutAssets_ReturnsFrameworks(IEnvironmentVariableReader environmentVariableReader)
         {
             var projectReference = new ProjectRestoreReference()

@@ -212,7 +212,6 @@ namespace NuGet.ProjectModel
                    osStringComparer.Equals(PackagesPath, other.PackagesPath) &&
                    ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, osStringComparer, osStringComparer) &&
                    FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, osStringComparer, osStringComparer) &&
-                   EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&

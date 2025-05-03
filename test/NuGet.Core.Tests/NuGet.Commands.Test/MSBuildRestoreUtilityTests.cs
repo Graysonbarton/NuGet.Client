@@ -2307,7 +2307,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(LibraryIncludeFlags.All, msbuildDependency.IncludeAssets);
                 Assert.Equal(LibraryIncludeFlags.None, msbuildDependency.ExcludeAssets);
                 Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, msbuildDependency.PrivateAssets);
-                Assert.Equal("net45", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks
+                Assert.Equal("net45", string.Join("|", project1Spec.TargetFrameworks
                     .Select(e => e.FrameworkName.GetShortFolderName())
                     .OrderBy(s => s, StringComparer.Ordinal)));
 

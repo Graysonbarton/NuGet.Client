@@ -328,7 +328,7 @@ namespace NuGet.Commands.Test
                 var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
