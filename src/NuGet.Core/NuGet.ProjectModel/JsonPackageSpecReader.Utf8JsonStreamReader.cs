@@ -780,7 +780,6 @@ namespace NuGet.ProjectModel
             RestoreLockProperties restoreLockProperties = null;
             var skipContentFileWrite = false;
             List<PackageSource> sources = null;
-            IList<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
             RestoreAuditProperties auditProperties = null;
@@ -834,10 +833,6 @@ namespace NuGet.ProjectModel
                                 files.Add(new ProjectRestoreMetadataFile(filePropertyName, jsonReader.ReadNextTokenAsString()));
                             }
                         }
-                    }
-                    else if (jsonReader.ValueTextEquals(FrameworksPropertyName))
-                    {
-                        targetFrameworks = ReadTargetFrameworks(ref jsonReader);
                     }
                     else if (jsonReader.ValueTextEquals(LegacyPackagesDirectoryPropertyName))
                     {
@@ -1118,11 +1113,6 @@ namespace NuGet.ProjectModel
             if (sources != null)
             {
                 msbuildMetadata.Sources = sources;
-            }
-
-            if (targetFrameworks != null)
-            {
-                msbuildMetadata.TargetFrameworks = targetFrameworks;
             }
 
             msbuildMetadata.ValidateRuntimeAssets = validateRuntimeAssets;

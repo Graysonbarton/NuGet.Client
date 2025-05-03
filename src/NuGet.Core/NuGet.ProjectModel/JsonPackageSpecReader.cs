@@ -870,10 +870,6 @@ namespace NuGet.ProjectModel
                         });
                         break;
 
-                    case "frameworks":
-                        targetFrameworks = ReadTargetFrameworks(jsonReader);
-                        break;
-
                     case "legacyPackagesDirectory":
                         legacyPackagesDirectory = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
