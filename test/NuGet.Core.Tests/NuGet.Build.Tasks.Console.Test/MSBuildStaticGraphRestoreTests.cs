@@ -413,16 +413,13 @@ namespace NuGet.Build.Tasks.Console.Test
                     }
                 };
 
-                var targetFrameworkInfos = new List<TargetFrameworkInformation>();
-                targetFrameworkInfos.Add(new TargetFrameworkInformation { TargetAlias = net45Alias, FrameworkName = FrameworkConstants.CommonFrameworks.Net45 });
-                targetFrameworkInfos.Add(new TargetFrameworkInformation { TargetAlias = netstandard20Alias, FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard20 });
-
-                var actual = MSBuildStaticGraphRestore.GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projects);
+                var actual = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(projects, isCpvmEnabled: false);
 
                 actual.Should().BeEquivalentTo(new[]
                 {
-                    new ProjectRestoreMetadataFrameworkInfo(FrameworkConstants.CommonFrameworks.Net45)
+                    new TargetFrameworkInformation()
                     {
+                        FrameworkName = FrameworkConstants.CommonFrameworks.Net45,
                         TargetAlias = net45Alias,
                         ProjectReferences = new List<ProjectRestoreReference>
                         {
@@ -438,8 +435,9 @@ namespace NuGet.Build.Tasks.Console.Test
                             }
                         }
                     },
-                    new ProjectRestoreMetadataFrameworkInfo(FrameworkConstants.CommonFrameworks.NetStandard20)
+                    new TargetFrameworkInformation()
                     {
+                        FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard20,
                         TargetAlias = netstandard20Alias,
                         ProjectReferences = new List<ProjectRestoreReference>
                         {

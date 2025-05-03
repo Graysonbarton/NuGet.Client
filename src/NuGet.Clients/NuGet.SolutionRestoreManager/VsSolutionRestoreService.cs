@@ -321,17 +321,16 @@ namespace NuGet.SolutionRestoreManager
             var targetFrameworks = projectRestoreInfo.TargetFrameworks;
 
             var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(targetFrameworks);
+            var projectFullPath = Path.GetFullPath(projectNames.FullName);
+            var projectDirectory = Path.GetDirectoryName(projectFullPath);
 
             TargetFrameworkInformation[] tfis = new TargetFrameworkInformation[targetFrameworks.Count];
             for (int i = 0; i < targetFrameworks.Count; i++)
             {
                 IVsTargetFrameworkInfo4 targetFrameworkInfo = targetFrameworks[i];
-                TargetFrameworkInformation tfi = VSNominationUtilities.ToTargetFrameworkInformation(targetFrameworkInfo, cpvmEnabled, projectNames.FullName);
+                TargetFrameworkInformation tfi = VSNominationUtilities.ToTargetFrameworkInformation(targetFrameworkInfo, cpvmEnabled, projectNames.FullName, projectDirectory);
                 tfis[i] = tfi;
             }
-
-            var projectFullPath = Path.GetFullPath(projectNames.FullName);
-            var projectDirectory = Path.GetDirectoryName(projectFullPath);
 
             // Initialize OTF and CT values when original value of OTF property is not provided.
             string[]? originalTargetFrameworks = tfis
@@ -363,9 +362,6 @@ namespace NuGet.SolutionRestoreManager
                     ProjectPath = projectFullPath,
                     OutputPath = outputPath,
                     ProjectStyle = ProjectStyle.PackageReference,
-                    TargetFrameworks = targetFrameworks
-                        .Select(item => VSNominationUtilities.ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory, projectFullPath))
-                        .ToList(),
                     OriginalTargetFrameworks = originalTargetFrameworks,
                     CrossTargeting = crossTargeting,
 

@@ -61,7 +61,6 @@ namespace Test.Utility.Commands
             }
 
             foreach (var framework in spec
-                .RestoreMetadata
                 .TargetFrameworks
                 .Where(e => frameworks.Contains(e.FrameworkName)))
             {

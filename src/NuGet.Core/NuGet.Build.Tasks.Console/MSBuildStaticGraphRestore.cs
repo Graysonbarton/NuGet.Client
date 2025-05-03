@@ -480,28 +480,6 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Gets the restore metadata framework information for the specified projects.
-        /// </summary>
-        /// <param name="projects">A <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance}" /> representing the target frameworks and their corresponding projects.</param>
-        /// <returns>A <see cref="List{ProjectRestoreMetadataFrameworkInfo}" /> containing the restore metadata framework information for the specified project.</returns>
-        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(List<TargetFrameworkInformation> targetFrameworkInfos, IReadOnlyDictionary<string, IMSBuildProject> projects)
-        {
-            var projectRestoreMetadataFrameworkInfos = new List<ProjectRestoreMetadataFrameworkInfo>(projects.Count);
-
-            foreach (var targetFrameworkInfo in targetFrameworkInfos)
-            {
-                var project = projects[targetFrameworkInfo.TargetAlias];
-                projectRestoreMetadataFrameworkInfos.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName)
-                {
-                    TargetAlias = targetFrameworkInfo.TargetAlias,
-                    ProjectReferences = GetProjectReferences(project)
-                });
-            }
-
-            return projectRestoreMetadataFrameworkInfos;
-        }
-
-        /// <summary>
         /// Gets the target frameworks for the specified project.
         /// </summary>
         /// <param name="project">An <see cref="IMSBuildProject" /> representing the main project.</param>
@@ -749,7 +727,8 @@ namespace NuGet.Build.Tasks.Console
                     PackagesToPrune = prunedReferences,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath)),
                     TargetAlias = targetAlias,
-                    Warn = warn
+                    Warn = warn,
+                    ProjectReferences = GetProjectReferences(msBuildProjectInstance)
                 };
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -1050,7 +1029,6 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"), project.GetProperty("WarningsNotAsErrors"));
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
-            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
             restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = project.IsPropertyTrue("RestoreUseLegacyDependencyResolver");

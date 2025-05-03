@@ -194,7 +194,7 @@ namespace NuGet.ProjectModel
         private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec, SortedDictionary<string, PackageSpec> projectsByUniqueName)
         {
             // Handle projects which may not have specs, and which may not have references
-            return spec?.RestoreMetadata?
+            return spec?
                 .TargetFrameworks
                 .SelectMany(e => e.ProjectReferences)
                 .Where(project => projectsByUniqueName.ContainsKey(project.ProjectUniqueName))
@@ -448,7 +448,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         private static string[] GetPackageSpecDependencyIds(PackageSpec spec)
         {
-            return spec.RestoreMetadata
+            return spec
                 .TargetFrameworks
                 .SelectMany(r => r.ProjectReferences)
                 .Select(r => r.ProjectUniqueName)

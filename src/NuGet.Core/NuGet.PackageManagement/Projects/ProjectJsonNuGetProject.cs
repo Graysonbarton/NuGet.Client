@@ -224,19 +224,13 @@ namespace NuGet.ProjectManagement.Projects
 
                 if (references != null && references.Count > 0)
                 {
-                    // Add msbuild reference groups for each TFM in the project
-                    foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
-                    {
-                        metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
-                    }
-
                     foreach (var reference in references)
                     {
                         // This reference applies to all frameworks
                         // Include/exclude flags may be applied later when merged with project.json
                         // Add the reference for all TFM groups, there are no conditional project
                         // references in UWP. There should also be just one TFM.
-                        foreach (var frameworkInfo in metadata.TargetFrameworks)
+                        foreach (var frameworkInfo in packageSpec.TargetFrameworks)
                         {
                             frameworkInfo.ProjectReferences.Add(reference);
                         }

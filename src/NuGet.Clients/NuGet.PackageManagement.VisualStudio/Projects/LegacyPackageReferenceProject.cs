@@ -479,6 +479,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 FrameworkName = targetFramework,
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
+                ProjectReferences = projectReferences?.ToImmutableArray(),
             };
 
             // Build up runtime information.
@@ -555,13 +556,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())
                         .ToList(),
-                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
-                    {
-                        new ProjectRestoreMetadataFrameworkInfo(tfis[0].FrameworkName)
-                        {
-                            ProjectReferences = projectReferences?.ToList()
-                        }
-                    },
                     SkipContentFileWrite = true,
                     CacheFilePath = GetCacheFilePath(msbuildProjectExtensionsPath),
                     PackagesPath = GetPackagesPath(settings),

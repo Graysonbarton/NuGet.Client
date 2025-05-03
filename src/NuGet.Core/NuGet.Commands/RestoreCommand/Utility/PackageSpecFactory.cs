@@ -159,7 +159,6 @@ namespace NuGet.Commands.Restore.Utility
             restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(outerBuild.GetProperty("TreatWarningsAsErrors"), outerBuild.GetProperty("WarningsAsErrors"), outerBuild.GetProperty("NoWarn"), outerBuild.GetProperty("WarningsNotAsErrors"));
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(outerBuild.GetProperty("RestorePackagesWithLockFile"), outerBuild.GetProperty("NuGetLockFilePath"), outerBuild.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, settings);
-            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, project.TargetFrameworks);
             restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(outerBuild.GetProperty("UsingMicrosoftNETSdk"));
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(outerBuild.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = outerBuild.IsPropertyTrue("RestoreUseLegacyDependencyResolver");
@@ -234,7 +233,8 @@ namespace NuGet.Commands.Restore.Utility
                     PackagesToPrune = prunedReferences,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath)),
                     TargetAlias = targetAlias,
-                    Warn = warn
+                    Warn = warn,
+                    ProjectReferences = GetProjectReferences(msBuildProjectInstance)
                 };
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -521,28 +521,6 @@ namespace NuGet.Commands.Restore.Utility
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the restore metadata framework information for the specified projects.
-        /// </summary>
-        /// <param name="projects">A <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance}" /> representing the target frameworks and their corresponding projects.</param>
-        /// <returns>A <see cref="List{ProjectRestoreMetadataFrameworkInfo}" /> containing the restore metadata framework information for the specified project.</returns>
-        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(List<TargetFrameworkInformation> targetFrameworkInfos, IReadOnlyDictionary<string, ITargetFramework> projects)
-        {
-            var projectRestoreMetadataFrameworkInfos = new List<ProjectRestoreMetadataFrameworkInfo>(projects.Count);
-
-            foreach (var targetFrameworkInfo in targetFrameworkInfos)
-            {
-                var project = projects[targetFrameworkInfo.TargetAlias];
-                projectRestoreMetadataFrameworkInfos.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName)
-                {
-                    TargetAlias = targetFrameworkInfo.TargetAlias,
-                    ProjectReferences = GetProjectReferences(project)
-                });
-            }
-
-            return projectRestoreMetadataFrameworkInfos;
         }
 
         /// <summary>

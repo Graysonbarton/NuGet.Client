@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void IgnoreUnsupportProjectReference(PackageSpec project)
         {
-            foreach (var frameworkInfo in project.RestoreMetadata.TargetFrameworks)
+            foreach (var frameworkInfo in project.TargetFrameworks)
             {
                 var projectReferences = new List<ProjectRestoreReference>();
 

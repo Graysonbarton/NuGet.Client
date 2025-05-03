@@ -63,7 +63,6 @@ namespace NuGet.Commands
                         {
                             TargetAlias = frameworkShortFolderName,
                             FrameworkName = framework,
-                            ProjectReferences = { }
                         }
                     },
                     ProjectWideWarningProperties = projectWideWarningProperties ?? new WarningProperties()

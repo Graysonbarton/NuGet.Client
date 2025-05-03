@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.ProjectModel.TargetFrameworkInformation.ProjectReferences.get -> System.Collections.Generic.IList<NuGet.ProjectModel.ProjectRestoreReference>
+~NuGet.ProjectModel.TargetFrameworkInformation.ProjectReferences.set -> void

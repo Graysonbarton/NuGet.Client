@@ -34,6 +34,8 @@ namespace NuGet.ProjectModel
             }
         }
 
+        public IList<ProjectRestoreReference> ProjectReferences { get; set; } = new List<ProjectRestoreReference>();
+
         /// <summary>
         /// A fallback PCL framework to use when no compatible items
         /// were found for <see cref="FrameworkName"/>.
@@ -136,6 +138,7 @@ namespace NuGet.ProjectModel
             FrameworkReferences = cloneFrom.FrameworkReferences;
             RuntimeIdentifierGraphPath = cloneFrom.RuntimeIdentifierGraphPath;
             PackagesToPrune = cloneFrom.PackagesToPrune;
+            ProjectReferences = [.. cloneFrom.ProjectReferences]; // TODO
         }
 
         public override string ToString()
@@ -150,6 +153,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(FrameworkName);
             hashCode.AddObject(AssetTargetFallback);
             hashCode.AddUnorderedSequence(Dependencies);
+            hashCode.AddSequence(ProjectReferences);
             hashCode.AddSequence((IReadOnlyList<NuGetFramework>)Imports);
             hashCode.AddObject(Warn);
             hashCode.AddUnorderedSequence(DownloadDependencies);
@@ -183,6 +187,7 @@ namespace NuGet.ProjectModel
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
                    EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
+                   ProjectReferences.OrderedEquals(other.ProjectReferences, e => e.ProjectPath, PathUtility.GetStringComparerBasedOnOS()) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    Warn == other.Warn &&
                    AssetTargetFallback == other.AssetTargetFallback &&

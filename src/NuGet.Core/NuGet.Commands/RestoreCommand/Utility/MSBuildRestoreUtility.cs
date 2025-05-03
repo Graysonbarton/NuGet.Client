@@ -336,7 +336,7 @@ namespace NuGet.Commands
 
             foreach (var project in graphSpec.Projects)
             {
-                foreach (var framework in project.RestoreMetadata.TargetFrameworks)
+                foreach (var framework in project.TargetFrameworks)
                 {
                     // Loop through the items in reverse order so items can be removed from the collection safely
                     for (int i = framework.ProjectReferences.Count - 1; i >= 0; i--)
@@ -364,7 +364,7 @@ namespace NuGet.Commands
             {
                 foreach (var project in graphSpec.Projects)
                 {
-                    foreach (var framework in project.RestoreMetadata.TargetFrameworks)
+                    foreach (var framework in project.TargetFrameworks)
                     {
                         foreach (var projectReference in framework.ProjectReferences)
                         {
@@ -558,6 +558,7 @@ namespace NuGet.Commands
             return new RuntimeGraph(runtimes, supports);
         }
 
+        // TODO NK
         private static void AddProjectReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             // Add groups for each spec framework

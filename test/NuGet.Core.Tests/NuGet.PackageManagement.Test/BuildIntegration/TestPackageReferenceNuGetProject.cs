@@ -113,7 +113,7 @@ namespace NuGet.Test
 
         public Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(ILogger logger, CancellationToken token)
         {
-            return Task.FromResult<IEnumerable<ProjectRestoreReference>>(PackageSpec.RestoreMetadata.TargetFrameworks[0].ProjectReferences);
+            return Task.FromResult<IEnumerable<ProjectRestoreReference>>(PackageSpec.TargetFrameworks[0].ProjectReferences);
         }
 
         public Task<IReadOnlyList<(string id, string[] metadata)>> GetItemsAsync(string itemTypeName, params string[] metadataNames)

@@ -140,7 +140,7 @@ namespace NuGet.Commands
 
         private static ExternalProjectReference GetExternalProject(PackageSpec rootProject)
         {
-            var projectReferences = rootProject.RestoreMetadata?.TargetFrameworks.SelectMany(e => e.ProjectReferences)
+            var projectReferences = rootProject.TargetFrameworks.SelectMany(e => e.ProjectReferences)
                 ?? new List<ProjectRestoreReference>();
 
             var type = rootProject.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;

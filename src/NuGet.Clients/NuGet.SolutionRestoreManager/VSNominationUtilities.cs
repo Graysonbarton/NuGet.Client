@@ -15,7 +15,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
@@ -91,7 +90,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static TargetFrameworkInformation ToTargetFrameworkInformation(
-            IVsTargetFrameworkInfo4 targetFrameworkInfo, bool cpvmEnabled, string projectFullPath)
+            IVsTargetFrameworkInfo4 targetFrameworkInfo, bool cpvmEnabled, string projectFullPath, string projectDirectory)
         {
             var frameworkName = GetTargetFramework(targetFrameworkInfo.Properties, projectFullPath);
 
@@ -115,6 +114,7 @@ namespace NuGet.SolutionRestoreManager
             IReadOnlyDictionary<string, CentralPackageVersion>? centralPackageVersions = null;
             IReadOnlyCollection<FrameworkDependency>? frameworkReferences = null;
             IReadOnlyDictionary<string, PrunePackageReference>? packagesToPrune = null;
+            ImmutableArray<ProjectRestoreReference> projectRestoreReferences = [];
 
             if (targetFrameworkInfo.Items is not null)
             {
@@ -147,6 +147,14 @@ namespace NuGet.SolutionRestoreManager
                         .Select(ToPrunePackageReference)
                         .ToDictionary(packageToPrune => packageToPrune.Name, StringComparer.OrdinalIgnoreCase);
                 }
+
+                if (targetFrameworkInfo.Items?.TryGetValue(ProjectItems.ProjectReference, out var projectReferences) ?? false)
+                {
+                    projectRestoreReferences = projectReferences
+                            .Where(IsReferenceOutputAssemblyTrueOrEmpty)
+                            .Select(item => ToProjectRestoreReference(item, projectDirectory))
+                            .Distinct(ProjectRestoreReferenceComparer.Default).ToImmutableArray();
+                }
             }
 
             var tfi = new TargetFrameworkInformation
@@ -162,6 +170,7 @@ namespace NuGet.SolutionRestoreManager
                 TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework),
                 Warn = warn,
                 PackagesToPrune = packagesToPrune,
+                ProjectReferences = projectRestoreReferences,
             };
 
             return tfi;
@@ -182,29 +191,6 @@ namespace NuGet.SolutionRestoreManager
                 targetPlatformMinVersion,
                 clrSupport,
                 windowsTargetPlatformMinVersion);
-        }
-
-        internal static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreMetadataFrameworkInfo(
-            IVsTargetFrameworkInfo4 targetFrameworkInfo,
-            string projectDirectory,
-            string projectFullPath)
-        {
-            var tfi = new ProjectRestoreMetadataFrameworkInfo
-            {
-                FrameworkName = GetTargetFramework(targetFrameworkInfo.Properties, projectFullPath),
-                TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework)
-            };
-
-            if (targetFrameworkInfo.Items?.TryGetValue(ProjectItems.ProjectReference, out var projectReferences) ?? false)
-            {
-                tfi.ProjectReferences.AddRange(
-                    projectReferences
-                        .Where(IsReferenceOutputAssemblyTrueOrEmpty)
-                        .Select(item => ToProjectRestoreReference(item, projectDirectory))
-                        .Distinct(ProjectRestoreReferenceComparer.Default));
-            }
-
-            return tfi;
         }
 
         internal static string GetPackageId(ProjectNames projectNames, IReadOnlyList<IVsTargetFrameworkInfo4> tfms)

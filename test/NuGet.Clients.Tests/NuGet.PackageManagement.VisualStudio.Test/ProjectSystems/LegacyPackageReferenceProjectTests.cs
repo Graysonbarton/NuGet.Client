@@ -559,7 +559,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var actualRestoreSpec = packageSpecs.Single();
                 SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
 
-                var actualDependency = actualRestoreSpec.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Single();
+                var actualDependency = actualRestoreSpec.TargetFrameworks.Single().ProjectReferences.Single();
                 Assert.NotNull(actualDependency);
                 Assert.Equal("TestProjectA", actualDependency.ProjectUniqueName);
 

@@ -370,11 +370,11 @@ namespace NuGet.PackageManagement
 
                         if (!string.IsNullOrEmpty(outputPath))
                         {
-                            for (int frameworkCount = 0; frameworkCount < packageSpec.RestoreMetadata.TargetFrameworks.Count; frameworkCount++)
+                            for (int frameworkCount = 0; frameworkCount < packageSpec.TargetFrameworks.Count; frameworkCount++)
                             {
-                                for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
+                                for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
                                 {
-                                    if (!knownProjects.Contains(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
+                                    if (!knownProjects.Contains(packageSpec.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
                                     {
                                         var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
                                         if (File.Exists(persistedDGSpecPath))

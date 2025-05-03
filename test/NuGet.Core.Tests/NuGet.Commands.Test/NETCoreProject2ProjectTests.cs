@@ -49,7 +49,7 @@ namespace NuGet.Commands.Test
                 var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
@@ -135,7 +135,7 @@ namespace NuGet.Commands.Test
 
                 // Link projects
                 // A -> B
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
@@ -143,7 +143,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // B -> C
-                spec2.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec2.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[2].ProjectPath,
                     ProjectUniqueName = spec3.RestoreMetadata.ProjectUniqueName,
@@ -151,7 +151,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // C -> D
-                spec3.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec3.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[3].ProjectPath,
                     ProjectUniqueName = spec4.RestoreMetadata.ProjectUniqueName,
@@ -159,7 +159,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // A -> X
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[4].ProjectPath,
                     ProjectUniqueName = spec5.RestoreMetadata.ProjectUniqueName,
@@ -167,7 +167,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // X -> Y
-                spec5.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec5.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[5].ProjectPath,
                     ProjectUniqueName = spec6.RestoreMetadata.ProjectUniqueName,
@@ -175,7 +175,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // Y -> D
-                spec6.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec6.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[3].ProjectPath,
                     ProjectUniqueName = spec4.RestoreMetadata.ProjectUniqueName,
@@ -399,8 +399,8 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.TargetFrameworks.Clear();
 
                 // Add invalid link, net45 is not a project tfm
-                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Add(new TargetFrameworkInformation() { FrameworkName = NuGetFramework.Parse("net45") });
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName
@@ -448,7 +448,7 @@ namespace NuGet.Commands.Test
                 var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
@@ -495,13 +495,13 @@ namespace NuGet.Commands.Test
                 var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
                 });
 
-                spec2.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
+                spec2.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[2].ProjectPath,
                     ProjectUniqueName = spec3.RestoreMetadata.ProjectUniqueName,

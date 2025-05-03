@@ -846,7 +846,7 @@ namespace NuGet.Build.Tasks.Pack
                     PathUtility.GetStringComparerBasedOnOS());
 
             // Consider all of the project references, grouped by target framework.
-            foreach (var framework in assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks)
+            foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
             {
                 var target = assetsFile.GetTarget(framework.FrameworkName, runtimeIdentifier: null);
                 if (target == null || frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))

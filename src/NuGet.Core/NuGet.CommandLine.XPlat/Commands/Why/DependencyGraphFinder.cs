@@ -250,19 +250,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             {
                 topLevelReferences.Add(targetAlias, []);
 
-                // top-level packages
                 TargetFrameworkInformation? targetFrameworkInformation = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
                 if (targetFrameworkInformation != default)
                 {
                     var topLevelPackages = targetFrameworkInformation.Dependencies.Select(d => d.Name);
                     topLevelReferences[targetAlias].AddRange(topLevelPackages);
-                }
 
-                // top-level projects
-                ProjectRestoreMetadataFrameworkInfo? restoreMetadataFrameworkInfo = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
-                if (restoreMetadataFrameworkInfo != default)
-                {
-                    var topLevelProjectPaths = restoreMetadataFrameworkInfo.ProjectReferences.Select(p => p.ProjectPath);
+                    var topLevelProjectPaths = targetFrameworkInformation.ProjectReferences.Select(p => p.ProjectPath);
                     foreach (var projectPath in topLevelProjectPaths)
                     {
                         topLevelReferences[targetAlias].Add(projectLibraryPathToName[projectPath]);

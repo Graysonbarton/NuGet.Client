@@ -210,7 +210,7 @@ namespace NuGet.SolutionRestoreManager
 
         private static string[] GetPackageSpecDependencyIds(PackageSpec spec)
         {
-            return spec.RestoreMetadata
+            return spec
                 .TargetFrameworks
                 .SelectMany(r => r.ProjectReferences)
                 .Select(r => r.ProjectUniqueName)

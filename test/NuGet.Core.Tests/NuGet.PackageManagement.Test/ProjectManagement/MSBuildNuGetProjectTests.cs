@@ -62,7 +62,7 @@ namespace ProjectManagement.Test
 
                 Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
-                Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
+                Assert.Empty(actual.TargetFrameworks.SelectMany(e => e.ProjectReferences));
             }
         }
 

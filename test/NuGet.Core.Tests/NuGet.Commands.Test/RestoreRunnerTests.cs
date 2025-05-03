@@ -476,7 +476,7 @@ namespace NuGet.Commands.Test
                 spec1.TargetFrameworks[0] = new TargetFrameworkInformation(spec1.TargetFrameworks[0]) { Dependencies = spec1TargetFrameworkDependencies };
 
                 spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
-                spec1.RestoreMetadata.TargetFrameworks
+                spec1.TargetFrameworks
                     .Single()
                     .ProjectReferences
                     .Add(new ProjectRestoreReference()
@@ -628,7 +628,7 @@ namespace NuGet.Commands.Test
                 spec1.TargetFrameworks[0] = new TargetFrameworkInformation(spec1.TargetFrameworks[0]) { Dependencies = spec1TargetFrameworkDependencies };
 
                 spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")) { TargetAlias = "net45" });
-                spec1.RestoreMetadata.TargetFrameworks
+                spec1.TargetFrameworks
                     .Single()
                     .ProjectReferences
                     .Add(new ProjectRestoreReference()
@@ -1795,7 +1795,6 @@ namespace NuGet.Commands.Test
 
                 // link the projects
                 projectSpec1
-                    .RestoreMetadata
                     .TargetFrameworks.Single()
                     .ProjectReferences
                     .Add(new ProjectRestoreReference()

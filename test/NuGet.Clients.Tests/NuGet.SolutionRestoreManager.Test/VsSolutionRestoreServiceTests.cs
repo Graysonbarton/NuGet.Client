@@ -2451,7 +2451,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actual = VsSolutionRestoreService.ToPackageSpec(projectName, pri);
 
             // Assert
-            ProjectRestoreMetadataFrameworkInfo targetFramework = Assert.Single(actual.RestoreMetadata.TargetFrameworks);
+            TargetFrameworkInformation targetFramework = Assert.Single(actual.TargetFrameworks);
             var projectReference = Assert.Single(targetFramework.ProjectReferences);
             Assert.Equal(referencedProjectPath, projectReference.ProjectUniqueName);
         }

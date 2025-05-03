@@ -151,9 +151,9 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+            spec.Projects.First().TargetFrameworks.Add(new TargetFrameworkInformation() { FrameworkName = NuGetFramework.Parse("net45") });
 
-            spec.Projects.First().RestoreMetadata.TargetFrameworks.Single()
+            spec.Projects.First().TargetFrameworks.Single()
                 .ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = "b.csproj",
@@ -174,9 +174,9 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+            spec.Projects.First().TargetFrameworks.Add(new TargetFrameworkInformation() { FrameworkName = NuGetFramework.Parse("net45") });
 
-            spec.Projects.First().RestoreMetadata.TargetFrameworks.Single()
+            spec.Projects.First().TargetFrameworks.Single()
                 .ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = "b.csproj",

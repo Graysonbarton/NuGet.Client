@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -658,13 +659,7 @@ namespace NuGet.ProjectManagement
             PackageSpec packageSpec = null;
             if (!context.PackageSpecCache.TryGetValue(ProjectSystem.ProjectFileFullPath, out packageSpec))
             {
-                packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
-                {
-                    new TargetFrameworkInformation()
-                    {
-                        FrameworkName = ProjectSystem.TargetFramework
-                    }
-                });
+                packageSpec = new PackageSpec();
                 packageSpec.Name = ProjectSystem.ProjectName;
                 packageSpec.FilePath = ProjectSystem.ProjectFileFullPath;
 
@@ -679,10 +674,7 @@ namespace NuGet.ProjectManagement
                 metadata.ProjectName = ProjectSystem.ProjectName;
                 metadata.ProjectUniqueName = ProjectSystem.ProjectFileFullPath;
 
-                // Add framework group
-                var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(ProjectSystem.TargetFramework);
-                metadata.TargetFrameworks.Add(frameworkGroup);
-
+                var projectReferences = new List<ProjectRestoreReference>();
                 var references = (await ProjectServices
                     .ReferencesReader
                     .GetProjectReferencesAsync(context.Logger, CancellationToken.None))
@@ -693,9 +685,17 @@ namespace NuGet.ProjectManagement
                     {
                         // This reference applies to all frameworks
                         // Include/exclude flags are not possible for this project type
-                        frameworkGroup.ProjectReferences.Add(reference);
+                        projectReferences.Add(reference);
                     }
                 }
+
+                packageSpec.TargetFrameworks.Add(
+                    new TargetFrameworkInformation()
+                    {
+                        FrameworkName = ProjectSystem.TargetFramework,
+                        ProjectReferences = projectReferences.ToImmutableArray()
+                    }
+                );
 
                 context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }

@@ -178,7 +178,7 @@ namespace NuGet.ProjectModel
                 }
 
                 // Validate all P2P references
-                foreach (var restoreMetadataFramework in project.RestoreMetadata.TargetFrameworks)
+                foreach (var restoreMetadataFramework in project.TargetFrameworks)
                 {
                     var target = nuGetLockFile.Targets.FirstOrDefault(
                         t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, restoreMetadataFramework.FrameworkName));
@@ -239,7 +239,7 @@ namespace NuGet.ProjectModel
                                     if (p2pSpecTargetFrameworkInformation != null)
                                     {
                                         // We need to compare the main framework only. Ignoring fallbacks.
-                                        var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(
+                                        var p2pSpecProjectRestoreMetadataFrameworkInfo = p2pSpec.TargetFrameworks.FirstOrDefault(
                                             t => NuGetFramework.Comparer.Equals(p2pSpecTargetFrameworkInformation.FrameworkName, t.FrameworkName));
 
                                         if (p2pSpecProjectRestoreMetadataFrameworkInfo != null)
