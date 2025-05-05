@@ -14,7 +14,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
