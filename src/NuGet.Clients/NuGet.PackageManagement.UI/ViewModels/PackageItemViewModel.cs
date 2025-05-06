@@ -39,14 +39,14 @@ namespace NuGet.PackageManagement.UI
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
         private readonly PackageModel _packageModel;
-        private readonly PackageVersionsModel _packageModelVersions;
+        private readonly PackageVersionsModel _packageVersionsModel;
         private List<NuGetVersion> _transitiveInstalledVersions;
         private List<PackageIdentity> _transitiveOrigins;
 
-        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, PackageVersionsModel packageModelVersions, IPackageVulnerabilityService vulnerabilityService = default)
+        public PackageItemViewModel(INuGetSearchService searchService, PackageModel packageModel, PackageVersionsModel packageVersionsModel, IPackageVulnerabilityService vulnerabilityService = default)
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            _packageModelVersions = packageModelVersions;
+            _packageVersionsModel = packageVersionsModel;
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
             _packageModel = packageModel;
@@ -495,8 +495,8 @@ namespace NuGet.PackageManagement.UI
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
         {
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            await _packageModelVersions.PopulateDataAsync(Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
-            return _packageModelVersions.Versions;
+            await _packageVersionsModel.PopulateDataAsync(Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
+            return _packageVersionsModel.Versions;
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
@@ -686,7 +686,7 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 await GetVersionsAsync(null);
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = _packageModelVersions.Versions;
+                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = _packageVersionsModel.Versions;
 
                 // filter package versions based on allowed versions in packages.config
                 packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();

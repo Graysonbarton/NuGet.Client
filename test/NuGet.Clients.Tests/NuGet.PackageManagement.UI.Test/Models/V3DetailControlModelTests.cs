@@ -708,7 +708,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageModelVersions = new PackageVersionsModel(packageIdentity, searchService.Object);
 
             // Act
-            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("test_source") },
                 InstalledVersion = packageIdentity.Version,
@@ -820,7 +820,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageModelVersions = new PackageVersionsModel(packageIdentity, searchService.Object);
 
             // Act
-            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = packageIdentity.Version,
@@ -946,7 +946,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageModelVersions = new PackageVersionsModel(identity, searchService.Object);
 
             // Act
-            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = NuGetVersion.Parse(installedVersion),
@@ -1160,7 +1160,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageModelVersions = new PackageVersionsModel(identity, searchService.Object);
 
             // Act
-            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = NuGetVersion.Parse(installedVersion),
@@ -1267,7 +1267,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageModelVersions = new PackageVersionsModel(identity, searchService.Object);
 
             // Act
-            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = packageIdentity.Version,
@@ -1375,7 +1375,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var packageModelVersions = new PackageVersionsModel(identity, searchService.Object);
 
             // Act
-            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            PackageItemViewModel vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 Sources = new List<PackageSourceContextInfo> { new PackageSourceContextInfo("Contoso.A.test") },
                 InstalledVersion = NuGetVersion.Parse(installedVersion),
@@ -1585,7 +1585,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             var packageModelVersions = new PackageVersionsModel(identity, searchService.Object);
-            var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions)
+            var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions)
             {
                 InstalledVersion = installedVersion,
             };
@@ -1626,7 +1626,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
             var packageModelVersions = new PackageVersionsModel(identity, searchService.Object);
-            var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageModelVersions: packageModelVersions);
+            var vm = new PackageItemViewModel(searchService.Object, packageModel: packageModel, packageVersionsModel: packageModelVersions);
             vm.Sources = new ReadOnlyCollection<PackageSourceContextInfo>(new List<PackageSourceContextInfo>());
             vm.InstalledVersion = installedVersion;
 
