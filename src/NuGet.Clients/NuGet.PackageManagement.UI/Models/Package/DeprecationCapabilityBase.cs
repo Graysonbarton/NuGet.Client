@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
                 bool hasCriticalBugs = false;
                 bool hasLegacy = false;
 
-                foreach (var reason in _deprecationMetadata.Reasons)
+                foreach (string? reason in _deprecationMetadata.Reasons)
                 {
                     if (string.Equals(reason, PackageDeprecationReasonConstants.CriticalBugs, StringComparison.OrdinalIgnoreCase))
                     {
