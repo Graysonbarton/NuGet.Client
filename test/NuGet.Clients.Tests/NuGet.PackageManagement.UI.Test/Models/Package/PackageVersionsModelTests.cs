@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Moq;
 using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.Packaging.Core;
@@ -37,19 +38,25 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         [Fact]
         public void Constructor_WithNullSearchService_ThrowsArgumentException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new PackageVersionsModel(
+            // Act
+            Action act = () => new PackageVersionsModel(
                 null!,
-                _packageModel));
+                _packageModel);
+
+            // assert
+            act.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void Constructor_WithNullPackageModel_ThrowsArgumentNullException()
         {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new PackageVersionsModel(
+            // Act
+            Action act = () => new PackageVersionsModel(
                 _mockSearchService.Object,
-                null!));
+                null!);
+
+            // assert
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -77,7 +84,8 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             await packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, CancellationToken.None);
             var result = packageModelVersions.Versions;
             // Assert
-            Assert.Same(expectedVersions, result);
+            result.Should().BeSameAs(expectedVersions);
+
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
                 _packageIdentity,
                 _packageSources,
@@ -123,7 +131,8 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var result = packageModelVersions.Versions;
 
             // Assert
-            Assert.Same(expectedVersions, result);
+            result.Should().BeSameAs(expectedVersions);
+
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
                 _packageIdentity,
                 _packageSources,
@@ -161,9 +170,10 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var result2 = packageModelVersions.Versions;
 
             // Assert - Both results should be the same instance and search service should only be called once
-            Assert.Same(expectedVersions, result1);
-            Assert.Same(expectedVersions, result2);
-            Assert.Same(result1, result2);
+            result1.Should().BeSameAs(expectedVersions);
+            result2.Should().BeSameAs(expectedVersions);
+            result2.Should().BeSameAs(result1);
+
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
                 _packageIdentity,
                 _packageSources,
@@ -190,9 +200,11 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     canceledToken))
                 .ThrowsAsync(new OperationCanceledException(canceledToken));
 
-            // Act & Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(() =>
-                packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, canceledToken));
+            // Act
+            var act = packageModelVersions.Awaiting(v => v.PopulateDataAsync(_packageSources, true, _projects, canceledToken));
+
+            // Assert
+            await act.Should().ThrowAsync<OperationCanceledException>();
 
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
                 _packageIdentity,
@@ -241,8 +253,9 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             var result2 = packageModelVersions.Versions;
 
             // Assert
-            Assert.Same(versions1, result1);
-            Assert.Same(versions1, result2); // It should return the cached result from the first call
+            result1.Should().BeSameAs(versions1);
+            // It should return the cached result from the first call
+            result2.Should().BeSameAs(versions1);
 
             // Service should be called only once
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
