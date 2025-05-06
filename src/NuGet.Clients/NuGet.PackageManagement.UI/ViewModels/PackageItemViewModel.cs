@@ -494,7 +494,8 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
         {
-            await _packageModelVersions.PopulateDataAsync(Sources, IncludePrerelease, projects, _cancellationTokenSource.Token);
+            var isTransitive = PackageLevel == PackageLevel.Transitive;
+            await _packageModelVersions.PopulateDataAsync(Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
             return _packageModelVersions.Versions;
         }
 
@@ -684,7 +685,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                await _packageModelVersions.PopulateDataAsync(Sources, IncludePrerelease, null, _cancellationTokenSource.Token);
+                await GetVersionsAsync(null);
                 IReadOnlyCollection<VersionInfoContextInfo> packageVersions = _packageModelVersions.Versions;
 
                 // filter package versions based on allowed versions in packages.config

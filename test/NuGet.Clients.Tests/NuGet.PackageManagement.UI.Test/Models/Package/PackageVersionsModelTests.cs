@@ -40,8 +40,8 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Act
             Action act = () => new PackageVersionsModel(
-                null!,
-                _packageModel);
+                _packageIdentity,
+                null!);
 
             // assert
             act.Should().Throw<ArgumentException>();
@@ -52,8 +52,8 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
         {
             // Act
             Action act = () => new PackageVersionsModel(
-                _mockSearchService.Object,
-                null!);
+                null!,
+                _mockSearchService.Object);
 
             // assert
             act.Should().Throw<ArgumentNullException>();
@@ -78,10 +78,10 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
-            var packageModelVersions = new PackageVersionsModel(_mockSearchService.Object, _packageModel);
+            var packageModelVersions = new PackageVersionsModel(_packageIdentity, _mockSearchService.Object);
 
             // Act
-            await packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, CancellationToken.None);
+            await packageModelVersions.PopulateDataAsync(_packageSources, true, false, _projects, CancellationToken.None);
             var result = packageModelVersions.Versions;
             // Assert
             result.Should().BeSameAs(expectedVersions);
@@ -114,7 +114,6 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
             var transitivePackageModel = PackageModelCreationTestHelper.CreateTransitivelyReferencedPackageModel(_packageIdentity, vulnerableCapability.Object, embeddedResourceCapability.Object, transitiveOrigins);
 
-
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
                     _packageSources,
@@ -124,10 +123,10 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
-            var packageModelVersions = new PackageVersionsModel(_mockSearchService.Object, transitivePackageModel);
+            var packageModelVersions = new PackageVersionsModel(_packageIdentity, _mockSearchService.Object);
 
             // Act
-            await packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, CancellationToken.None);
+            await packageModelVersions.PopulateDataAsync(_packageSources, true, true, _projects, CancellationToken.None);
             var result = packageModelVersions.Versions;
 
             // Assert
@@ -160,13 +159,13 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
-            var packageModelVersions = new PackageVersionsModel(_mockSearchService.Object, _packageModel);
+            var packageModelVersions = new PackageVersionsModel(_packageIdentity, _mockSearchService.Object);
 
             // Act - Call twice with the same parameters
-            await packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, CancellationToken.None);
+            await packageModelVersions.PopulateDataAsync(_packageSources, true, false, _projects, CancellationToken.None);
             var result1 = packageModelVersions.Versions;
 
-            await packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, CancellationToken.None);
+            await packageModelVersions.PopulateDataAsync(_packageSources, true, false, _projects, CancellationToken.None);
             var result2 = packageModelVersions.Versions;
 
             // Assert - Both results should be the same instance and search service should only be called once
@@ -189,7 +188,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             // Arrange
             var canceledToken = new CancellationToken(true);
 
-            var packageModelVersions = new PackageVersionsModel(_mockSearchService.Object, _packageModel);
+            var packageModelVersions = new PackageVersionsModel(_packageIdentity, _mockSearchService.Object);
 
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
@@ -201,7 +200,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 .ThrowsAsync(new OperationCanceledException(canceledToken));
 
             // Act
-            var act = packageModelVersions.Awaiting(v => v.PopulateDataAsync(_packageSources, true, _projects, canceledToken));
+            var act = packageModelVersions.Awaiting(v => v.PopulateDataAsync(_packageSources, true, false, _projects, canceledToken));
 
             // Assert
             await act.Should().ThrowAsync<OperationCanceledException>();
@@ -242,14 +241,14 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(versions2);
 
-            var packageModelVersions = new PackageVersionsModel(_mockSearchService.Object, _packageModel);
+            var packageModelVersions = new PackageVersionsModel(_packageIdentity, _mockSearchService.Object);
 
             // Act - First call should set the cache
-            await packageModelVersions.PopulateDataAsync(_packageSources, true, _projects, CancellationToken.None);
+            await packageModelVersions.PopulateDataAsync(_packageSources, true, false, _projects, CancellationToken.None);
             var result1 = packageModelVersions.Versions;
 
             // This call should use the cached result regardless of different parameters
-            await packageModelVersions.PopulateDataAsync(sources2, true, _projects, CancellationToken.None);
+            await packageModelVersions.PopulateDataAsync(sources2, true, false, _projects, CancellationToken.None);
             var result2 = packageModelVersions.Versions;
 
             // Assert
