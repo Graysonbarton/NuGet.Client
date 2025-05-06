@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             // Act
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
-            var packageVersions = new PackageVersionsModel(searchService.Object, packageModel);
+            var packageVersions = new PackageVersionsModel(identity, searchService.Object);
 
             _testViewModel = new PackageItemViewModel(searchService.Object, packageModel, packageVersions)
             {
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             // Act
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
-            var packageVersions = new PackageVersionsModel(searchService.Object, packageModel);
+            var packageVersions = new PackageVersionsModel(identity, searchService.Object);
 
             await model.SetCurrentPackageAsync(
                 new PackageItemViewModel(searchService.Object, packageModel, packageVersions)
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var embeddedResourceCapability = new Mock<IEmbeddedResourcesCapable>();
             var packagePath = "C:\\TestPackage";
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedResourceCapability.Object);
-            var packageVersions = new PackageVersionsModel(searchService.Object, packageModel);
+            var packageVersions = new PackageVersionsModel(identity, searchService.Object);
 
             var packageItemModel = new PackageItemViewModel(searchService.Object, packageModel, packageVersions)
             {

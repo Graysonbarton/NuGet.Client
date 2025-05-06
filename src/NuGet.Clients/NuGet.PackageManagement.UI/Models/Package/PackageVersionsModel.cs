@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
@@ -13,29 +14,27 @@ namespace NuGet.PackageManagement.UI.Models.Package
     {
         private INuGetSearchService _nuGetSearchService;
         private IReadOnlyCollection<VersionInfoContextInfo>? _availableVersions;
-        private PackageModel _primaryPackage;
         private bool _dataLoaded;
 
         public PackageVersionsModel(
-            INuGetSearchService nuGetSearchService,
-            PackageModel basePackage)
+            PackageIdentity packageIdentity,
+            INuGetSearchService nuGetSearchService)
         {
             _nuGetSearchService = nuGetSearchService ?? throw new ArgumentException(nameof(nuGetSearchService));
-            _primaryPackage = basePackage ?? throw new ArgumentNullException(nameof(basePackage));
             _dataLoaded = false;
+            Id = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
         }
 
-        public string Id => _primaryPackage.Id;
+        public PackageIdentity Id { get; private set; }
 
         public IReadOnlyCollection<VersionInfoContextInfo>? Versions => _availableVersions;
 
-        public async Task PopulateDataAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrelease, IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
+        public async Task PopulateDataAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrelease, bool isTransitive, IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             if (!_dataLoaded)
             {
                 _dataLoaded = true;
-                var isTransitive = _primaryPackage is TransitivelyReferencedPackageModel;
-                _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(_primaryPackage.Identity, packageSources, includePrelease, isTransitive, projects, cancellationToken);
+                _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(Id, packageSources, includePrelease, isTransitive, projects, cancellationToken);
             }
         }
     }
