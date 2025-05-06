@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     [Guid("6C09BBE2-4537-48B4-87D8-01BF5EB75901")]
     public sealed class GeneralPage : NuGetExternalSettingsProvider
     {
-        private const string MonikerAllowRestoreDownload = "packageRestore.allowRestoreDownload";
+        internal const string MonikerAllowRestoreDownload = "packageRestore.allowRestoreDownload";
         private const string MonikerPackageRestoreAutomatic = "packageRestore.packageRestoreAutomatic";
         private const string MonikerSkipBindingRedirects = "bindingRedirects.skipBindingRedirects";
         private const string MonikerDefaultPackageManagementFormat = "packageManagement.defaultPackageManagementFormat";
