@@ -97,18 +97,19 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         private PackageModel Create(VersionInfoContextInfo version)
         {
-            EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, version.PackageSearchMetadata.Identity!, version.PackageSearchMetadata.ReadmeUrl);
+            var packageSearchMetadata = version.PackageSearchMetadata ?? throw new ArgumentNullException(nameof(version.PackageSearchMetadata));
+            EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, version.PackageSearchMetadata?.Identity!, version.PackageSearchMetadata?.ReadmeUrl);
 
-            if (version.PackageSearchMetadata.PackagePath != null)
+            if (packageSearchMetadata.PackagePath != null)
             {
-                return CreateLocalPackageModel(version.PackageSearchMetadata,
-                     new VulnerablePreloadedCapability(version.PackageSearchMetadata.Vulnerabilities?.ToList()),
+                return CreateLocalPackageModel(packageSearchMetadata,
+                     new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
                      embeddedResources);
             }
             else
             {
-                return CreateRemotePackageModel(version.PackageSearchMetadata,
-                     new VulnerablePreloadedCapability(version.PackageSearchMetadata.Vulnerabilities?.ToList()),
+                return CreateRemotePackageModel(packageSearchMetadata,
+                     new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
                      new DeprecationPreloadedCapability(version.PackageDeprecationMetadata),
                      embeddedResources);
             }

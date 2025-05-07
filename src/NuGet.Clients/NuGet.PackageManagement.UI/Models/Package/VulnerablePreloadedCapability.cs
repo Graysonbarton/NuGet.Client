@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class VulnerablePreloadedCapability : VulnerableCapabilityBase
     {
-        public VulnerablePreloadedCapability(IReadOnlyList<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
+        public VulnerablePreloadedCapability(IReadOnlyList<PackageVulnerabilityMetadataContextInfo>? vulnerabilities)
         {
             Vulnerabilities = vulnerabilities;
         }
