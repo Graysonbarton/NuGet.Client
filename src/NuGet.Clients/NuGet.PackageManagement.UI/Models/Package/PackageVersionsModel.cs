@@ -14,14 +14,14 @@ namespace NuGet.PackageManagement.UI.Models.Package
     {
         private INuGetSearchService _nuGetSearchService;
         private IReadOnlyCollection<VersionInfoContextInfo>? _availableVersions;
-        private bool _dataLoaded;
+        private bool _hasDataLoaded;
 
         public PackageVersionsModel(
             PackageIdentity packageIdentity,
             INuGetSearchService nuGetSearchService)
         {
-            _nuGetSearchService = nuGetSearchService ?? throw new ArgumentException(nameof(nuGetSearchService));
-            _dataLoaded = false;
+            _nuGetSearchService = nuGetSearchService ?? throw new ArgumentNullException(nameof(nuGetSearchService));
+            _hasDataLoaded = false;
             Id = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
         }
 
@@ -31,9 +31,9 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         public async Task PopulateDataAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrelease, bool isTransitive, IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
-            if (!_dataLoaded)
+            if (!_hasDataLoaded)
             {
-                _dataLoaded = true;
+                _hasDataLoaded = true;
                 _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(Id, packageSources, includePrelease, isTransitive, projects, cancellationToken);
             }
         }
