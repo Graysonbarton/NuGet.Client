@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 null!);
 
             // assert
-            act.Should().Throw<ArgumentException>();
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
