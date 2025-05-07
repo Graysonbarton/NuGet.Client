@@ -5,16 +5,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    public class PackageModelFactory : IPackageModelFactory
+    public class PackageModelFactory
     {
         private readonly INuGetSearchService _searchService;
         private readonly INuGetPackageFileService _packageFileService;
@@ -29,25 +26,6 @@ namespace NuGet.PackageManagement.UI.Models.Package
             _packageVulnerabilityService = packageVulnerabilityService ?? throw new ArgumentNullException(nameof(_packageVulnerabilityService));
             _includePrerelease = includePrerelease;
             _packageSources = packageSources ?? throw new ArgumentNullException(nameof(_packageSources));
-        }
-
-        public PackageModel Create(string identity, VersionInfoContextInfo version)
-        {
-            if (version == null)
-            {
-                throw new ArgumentNullException(nameof(version));
-            }
-            PackageSearchMetadataContextInfo? versionPackageSearchMetadata = version.PackageSearchMetadata;
-            if (version.PackageSearchMetadata != null)
-            {
-                return Create(version);
-            }
-            var packageIdentity = new PackageIdentity(identity, version.Version);
-            var packageSearchMetadata = PackageSearchMetadataContextInfo.Create(new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
-            {
-                Identity = packageIdentity,
-            });
-            return Create(packageSearchMetadata, ContractItemFilter.All);
         }
 
         public PackageModel Create(PackageSearchMetadataContextInfo metadata, ContractItemFilter itemFilter)
@@ -94,25 +72,6 @@ namespace NuGet.PackageManagement.UI.Models.Package
                 }
             }
         }
-
-        private PackageModel Create(VersionInfoContextInfo version)
-        {
-            var packageSearchMetadata = version.PackageSearchMetadata ?? throw new ArgumentNullException(nameof(version.PackageSearchMetadata));
-            EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, version.PackageSearchMetadata?.Identity!, version.PackageSearchMetadata?.ReadmeUrl);
-
-            if (packageSearchMetadata.PackagePath == null)
-            {
-                return CreateRemotePackageModel(packageSearchMetadata,
-                     new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
-                     new DeprecationPreloadedCapability(version.PackageDeprecationMetadata),
-                     embeddedResources);
-            }
-
-            return CreateLocalPackageModel(packageSearchMetadata,
-                 new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
-                 embeddedResources);
-        }
-
 
         private static LocalPackageModel CreateLocalPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, EmbeddedResourcesCapability embeddedResources)
         {

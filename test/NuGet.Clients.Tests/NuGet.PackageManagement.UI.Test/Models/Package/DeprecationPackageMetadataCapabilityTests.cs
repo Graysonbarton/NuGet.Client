@@ -52,5 +52,63 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             Assert.Equal(alternatePackageMetadata, capability.AlternatePackage);
             Assert.Equal(deprecationMetadata, capability.DeprecationMetadata);
         }
+
+        [Fact]
+        public async Task IsDeprecated_WithDeprecationMetadata_IsTrue()
+        {
+            // Arrange
+            var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", ["Legacy"], null);
+            _packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(deprecationMetadata);
+
+            var capability = new DeprecationPackageMetadataCapability(_packageMetadataRetrievalAdapterMock.Object);
+            await capability.PopulateDataAsync(CancellationToken.None);
+
+            // Act
+            var result = capability.IsDeprecated;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task IsDeprecated_WithoutDeprecationMetadata_IsFalse()
+        {
+            // Arrange
+            PackageDeprecationMetadataContextInfo? deprecationMetadata = null;
+            _packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(deprecationMetadata);
+
+            var capability = new DeprecationPackageMetadataCapability(_packageMetadataRetrievalAdapterMock.Object);
+            await capability.PopulateDataAsync(CancellationToken.None);
+
+            // Act
+            var result = capability.IsDeprecated;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(new[] { "CriticalBugs" }, PackageDeprecationReason.CriticalBugs)]
+        [InlineData(new[] { "Legacy" }, PackageDeprecationReason.Legacy)]
+        [InlineData(new[] { "Legacy", "CriticalBugs" }, PackageDeprecationReason.LegacyAndCriticalBugs)]
+        [InlineData(new[] { "Other" }, PackageDeprecationReason.Unknown)]
+        public async Task PackageDeprecationReasons_MultipleDeprecationReasons_ReturnsExpected(string[] reasons, PackageDeprecationReason expectedMessage)
+        {
+            // Arrange
+            var deprecationMetadata = new PackageDeprecationMetadataContextInfo("Test message", reasons, null);
+            _packageMetadataRetrievalAdapterMock.Setup(pm => pm.GetPackageDeprecationInfoAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(deprecationMetadata);
+
+            var capability = new DeprecationPackageMetadataCapability(_packageMetadataRetrievalAdapterMock.Object);
+            await capability.PopulateDataAsync(CancellationToken.None);
+
+            // Act
+            var result = capability.PackageDeprecationReasons;
+
+            // Assert
+            Assert.Equal(expectedMessage, result);
+        }
     }
 }
