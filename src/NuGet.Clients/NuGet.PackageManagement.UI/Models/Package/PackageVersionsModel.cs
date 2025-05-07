@@ -31,11 +31,11 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         public IReadOnlyCollection<VersionInfoContextInfo>? Versions => _availableVersions;
 
-        public async Task PopulateDataAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrelease, bool isTransitive, IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
+        public async Task PopulateDataAsync(IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrelease, bool isTransitive, IEnumerable<IProjectContextInfo>? projects, CancellationToken cancellationToken)
         {
             if (!_hasDataLoaded)
             {
-                _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(Id, packageSources, includePrelease, isTransitive, projects, cancellationToken);
+                _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(Id, packageSources, includePrelease, isTransitive, projects!, cancellationToken);
                 _hasDataLoaded = true;
             }
         }
