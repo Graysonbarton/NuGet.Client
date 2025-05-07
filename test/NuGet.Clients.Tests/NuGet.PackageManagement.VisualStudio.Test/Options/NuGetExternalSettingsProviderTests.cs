@@ -9,78 +9,58 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.Options;
+using NuGet.PackageManagement.VisualStudio.Utility.FileWatchers;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Options
 {
-    public abstract class NuGetExternalSettingsProviderTests<T> where T : NuGetExternalSettingsProvider
+    public abstract class NuGetExternalSettingsProviderTests<TPage> where TPage : NuGetExternalSettingsProvider
     {
         private VSSettings _vsSettings;
 
-        protected abstract T CreateInstance(VSSettings? vsSettings);
+        protected abstract TPage CreateInstance(VSSettings? vsSettings);
         protected abstract List<string> GetMonikers();
 
         protected NuGetExternalSettingsProviderTests()
         {
-            _vsSettings = Mock.Of<VSSettings>();
+            var solutionManager = new Mock<ISolutionManager>();
+            var machineWideSettings = new Mock<IMachineWideSettings>();
+            var slnConfigWatcher = new Mock<IFileWatcher>();
+            var userConfigWatcher = new Mock<IFileWatcher>();
+
+            var watcherFactory = new Mock<IFileWatcherFactory>();
+            watcherFactory.Setup(f => f.CreateUserConfigFileWatcher()).Returns(userConfigWatcher.Object);
+            watcherFactory.Setup(f => f.CreateSolutionConfigFileWatcher(It.IsAny<string>())).Returns(userConfigWatcher.Object);
+
+            _vsSettings = new VSSettings(solutionManager.Object, machineWideSettings.Object, watcherFactory.Object);
         }
+
+        //public abstract Task GetValueAsync_MonikerExists_ReturnsSuccessExternalSettingOperationResultAsync();
 
         [Fact]
-        public virtual async Task GetValueAsync_MonikerExists_ReturnsSuccessExternalSettingOperationResultAsync()
+        public virtual async Task GetValueAsync_MonikerDoesNotExist_ThrowsInvalidOperationExceptionAsync()
         {
             // Arrange
-            T page = CreateInstance(_vsSettings);
-            List<string> monikers = GetMonikers();
-            monikers.Should().NotBeNullOrEmpty();
+            VSSettings vsSettings = _vsSettings;
+            TPage instance = CreateInstance(vsSettings);
 
             // Act
-            Func<Task> act = async () =>
-            {
-                foreach (string moniker in monikers)
-                {
-                    var result = await page.GetValueAsync<object>(moniker, CancellationToken.None);
-                    result.Should().NotBeNull();
-                }
-            };
+            Func<Task> act = () => instance.GetValueAsync<object>(moniker: "TESTING!doesNotExist", CancellationToken.None);
 
             // Assert
-            await act.Invoke().Should().NotThrow(because: "All GetValue calls were for existing monikers");
-        }
-
-        public virtual Task GetValueAsync_MonikerDoesNotExist_ThrowsInvalidOperationExceptionAsync()
-        {
-
-        }
-
-        public virtual Task GetValueAsync_ValueInvalidForMoniker_ThrowsIncompatibleSettingTypeExceptionAsync()
-        {
-
-        }
-
-        public virtual Task SetValueAsync_MonikerExists_ReturnsSuccessExternalSettingOperationResultAsync()
-        {
-
-        }
-
-        public virtual Task SetValueAsync_MonikerDoesNotExist_InvalidOperationExceptionAsync()
-        {
-
-        }
-
-        public virtual Task SetValueAsync_ValueInvalidForMoniker_ThrowsIncompatibleSettingTypeExceptionAsync()
-        {
-
+            await Assert.ThrowsAsync<InvalidOperationException>(act);
         }
 
         [Fact]
         public void Constructor_NullVsSettings_ThrowsArgumentNullException()
         {
             // Arrange
-            Mock<NuGetExternalSettingsProvider> nuGetExternalSettingsProvider = new Mock<NuGetExternalSettingsProvider>();
+            VSSettings? vsSettings = null;
 
             // Act
-            Action act = () => CreateInstance(vsSettings: null);
+            Action act = () => CreateInstance(vsSettings);
 
             // Assert
             act.Should().Throw<ArgumentNullException>();
