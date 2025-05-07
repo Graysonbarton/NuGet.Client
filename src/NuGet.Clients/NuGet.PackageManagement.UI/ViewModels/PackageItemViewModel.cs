@@ -685,7 +685,7 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                await GetVersionsAsync(null);
+                await GetVersionsAsync(projects: null);
                 IReadOnlyCollection<VersionInfoContextInfo> packageVersions = _packageVersionsModel.Versions;
 
                 // filter package versions based on allowed versions in packages.config
