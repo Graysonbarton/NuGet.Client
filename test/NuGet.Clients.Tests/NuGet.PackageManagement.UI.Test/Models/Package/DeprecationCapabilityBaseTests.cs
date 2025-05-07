@@ -41,6 +41,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
 
         [Theory]
         [InlineData(new[] { "CriticalBugs" }, PackageDeprecationReason.CriticalBugs)]
+        [InlineData(new[] { "criticalbugs" }, PackageDeprecationReason.CriticalBugs)]
         [InlineData(new[] { "Legacy" }, PackageDeprecationReason.Legacy)]
         [InlineData(new[] { "Legacy", "CriticalBugs" }, PackageDeprecationReason.LegacyAndCriticalBugs)]
         [InlineData(new[] { "Other" }, PackageDeprecationReason.Unknown)]
