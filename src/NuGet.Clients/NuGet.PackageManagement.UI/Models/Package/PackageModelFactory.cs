@@ -100,19 +100,17 @@ namespace NuGet.PackageManagement.UI.Models.Package
             var packageSearchMetadata = version.PackageSearchMetadata ?? throw new ArgumentNullException(nameof(version.PackageSearchMetadata));
             EmbeddedResourcesCapability embeddedResources = new EmbeddedResourcesCapability(_packageFileService, version.PackageSearchMetadata?.Identity!, version.PackageSearchMetadata?.ReadmeUrl);
 
-            if (packageSearchMetadata.PackagePath != null)
-            {
-                return CreateLocalPackageModel(packageSearchMetadata,
-                     new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
-                     embeddedResources);
-            }
-            else
+            if (packageSearchMetadata.PackagePath == null)
             {
                 return CreateRemotePackageModel(packageSearchMetadata,
                      new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
                      new DeprecationPreloadedCapability(version.PackageDeprecationMetadata),
                      embeddedResources);
             }
+
+            return CreateLocalPackageModel(packageSearchMetadata,
+                 new VulnerablePreloadedCapability(packageSearchMetadata.Vulnerabilities?.ToList()),
+                 embeddedResources);
         }
 
 
