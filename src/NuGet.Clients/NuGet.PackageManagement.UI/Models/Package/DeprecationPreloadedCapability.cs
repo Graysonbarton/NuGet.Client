@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
 {
     internal class DeprecationPreloadedCapability : DeprecationCapabilityBase
     {
-        public DeprecationPreloadedCapability(PackageDeprecationMetadataContextInfo deprecationMetadata)
+        public DeprecationPreloadedCapability(PackageDeprecationMetadataContextInfo? deprecationMetadata)
         {
             _deprecationMetadata = deprecationMetadata;
         }
