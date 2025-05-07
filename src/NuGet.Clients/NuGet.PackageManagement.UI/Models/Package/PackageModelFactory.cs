@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
             {
                 throw new ArgumentNullException(nameof(version));
             }
-            var versionPackageSearchMetadata = version.PackageSearchMetadata;
+            PackageSearchMetadataContextInfo? versionPackageSearchMetadata = version.PackageSearchMetadata;
             if (version.PackageSearchMetadata != null)
             {
                 return Create(version);
