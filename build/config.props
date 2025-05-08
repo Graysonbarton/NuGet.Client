@@ -26,7 +26,7 @@
 
     <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
-    <VsTargetBranch>main</VsTargetBranch>
+    <VsTargetBranch>d17.14</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
     <VsTargetChannelForTests>int.$(VsTargetBranch)</VsTargetChannelForTests>
 
