@@ -11,7 +11,7 @@ using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    public class PackageModelFactory
+    internal class PackageModelFactory
     {
         private readonly INuGetSearchService _searchService;
         private readonly INuGetPackageFileService _packageFileService;
