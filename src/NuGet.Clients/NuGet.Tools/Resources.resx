@@ -203,4 +203,10 @@
   <data name="Text_FilePath_Header" xml:space="preserve">
     <value>File Path</value>
   </data>
+  <data name="Text_PackageSourceName_Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Text_PackageSourceUrl_Header" xml:space="preserve">
+    <value>Source</value>
+  </data>
 </root>

@@ -120,6 +120,51 @@
           ]
         }
       }
+    },
+    "nuGetPackageManager.packageSources.externalSettings": {
+      "type": "external",
+      "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "backingStoreDescription": "@SettingsStoredInNuGetConfiguration;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+
+      "callback": {
+        "packageId": "5fcc8577-4feb-4d04-ad72-d6c629b083cc",
+        "serviceId": "4F0DC114-28A6-4888-84E7-766D6E7DE456"
+      },
+
+      "realtimeNotifications": true,
+
+      // Settings within this external settings region.  Unlike "normal" settings, these have no registered default values.
+      // Their values are retrieved via IExternalSettingsProvider.GetValueAsync; when the user edits them, the new values are passed to
+      // IExternalSettingsProvider.SetValueAsync.
+      "properties": {
+        "packageSources": {
+          "type": "array",
+          "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+
+          // Metadata about items in this array
+          "items": {
+            "type": "object",
+
+            // The properties of items in this array
+            "properties": {
+              "sourceName": {
+                "type": "string",
+                "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+              },
+              "sourceUrl": {
+                "type": "string",
+                "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+              }
+            }
+          },
+
+          // The actual items that appear by default; in most cases, you'd leave this array empty.
+          "default": [],
+          "allowItemEditing": true,
+          "allowAdditionsAndRemovals": true,
+          "messages": []
+        }
+      }
     }
   },
   "categories": {
@@ -144,6 +189,11 @@
       "title": "@117;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "legacyOptionPageId": "C17B308A-00BB-446E-9212-2D14E1005985",
       "order": 1
+    },
+    "nuGetPackageManager.packageSources": {
+      "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "legacyOptionPageId": "2819C3B6-FC75-4CD5-8C77-877903DE864C",
+      "order": 2
     }
   }
 }
