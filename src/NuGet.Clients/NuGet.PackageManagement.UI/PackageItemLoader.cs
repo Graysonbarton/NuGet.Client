@@ -320,7 +320,7 @@ namespace NuGet.PackageManagement.UI
 
                     _packageModelFactory ??= new PackageModelFactory(_searchService, _packageFileService, _packageVulnerabilityService, _includePrerelease, _packageSources);
                     PackageModel packageModel = _packageModelFactory.Create(metadataContextInfo, _itemFilter);
-                    var packageVersions = new PackageVersionsModel(packageModel.Identity, _searchService);
+                    var packageVersions = new PackageVersionsModel(_packageSources, _includePrerelease, packageModel.Identity, _searchService);
 
                     var listItem = new PackageItemViewModel(_searchService, packageModel, packageVersions, _packageVulnerabilityService)
                     {

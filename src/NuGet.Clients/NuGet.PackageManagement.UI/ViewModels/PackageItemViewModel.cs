@@ -492,11 +492,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
+        {
+            await _packageVersionsModel.PopulateDataAsync(_cancellationTokenSource.Token);
+            return _packageVersionsModel.Versions;
+        }
+
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync(IEnumerable<IProjectContextInfo> projects)
         {
+            var identity = new PackageIdentity(Id, Version);
             var isTransitive = PackageLevel == PackageLevel.Transitive;
-            await _packageVersionsModel.PopulateDataAsync(Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
-            return _packageVersionsModel.Versions;
+            return await _searchService.GetPackageVersionsAsync(identity, Sources, IncludePrerelease, isTransitive, projects, _cancellationTokenSource.Token);
         }
 
         // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
@@ -504,7 +510,7 @@ namespace NuGet.PackageManagement.UI
         // not awaited. By keeping this AsyncLazy, we ensure that the exception is thrown in an async continuation. Whereas
         // if we get rid of it and have GetDetailedPackageSearchMetadataAsync call _searchService directly, then the exception
         // will not be thrown in a continuation, and the test will fail.
-        private Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> _detailedPackageSearchMetadata =>
+        private Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> DetailedPackageSearchMetadata =>
             new Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>(async () =>
             {
                 var identity = new PackageIdentity(Id, Version);
@@ -513,7 +519,7 @@ namespace NuGet.PackageManagement.UI
         public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchMetadataAsync()
         {
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
-            return _detailedPackageSearchMetadata.Value;
+            return DetailedPackageSearchMetadata.Value;
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
         }
 
@@ -685,19 +691,12 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                await GetVersionsAsync(projects: null);
-                IReadOnlyCollection<VersionInfoContextInfo> packageVersions = _packageVersionsModel.Versions;
-
-                // filter package versions based on allowed versions in packages.config
-                packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version)).ToList();
-                NuGetVersion result = packageVersions
-                    .Select(p => p.Version)
-                    .MaxOrDefault();
+                await GetVersionsAsync();
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                LatestVersion = result;
+                LatestVersion = _packageVersionsModel.GetLatestVersion(AllowedVersions);
                 Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
             }
             catch (OperationCanceledException)

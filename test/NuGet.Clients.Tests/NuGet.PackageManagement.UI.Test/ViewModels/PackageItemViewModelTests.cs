@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var embeddedCapability = new EmbeddedResourcesCapability(_packageFileService, identity, null);
 
             var packageModel = PackageModelCreationTestHelper.CreateLocalPackageModel(identity, packagePath, embeddedCapability);
-            var packageModelVersions = new PackageVersionsModel(identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, identity, _searchService.Object);
 
             _testInstance = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
             _output = output;
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             // Arrange
             var iconUrl = new Uri("httphttphttp://fake.test/image.png");
             var packageModel = CreateLocalPackageModel(iconUrl: iconUrl);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
             // Act
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             // Arrange
             var iconUrl = new Uri(@"C:\path\to\image.png");
             var packageModel = CreateLocalPackageModel(iconUrl: iconUrl);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
 
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             // relative URIs are not supported in viewmodel.
             var iconUrl = new Uri("resources/testpackageicon.png", UriKind.Relative);
             var packageModel = CreateLocalPackageModel(iconUrl: iconUrl);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
 
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var iconUrl = new Uri("http://fake.test/image.png");
 
             var packageModel = CreateLocalPackageModel(iconUrl: iconUrl);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
             // Act
@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 };
 
                 var packageModel = CreateLocalPackageModel(iconUrl: builder.Uri);
-                var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+                var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
                 var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
                 _output.WriteLine($"ZipPath {zipPath}");
@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 CreateNoisePngImage(path: imagePath);
 
                 var packageModel = CreateLocalPackageModel(iconUrl: new Uri(imagePath, UriKind.Absolute));
-                var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+                var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
                 var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
                 // Act
@@ -253,7 +253,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 };
 
                 var packageModel = CreateLocalPackageModel(iconUrl: builder.Uri);
-                var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+                var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
                 var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
                 // Act
@@ -371,7 +371,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 };
 
                 var packageModel = CreateLocalPackageModel(packagePath: zipPath, iconUrl: builder.Uri);
-                var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+                var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
                 var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
                 _output.WriteLine($"ZipPath {zipPath}");
@@ -400,7 +400,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             // Arrange
             var packageModel = CreateLocalPackageModel(authors: emptyAuthor, owners: ["owner1, owner2"]);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
 
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
@@ -416,7 +416,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             // Arrange
             var packageModel = CreateLocalPackageModel(authors: "author1", owners: ["owner1, owner2"]);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
             // Act
@@ -435,7 +435,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             // Arrange
             var packageModel = CreateLocalPackageModel(authors: "author1", owners: ["owner1, owner2"]);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
 
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions)
             {
@@ -456,7 +456,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             // Arrange
             var packageModel = CreateLocalPackageModel(authors: "author1", owners: [string.Empty]);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
 
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions)
             {
@@ -482,7 +482,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             // Arrange
             var packageModel = CreateLocalPackageModel(authors: "author1", owners: ["owner1", "owner2"]);
-            var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+            var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
             var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions)
             {
                 KnownOwnerViewModels = new List<KnownOwnerViewModel>()
@@ -634,7 +634,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 File.WriteAllBytes(imageFilePath, bytes);
 
                 var packageModel = CreateLocalPackageModel(iconUrl: new Uri(imageFilePath, UriKind.Absolute));
-                var packageModelVersions = new PackageVersionsModel(packageModel.Identity, _searchService.Object);
+                var packageModelVersions = new PackageVersionsModel([], true, packageModel.Identity, _searchService.Object);
 
                 var packageItemViewModel = new PackageItemViewModel(_searchService.Object, packageModel, packageModelVersions);
 
