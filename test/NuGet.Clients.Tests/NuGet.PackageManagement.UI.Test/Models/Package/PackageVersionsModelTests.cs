@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 _packageIdentity,
                 _packageSources,
                 true,
-                true,
+                false,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
@@ -130,7 +130,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 _packageIdentity,
                 _packageSources,
                 true,
-                true,
+                false,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -144,7 +144,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     canceledToken))
                 .ThrowsAsync(new OperationCanceledException(canceledToken));
 
@@ -160,7 +160,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 _packageIdentity,
                 _packageSources,
                 true,
-                true,
+                false,
                 canceledToken), Times.Once);
         }
 
@@ -175,7 +175,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(versions1);
 
@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 _packageIdentity,
                 _packageSources,
                 true,
-                true,
+                false,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
-                    true,
+                    false,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 

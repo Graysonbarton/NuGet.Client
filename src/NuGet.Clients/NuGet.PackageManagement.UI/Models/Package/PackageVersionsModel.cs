@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Models.Package
         {
             if (!_hasDataLoaded)
             {
-                _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(Id, _packageSources, _includePrelease, true, cancellationToken);
+                _availableVersions = await _nuGetSearchService.GetPackageVersionsAsync(Id, _packageSources, _includePrelease, false, cancellationToken);
                 _hasDataLoaded = true;
             }
         }
