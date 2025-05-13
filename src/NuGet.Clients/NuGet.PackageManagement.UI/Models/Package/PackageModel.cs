@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,12 +14,9 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    public abstract class PackageModel : IEmbeddedResourcesCapable
+    public abstract class PackageModel
     {
-        private readonly IEmbeddedResourcesCapable _embeddedResources;
-
         internal PackageModel(PackageIdentity identity,
-            IEmbeddedResourcesCapable embeddedResources,
             string? title,
             string? description,
             string? authors,
@@ -35,7 +31,6 @@ namespace NuGet.PackageManagement.UI.Models.Package
             bool requireLicenseAcceptance,
             Uri? iconUrl)
         {
-            _embeddedResources = embeddedResources ?? throw new ArgumentNullException(nameof(embeddedResources));
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             Title = title;
             Description = description;
@@ -88,14 +83,6 @@ namespace NuGet.PackageManagement.UI.Models.Package
 
         public Uri? IconUrl { get; }
 
-        public Uri? ReadmeUri => _embeddedResources.ReadmeUri;
-
         public abstract Task PopulateDataAsync(CancellationToken cancellationToken);
-
-        public ValueTask<Stream?> GetIconAsync(CancellationToken cancellationToken) => _embeddedResources.GetIconAsync(cancellationToken);
-
-        public ValueTask<Stream?> GetLicenseAsync(CancellationToken cancellationToken) => _embeddedResources.GetLicenseAsync(cancellationToken);
-
-        public ValueTask<Stream?> GetReadmeAsync(CancellationToken cancellationToken) => _embeddedResources.GetReadmeAsync(cancellationToken);
     }
 }

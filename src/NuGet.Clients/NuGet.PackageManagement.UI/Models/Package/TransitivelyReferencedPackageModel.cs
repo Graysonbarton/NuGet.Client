@@ -14,7 +14,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    internal class TransitivelyReferencedPackageModel : PackageModel, IVulnerableCapable
+    internal class TransitivelyReferencedPackageModel : EmbeddedPackageModel, IVulnerableCapable
     {
         private readonly IVulnerableCapable _vulnerableCapability;
 

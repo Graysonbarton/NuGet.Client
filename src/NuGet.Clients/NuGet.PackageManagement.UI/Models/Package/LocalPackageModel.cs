@@ -12,7 +12,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    internal class LocalPackageModel : PackageModel
+    internal class LocalPackageModel : EmbeddedPackageModel
     {
         public LocalPackageModel(PackageIdentity identity,
             string packagePath,

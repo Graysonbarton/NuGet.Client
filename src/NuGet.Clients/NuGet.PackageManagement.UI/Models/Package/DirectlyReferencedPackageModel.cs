@@ -14,7 +14,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.Models.Package
 {
-    internal class DirectlyReferencedPackageModel : PackageModel, IDeprecationCapable, IVulnerableCapable
+    internal class DirectlyReferencedPackageModel : EmbeddedPackageModel, IDeprecationCapable, IVulnerableCapable
     {
         private readonly IDeprecationCapable _deprecationCapability;
         private readonly IVulnerableCapable _vulnerableCapability;

@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             Assert.Equal(readmeStream, result);
         }
 
-        private class TestPackageModel : PackageModel
+        private class TestPackageModel : EmbeddedPackageModel
         {
             public TestPackageModel(PackageIdentity identity,
                 IEmbeddedResourcesCapable embeddedResources,

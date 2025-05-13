@@ -279,6 +279,24 @@ namespace NuGet.PackageManagement.UI
                 var latestSearchResults = results.FirstOrDefault();
                 PackageModel latestSearchResultModel = _packageModelFactory.Create(results.FirstOrDefault(), _itemFilter);
 
+                foreach (var installedVersion in installedVersions)
+                {
+                    if (latestSearchResultModel.Identity.Version == installedVersion)
+                    {
+                        installedPackages.Add(latestSearchResultModel);
+                        continue;
+                    }
+                    var installedPackage = results.FirstOrDefault(x => x.Identity.Version == installedVersion);
+                    if (installedPackage != null)
+                    {
+                        PackageModel packageModel = _packageModelFactory.Create(installedPackage, _itemFilter);
+                        installedPackages.Add(packageModel);
+                        continue;
+                    }
+                    var unknownPackage = PackageModelFactory.CreateUnknownPackageModel(new Packaging.Core.PackageIdentity(packageId, installedVersion));
+                    installedPackages.Add(unknownPackage);
+                }
+
                 foreach (var metadataContextInfo in results)
                 {
                     PackageModel packageModel = latestSearchResultModel.Identity == metadataContextInfo.Identity ?

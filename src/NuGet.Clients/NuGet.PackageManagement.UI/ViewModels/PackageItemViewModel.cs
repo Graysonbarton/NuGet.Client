@@ -600,9 +600,16 @@ namespace NuGet.PackageManagement.UI
         {
             await TaskScheduler.Default;
 
+            IEmbeddedResourcesCapable embeddedResourcesCapable = _packageVersionsModel.LatestSearchResults as IEmbeddedResourcesCapable;
+
+            if (embeddedResourcesCapable is null)
+            {
+                return;
+            }
+
             Assumes.NotNull(IconUrl);
 
-            using (Stream stream = await _packageVersionsModel.LatestSearchResults.GetIconAsync(CancellationToken.None))
+            using (Stream stream = await embeddedResourcesCapable.GetIconAsync(CancellationToken.None))
             {
                 if (stream != null)
                 {

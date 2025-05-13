@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Internal.Contracts;
 using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
 
@@ -72,6 +73,12 @@ namespace NuGet.PackageManagement.UI.Models.Package
                 }
             }
         }
+
+        public static UnknownPackageModel CreateUnknownPackageModel(PackageIdentity identity)
+        {
+            return new UnknownPackageModel(identity);
+        }
+
 
         private static LocalPackageModel CreateLocalPackageModel(PackageSearchMetadataContextInfo metadata, IVulnerableCapable vulnerableCapability, EmbeddedResourcesCapability embeddedResources)
         {
