@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI.Models.Package;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -160,10 +161,14 @@ namespace NuGet.PackageManagement.UI
                         UpdateProjectInstallationInfo(project, packageContext, installedVersionsSet);
                     }
 
-                    if (project.InstalledVersion is not null && _searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
+                    if (project.InstalledVersion is not null)
                     {
-                        project.InstalledVersionMaxVulnerability = vulnerable;
-                        vulnerabilitiesSet.Add(project.InstalledVersion);
+                        var installedVul = _searchResultPackage.VulnerableVersions.FirstOrDefault(x => x.Version == project.InstalledVersion) as IVulnerableCapable;
+                        if (installedVul is not null)
+                        {
+                            project.InstalledVersionMaxVulnerability = (int)installedVul.VulnerabilityMaxSeverity;
+                            vulnerabilitiesSet.Add(project.InstalledVersion);
+                        }
                     }
                 }
                 catch (Exception ex)

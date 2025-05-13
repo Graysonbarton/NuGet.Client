@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.Models.Package;
@@ -38,7 +37,6 @@ namespace NuGet.PackageManagement.UI
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IPackageVulnerabilityService _vulnerabilityService;
-        private readonly PackageModel _packageModel;
         private readonly PackageVersionsModel _packageVersionsModel;
         private List<NuGetVersion> _transitiveInstalledVersions;
         private List<PackageIdentity> _transitiveOrigins;
@@ -49,9 +47,32 @@ namespace NuGet.PackageManagement.UI
             _packageVersionsModel = packageVersionsModel;
             _searchService = searchService;
             _vulnerabilityService = vulnerabilityService;
-            _packageModel = packageModel;
             _transitiveInstalledVersions = [];
             _transitiveOrigins = [];
+        }
+
+        public PackageItemViewModel(INuGetSearchService searchService, PackageVersionsModel packageVersionsModel, IPackageVulnerabilityService vulnerabilityService = default)
+        {
+            _cancellationTokenSource = new CancellationTokenSource();
+            _packageVersionsModel = packageVersionsModel;
+            _searchService = searchService;
+            _vulnerabilityService = vulnerabilityService;
+            _transitiveInstalledVersions = [];
+            _transitiveOrigins = [];
+
+            if (packageVersionsModel.LatestSearchResults is TransitivelyReferencedPackageModel)
+            {
+                InstalledVersion = packageVersionsModel.LatestSearchResults.Identity.Version;
+            }
+            else
+            {
+                InstalledVersion = packageVersionsModel.InstalledVersions?.Max(x => x.Version);
+            }
+
+            foreach (TransitivelyReferencedPackageModel transitivePackage in _packageVersionsModel.InstalledVersions.Where(x => x is TransitivelyReferencedPackageModel))
+            {
+                UpdateTransitiveInfo(transitivePackage.Version, transitivePackage.TransitiveOrigins);
+            }
         }
 
         // same URIs can reuse the bitmapImage that we've already used.
@@ -65,9 +86,9 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Id => _packageModel.Id;
+        public string Id => _packageVersionsModel.LatestSearchResults.Id;
 
-        public NuGetVersion Version => _packageModel.Version;
+        public NuGetVersion Version => _packageVersionsModel.LatestSearchResults.Version;
 
         public VersionRange AllowedVersions { get; set; }
 
@@ -79,9 +100,9 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; internal set; }
 
-        public string Owner => string.Join(",", _packageModel.OwnersList ?? []);
+        public string Owner => string.Join(",", _packageVersionsModel.LatestSearchResults.OwnersList ?? []);
 
-        public string Author => _packageModel.Authors;
+        public string Author => _packageVersionsModel.LatestSearchResults.Authors;
 
         /// <summary>
         /// When a collection of <see cref="KnownOwnerViewModels"/> is available, this property returns the <see cref="PackageSearchMetadataContextInfo.Owners"/>
@@ -115,17 +136,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public string ByAuthor => !string.IsNullOrWhiteSpace(_packageModel.Authors) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _packageModel.Authors) : null;
+        public string ByAuthor => !string.IsNullOrWhiteSpace(_packageVersionsModel.LatestSearchResults.Authors)
+            ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByAuthor, _packageVersionsModel.LatestSearchResults.Authors)
+            : null;
 
         /// <summary>
         /// Fallback to <see cref="ByAuthor"/> only when <see cref="ByOwner"> is null.
         /// </summary>
         public string ByOwnerOrAuthor => ByOwner ?? ByAuthor;
 
-        public string VulnerableVersionsString => string.Join(", ", VulnerableVersions.Keys);
+        public string VulnerableVersionsString => string.Join(", ", _packageVersionsModel.VulnerableInstalledPackages.Select(x => x.Version));
 
-        private readonly Dictionary<NuGetVersion, int> _vulnerableVersions = [];
-        public Dictionary<NuGetVersion, int> VulnerableVersions => _vulnerableVersions;
+        public IReadOnlyCollection<PackageModel> VulnerableVersions => _packageVersionsModel.VulnerableInstalledPackages;
 
         /// <summary>
         /// The installed version of the package.
@@ -279,9 +301,9 @@ namespace NuGet.PackageManagement.UI
             return v1.Equals(v2, VersionComparison.Default);
         }
 
-        public long? DownloadCount => (_packageModel as RemotePackageModel)?.DownloadCount;
+        public long? DownloadCount => (_packageVersionsModel.LatestSearchResults as RemotePackageModel)?.DownloadCount;
 
-        public string Summary => _packageModel.Summary;
+        public string Summary => _packageVersionsModel.LatestSearchResults.Summary;
 
         private PackageStatus _status;
         public PackageStatus Status
@@ -352,9 +374,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool Recommended => (_packageModel as RecommendedPackageModel) is not null;
+        public bool Recommended => (_packageVersionsModel.LatestSearchResults as RecommendedPackageModel) is not null;
 
-        public (string modelVersion, string vsixVersion)? RecommenderVersion => (_packageModel as RecommendedPackageModel)?.RecommenderVersion;
+        public (string modelVersion, string vsixVersion)? RecommenderVersion => (_packageVersionsModel.LatestSearchResults as RecommendedPackageModel)?.RecommenderVersion;
 
         private bool _prefixReserved;
         public bool PrefixReserved
@@ -370,25 +392,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageDeprecationMetadataContextInfo DeprecationMetadata => (_packageModel as IDeprecationCapable)?.DeprecationMetadata;
-        public bool IsPackageDeprecated => (_packageModel as IDeprecationCapable)?.IsDeprecated ?? false;
+        public PackageDeprecationMetadataContextInfo DeprecationMetadata => (_packageVersionsModel.LatestSearchResults as IDeprecationCapable)?.DeprecationMetadata;
+        public bool IsPackageDeprecated => (_packageVersionsModel.LatestSearchResults as IDeprecationCapable)?.IsDeprecated ?? false;
 
-        public bool IsPackageVulnerable => (_packageModel as IVulnerableCapable)?.IsVulnerable ?? false || VulnerableVersions.Count > 0;
+        public bool IsPackageVulnerable => (_packageVersionsModel.LatestSearchResults as IVulnerableCapable)?.IsVulnerable ?? false || VulnerableVersions.Count > 0;
 
-        public int VulnerabilityMaxSeverity
-        {
-            get
-            {
-                if (VulnerableVersions.Count > 0)
-                {
-                    return VulnerableVersions.Values.Max();
-                }
-                else
-                {
-                    return -1;
-                }
-            }
-        }
+        public int VulnerabilityMaxSeverity => _packageVersionsModel.VulnerabilityMaxSeverity ?? -1;
 
         public bool IsPackageWithWarnings
         {
@@ -409,7 +418,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Uri IconUrl => _packageModel.IconUrl;
+        public Uri IconUrl => _packageVersionsModel.LatestSearchResults.IconUrl;
 
         private IconBitmapStatus _bitmapStatus;
 
@@ -476,21 +485,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private PackageLevel _packageLevel;
-        public PackageLevel PackageLevel
-        {
-            get => _packageLevel;
-            set
-            {
-                if (_packageLevel != value)
-                {
-                    _packageLevel = value;
-                    OnPropertyChanged(nameof(PackageLevel));
-                    OnPropertyChanged(nameof(IsUninstalledOrTransitive));
-                    OnPropertyChanged(nameof(IsInstalledAndTransitive));
-                }
-            }
-        }
+        public PackageLevel PackageLevel => _packageVersionsModel.LatestSearchResults is TransitivelyReferencedPackageModel ? PackageLevel.Transitive : PackageLevel.TopLevel;
 
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
         {
@@ -523,19 +518,24 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
         }
 
-        public AlternatePackageMetadataContextInfo AlternatePackage => (_packageModel as IDeprecationCapable)?.AlternatePackage;
+        public AlternatePackageMetadataContextInfo AlternatePackage => (_packageVersionsModel.LatestSearchResults as IDeprecationCapable)?.AlternatePackage;
 
-        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageModel as IVulnerableCapable)?.Vulnerabilities ?? [];
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageVersionsModel.LatestSearchResults as IVulnerableCapable)?.Vulnerabilities ?? [];
 
         public void UpdateTransitiveInfo(PackageSearchMetadataContextInfo metadataContextInfo)
         {
-            if (metadataContextInfo.TransitiveOrigins == null)
+            UpdateTransitiveInfo(metadataContextInfo.Identity.Version, metadataContextInfo.TransitiveOrigins);
+        }
+
+        public void UpdateTransitiveInfo(NuGetVersion version, IReadOnlyCollection<PackageIdentity> transitiveOrigins)
+        {
+            if (transitiveOrigins == null)
             {
                 return;
             }
 
-            _transitiveInstalledVersions.Add(metadataContextInfo.Identity.Version);
-            _transitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
+            _transitiveInstalledVersions.Add(version);
+            _transitiveOrigins.AddRange(transitiveOrigins);
             TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", _transitiveInstalledVersions), string.Join(", ", _transitiveOrigins));
             OnPropertyChanged(nameof(TransitiveToolTipMessage));
         }
@@ -602,7 +602,7 @@ namespace NuGet.PackageManagement.UI
 
             Assumes.NotNull(IconUrl);
 
-            using (Stream stream = await _packageModel.GetIconAsync(CancellationToken.None))
+            using (Stream stream = await _packageVersionsModel.LatestSearchResults.GetIconAsync(CancellationToken.None))
             {
                 if (stream != null)
                 {
@@ -698,6 +698,7 @@ namespace NuGet.PackageManagement.UI
 
                 LatestVersion = _packageVersionsModel.GetLatestVersion(AllowedVersions);
                 Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+                OnPropertyChanged(nameof(Status));
             }
             catch (OperationCanceledException)
             {
@@ -722,15 +723,18 @@ namespace NuGet.PackageManagement.UI
         {
             await RunOperationAsync(async (cancellationToken) =>
             {
-                await _packageModel.PopulateDataAsync(cancellationToken);
+                var tasks = _packageVersionsModel.InstalledVersions.Select(x => x.PopulateDataAsync(cancellationToken)).ToArray();
+                await Task.WhenAll(tasks);
+
+                await _packageVersionsModel.LatestSearchResults.PopulateDataAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (_packageModel is IDeprecationCapable deprecationCapable)
+                if (_packageVersionsModel.LatestSearchResults is IDeprecationCapable deprecationCapable)
                 {
                     UpdateDeprecationInfo(deprecationCapable);
                 }
 
-                if (_packageModel is IVulnerableCapable vulnerableCapable)
+                if (_packageVersionsModel.LatestSearchResults is IVulnerableCapable vulnerableCapable)
                 {
                     UpdateVulnerabilityInfo(vulnerableCapable);
                 }
@@ -776,21 +780,6 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        private void SetVulnerabilityMaxSeverity(NuGetVersion version, int maxSeverity)
-        {
-            if (maxSeverity > -1)
-            {
-                if (VulnerableVersions.TryAdd(version, maxSeverity))
-                {
-                    OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
-                    OnPropertyChanged(nameof(VulnerableVersions));
-                    OnPropertyChanged(nameof(VulnerableVersionsString));
-                }
-
-                OnPropertyChanged(nameof(Status));
-            }
-        }
-
         private void UpdateDeprecationInfo(IDeprecationCapable deprecationCapable)
         {
             if (deprecationCapable == null)
@@ -810,10 +799,13 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            SetVulnerabilityMaxSeverity(Version, (int)vulnerableCapable.VulnerabilityMaxSeverity);
             OnPropertyChanged(nameof(IsPackageVulnerable));
             OnPropertyChanged(nameof(IsPackageWithWarnings));
             OnPropertyChanged(nameof(Vulnerabilities));
+            OnPropertyChanged(nameof(VulnerabilityMaxSeverity));
+            OnPropertyChanged(nameof(VulnerableVersions));
+            OnPropertyChanged(nameof(VulnerableVersionsString));
+            OnPropertyChanged(nameof(Status));
         }
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
@@ -841,6 +833,15 @@ namespace NuGet.PackageManagement.UI
             await ReloadPackageMetadataAsync();
 
             OnPropertyChanged(nameof(Status));
+        }
+
+        public async Task InitializeAsync()
+        {
+            if (PackageLevel == PackageLevel.TopLevel)
+            {
+                await ReloadPackageVersionsAsync();
+            }
+            await ReloadPackageMetadataAsync();
         }
 
         public async Task UpdateTransitivePackageStatusAsync()
@@ -884,7 +885,7 @@ namespace NuGet.PackageManagement.UI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public string PackagePath => (_packageModel as LocalPackageModel)?.PackagePath;
+        public string PackagePath => (_packageVersionsModel.LatestSearchResults as LocalPackageModel)?.PackagePath;
 
         public override string ToString()
         {

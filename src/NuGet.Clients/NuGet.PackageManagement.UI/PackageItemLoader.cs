@@ -263,6 +263,92 @@ namespace NuGet.PackageManagement.UI
                 return Enumerable.Empty<PackageItemViewModel>();
             }
 
+            var listItemViewModels = new List<PackageItemViewModel>();
+            _packageModelFactory ??= new PackageModelFactory(_searchService, _packageFileService, _packageVulnerabilityService, _includePrerelease, _packageSources);
+
+            foreach (var searchResultsById in _state.Results.PackageSearchItems.GroupBy(x => x.Identity.Id))
+            {
+
+                var packageId = searchResultsById.Key;
+                var results = searchResultsById.OrderByDescending(x => x.Identity.Version);
+                VersionRange allowedVersions = VersionRange.All;
+                VersionRange versionOverride = null;
+                bool autoReferenced = false;
+                var installedVersions = _installedPackages.GetPackageVersions(packageId);
+                var installedPackages = new List<PackageModel>();
+                var latestSearchResults = results.FirstOrDefault();
+                PackageModel latestSearchResultModel = _packageModelFactory.Create(results.FirstOrDefault(), _itemFilter);
+
+                foreach (var metadataContextInfo in results)
+                {
+                    PackageModel packageModel = latestSearchResultModel.Identity == metadataContextInfo.Identity ?
+                        latestSearchResultModel :
+                        _packageModelFactory.Create(metadataContextInfo, _itemFilter);
+                    if (installedVersions.Contains(packageModel.Version))
+                    {
+                        installedPackages.Add(packageModel);
+                    }
+                }
+
+                ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
+
+                // Only load KnownOwners for the Browse tab and not for any Recommended packages.
+                // Recommended packages won't have KnownOwners metadata as they are not part of the search results.
+                if (_itemFilter == ContractItemFilter.All && !latestSearchResults.IsRecommended)
+                {
+                    knownOwnerViewModels = LoadKnownOwnerViewModels(latestSearchResults);
+                }
+
+                var packageVersions = new PackageVersionsModel(latestSearchResultModel, installedPackages, _packageSources, _includePrerelease, _searchService);
+                if (_packageReferences != null)
+                {
+                    IEnumerable<IPackageReferenceContextInfo> matchedPackageReferences = _packageReferences
+                        .Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, latestSearchResults.Identity.Id));
+                    var allowedVersionsRange = new List<VersionRange>();
+                    var versionOverrides = new List<VersionRange>();
+
+                    foreach (var reference in matchedPackageReferences)
+                    {
+                        if (reference.AllowedVersions != null)
+                        {
+                            allowedVersionsRange.Add(reference.AllowedVersions);
+                        }
+                        if (reference.VersionOverride != null)
+                        {
+                            versionOverrides.Add(reference.VersionOverride);
+                        }
+                        autoReferenced = reference.IsAutoReferenced;
+                    }
+                    allowedVersions = allowedVersionsRange.FirstOrDefault() ?? VersionRange.All;
+                    versionOverride = versionOverrides.FirstOrDefault();
+                }
+
+                var listItem = new PackageItemViewModel(_searchService, packageVersions, _packageVulnerabilityService)
+                {
+                    KnownOwnerViewModels = knownOwnerViewModels,
+                    AllowedVersions = allowedVersions,
+                    VersionOverride = versionOverride,
+                    PrefixReserved = latestSearchResults.PrefixReserved && !IsMultiSource,
+                    Sources = _packageSources,
+                    IncludePrerelease = _includePrerelease,
+                    AutoReferenced = autoReferenced,
+                };
+
+                listItem.InitializeAsync().PostOnFailure(nameof(PackageItemLoader), nameof(GetCurrent));
+
+                listItemViewModels.Add(listItem);
+            }
+
+            return listItemViewModels.ToArray();
+        }
+
+        public IEnumerable<PackageItemViewModel> GetCurrentOld()
+        {
+            if (_state.ItemsCount == 0)
+            {
+                return Enumerable.Empty<PackageItemViewModel>();
+            }
+
             var listItemViewModels = new Dictionary<string, PackageItemViewModel>();
 
             foreach (PackageSearchMetadataContextInfo metadataContextInfo in _state.Results.PackageSearchItems)
@@ -330,7 +416,7 @@ namespace NuGet.PackageManagement.UI
                         PrefixReserved = metadataContextInfo.PrefixReserved && !IsMultiSource,
                         Sources = _packageSources,
                         IncludePrerelease = _includePrerelease,
-                        PackageLevel = packageLevel,
+                        //PackageLevel = packageLevel,
                         AutoReferenced = autoReferenced,
                     };
 

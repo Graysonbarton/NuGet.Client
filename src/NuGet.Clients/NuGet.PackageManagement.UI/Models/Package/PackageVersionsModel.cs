@@ -33,11 +33,47 @@ namespace NuGet.PackageManagement.UI.Models.Package
             _nuGetSearchService = nuGetSearchService ?? throw new ArgumentNullException(nameof(nuGetSearchService));
             _hasDataLoaded = false;
             Id = packageIdentity ?? throw new ArgumentNullException(nameof(packageIdentity));
+            InstalledVersions = null;
+            LatestSearchResults = null;
+        }
+
+
+        public PackageVersionsModel(
+            PackageModel latestPackageModelSearchResults,
+            IReadOnlyCollection<PackageModel>? installedVersions,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            bool includePrelease,
+            INuGetSearchService nuGetSearchService)
+        {
+            _includePrelease = includePrelease;
+            _packageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+            _nuGetSearchService = nuGetSearchService ?? throw new ArgumentNullException(nameof(nuGetSearchService));
+            _hasDataLoaded = false;
+            LatestSearchResults = latestPackageModelSearchResults ?? throw new ArgumentNullException(nameof(latestPackageModelSearchResults));
+            Id = latestPackageModelSearchResults.Identity;
+            InstalledVersions = installedVersions;
         }
 
         public PackageIdentity Id { get; private set; }
 
+        public PackageModel? LatestSearchResults { get; private set; }
+
         public IReadOnlyCollection<VersionInfoContextInfo>? Versions => _availableVersions;
+
+        public IReadOnlyCollection<PackageModel>? InstalledVersions { get; private set; }
+
+        public int? VulnerabilityMaxSeverity => VulnerableInstalledPackages?
+            .Select(x => (int)((IVulnerableCapable)x).VulnerabilityMaxSeverity)
+            .OrderByDescending(x => x)
+            .FirstOrDefault();
+
+        internal IReadOnlyCollection<PackageModel>? VulnerableInstalledPackages => InstalledVersions?
+            .Where(x =>
+            {
+                var vulnerableCapable = x as IVulnerableCapable;
+                return vulnerableCapable is not null && vulnerableCapable.IsVulnerable;
+            })
+            .ToList();
 
         public NuGetVersion? GetLatestVersion(VersionRange allowedVersions)
         {
