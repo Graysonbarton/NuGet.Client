@@ -698,7 +698,6 @@ namespace NuGet.PackageManagement.UI
 
                 LatestVersion = _packageVersionsModel.GetLatestVersion(AllowedVersions);
                 Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
-                OnPropertyChanged(nameof(Status));
             }
             catch (OperationCanceledException)
             {
