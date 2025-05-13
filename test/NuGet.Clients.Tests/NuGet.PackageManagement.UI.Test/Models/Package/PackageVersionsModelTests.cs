@@ -75,6 +75,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
+                    true,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
@@ -89,6 +90,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
                 _packageIdentity,
                 _packageSources,
+                true,
                 true,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -105,6 +107,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
                     _packageSources,
+                    true,
                     true,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
@@ -127,6 +130,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 _packageIdentity,
                 _packageSources,
                 true,
+                true,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -139,6 +143,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
                     _packageSources,
+                    true,
                     true,
                     canceledToken))
                 .ThrowsAsync(new OperationCanceledException(canceledToken));
@@ -155,6 +160,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                 _packageIdentity,
                 _packageSources,
                 true,
+                true,
                 canceledToken), Times.Once);
         }
 
@@ -168,6 +174,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
                     _packageSources,
+                    true,
                     true,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(versions1);
@@ -191,6 +198,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Verify(s => s.GetPackageVersionsAsync(
                 _packageIdentity,
                 _packageSources,
+                true,
                 true,
                 It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -222,6 +230,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
                     _packageIdentity,
                     _packageSources,
                     true,
+                    true,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
 
@@ -248,6 +257,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
                     _packageSources,
+                    true,
                     true,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
@@ -277,6 +287,7 @@ namespace NuGet.PackageManagement.UI.Test.Models.Package
             _mockSearchService.Setup(s => s.GetPackageVersionsAsync(
                     _packageIdentity,
                     _packageSources,
+                    true,
                     true,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedVersions);
