@@ -313,6 +313,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enabled.
+        /// </summary>
+        internal static string Text_PackageSourceEnabled_Header {
+            get {
+                return ResourceManager.GetString("Text_PackageSourceEnabled_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         internal static string Text_PackageSourceName_Header {

@@ -69,7 +69,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     var dict = new Dictionary<string, object>(capacity: 1)
                     {
                         { "sourceName", packageSource.Name },
-                        { "sourceUrl", packageSource.SourceUri }
+                        { "sourceUrl", packageSource.SourceUri },
+                        { "isEnabled", packageSource.IsEnabled }
                     };
 
                     packageSourcesList.Add(dict);

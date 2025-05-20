@@ -209,4 +209,7 @@
   <data name="Text_PackageSourceUrl_Header" xml:space="preserve">
     <value>Source</value>
   </data>
+  <data name="Text_PackageSourceEnabled_Header" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
 </root>
