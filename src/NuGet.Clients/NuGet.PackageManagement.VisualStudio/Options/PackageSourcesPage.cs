@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +34,17 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            //if (moniker == MonikerPackageSources)
+            //{
+            //    if (value is bool boolValue)
+            //    {
+
+            //        return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+            //    }
+            //}
+
+            // Shouldn't happen as these are monikers we declared in registration.json.
+            throw new InvalidOperationException();
         }
 
         private static Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>(ISettings settings)
@@ -47,22 +58,24 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                //var configPathsList = settings.getpack();
+                var provider = new PackageSourceProvider(settings);
+                List<PackageSource> packageSources = provider.LoadPackageSources().ToList();
 
-                var packageSourcesDictionary = new List<Dictionary<string, object>>(capacity: 1);
+                var packageSourcesList = new List<Dictionary<string, object>>(capacity: packageSources.Count);
 
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
-                //foreach (var configPath in configPathsList)
-                //{
-                var dict = new Dictionary<string, object>(capacity: 1)
+                foreach (var packageSource in packageSources)
                 {
-                    { "sourceName", "nuget.org" },
-                    { "sourceUrl", "https://api.nuget.org/v3/index.json" }
-                };
+                    var dict = new Dictionary<string, object>(capacity: 1)
+                    {
+                        { "sourceName", packageSource.Name },
+                        { "sourceUrl", packageSource.SourceUri }
+                    };
 
-                packageSourcesDictionary.Add(dict);
+                    packageSourcesList.Add(dict);
+                }
 
-                var castedConfigPaths = (T)(object)packageSourcesDictionary;
+                var castedConfigPaths = (T)(object)packageSourcesList;
                 result = ExternalSettingOperationResult.SuccessResult(castedConfigPaths);
             }
             catch (Exception ex)
