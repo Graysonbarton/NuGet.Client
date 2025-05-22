@@ -212,4 +212,7 @@
   <data name="Text_PackageSourceEnabled_Header" xml:space="preserve">
     <value>Enabled</value>
   </data>
+  <data name="Text_HttpSource_Warning" xml:space="preserve">
+    <value>You are attempting to add an HTTP source, which is insecure.</value>
+  </data>
 </root>

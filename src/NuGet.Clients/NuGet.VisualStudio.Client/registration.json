@@ -140,6 +140,7 @@
         "packageSources": {
           "type": "array",
           "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "uniqueItems": true,
 
           // Metadata about items in this array
           "items": {
@@ -149,7 +150,8 @@
             "properties": {
               "isEnabled": {
                 "type": "boolean",
-                "title": "@Text_PackageSourceEnabled_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+                "title": "@Text_PackageSourceEnabled_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "default": true
               },
               "sourceName": {
                 "type": "string",
@@ -157,7 +159,14 @@
               },
               "sourceUrl": {
                 "type": "string",
-                "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+                "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "messages": [
+                  {
+                    "text": "@Text_HttpSource_Warning;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                    "visibleWhen": "${config:sourceUrl} ~= '(?i)^http\\\\:'",
+                    "severity": "warning"
+                  }
+                ]
               }
             }
           },

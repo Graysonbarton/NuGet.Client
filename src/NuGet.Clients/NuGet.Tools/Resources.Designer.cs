@@ -313,6 +313,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are attempting to add an HTTP source, which is insecure..
+        /// </summary>
+        internal static string Text_HttpSource_Warning {
+            get {
+                return ResourceManager.GetString("Text_HttpSource_Warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enabled.
         /// </summary>
         internal static string Text_PackageSourceEnabled_Header {
