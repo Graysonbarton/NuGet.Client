@@ -38,19 +38,27 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            if (moniker == MonikerPackageSources)
+            var packageSourcesList = value as IList<IDictionary<string, object>>;
+            if (moniker != MonikerPackageSources || packageSourcesList is null)
             {
-                var list = value as List<Dictionary<string, object>>;
-                //_packageSourceProvider.SavePackageSources()
-                //    if (value is bool boolValue)
-                //    {
-
-                //        return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
-                //    }
+                // Shouldn't happen as these are monikers we declared in registration.json.
+                throw new InvalidOperationException();
             }
 
-            // Shouldn't happen as these are monikers we declared in registration.json.
-            throw new InvalidOperationException();
+            List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourcesList.Count);
+
+            foreach (Dictionary<string, object> packageSourceDictionary in packageSourcesList)
+            {
+                string name = packageSourceDictionary["sourceName"].ToString();
+                string source = packageSourceDictionary["sourceUrl"].ToString();
+                bool isEnabled = (bool)packageSourceDictionary["isEnabled"];
+
+                PackageSource packageSource = new PackageSource(source, name, isEnabled, isOfficial: false);
+                packageSources.Add(packageSource);
+            }
+
+            _packageSourceProvider.SavePackageSources(packageSources);
+            return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
         }
 
         private Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>()
@@ -66,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
                 foreach (var packageSource in packageSources)
                 {
-                    var dict = new Dictionary<string, object>(capacity: 1)
+                    var dict = new Dictionary<string, object>(capacity: 3)
                     {
                         { "isEnabled", packageSource.IsEnabled },
                         { "sourceName", packageSource.Name },
