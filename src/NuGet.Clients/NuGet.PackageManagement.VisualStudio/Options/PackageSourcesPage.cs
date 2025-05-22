@@ -54,6 +54,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 bool isEnabled = (bool)packageSourceDictionary["isEnabled"];
 
                 PackageSource packageSource = new PackageSource(source, name, isEnabled, isOfficial: false);
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    packageSource.AllowInsecureConnections = true;
+                }
                 packageSources.Add(packageSource);
             }
 
