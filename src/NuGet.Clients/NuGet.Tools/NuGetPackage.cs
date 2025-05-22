@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
@@ -208,6 +209,7 @@ namespace NuGetVSExtension
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
             VSSettings vsSettings = Settings.Value as VSSettings;
+            PackageSourceProvider packageSourceProvider = new(Settings.Value);
 
             AddService(typeof(GeneralPage),
                 (container, ct, serviceType) => Task.FromResult<object>(new GeneralPage(vsSettings)),
@@ -216,7 +218,7 @@ namespace NuGetVSExtension
                 (container, ct, serviceType) => Task.FromResult<object>(new ConfigurationFilesPage(vsSettings)),
                 promote: true);
             AddService(typeof(PackageSourcesPage),
-                (container, ct, serviceType) => Task.FromResult<object>(new PackageSourcesPage(vsSettings)),
+                (container, ct, serviceType) => Task.FromResult<object>(new PackageSourcesPage(vsSettings, packageSourceProvider)),
                 promote: true);
 
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);

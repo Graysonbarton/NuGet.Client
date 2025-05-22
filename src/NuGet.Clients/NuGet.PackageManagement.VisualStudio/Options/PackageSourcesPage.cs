@@ -16,15 +16,19 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     public class PackageSourcesPage : NuGetExternalSettingsProvider
     {
         private const string MonikerPackageSources = "packageSources";
-        public PackageSourcesPage(VSSettings vsSettings)
+        private IPackageSourceProvider _packageSourceProvider;
+
+        public PackageSourcesPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider)
             : base(vsSettings)
-        { }
+        {
+            _packageSourceProvider = packageSourceProvider ?? throw new ArgumentNullException(nameof(packageSourceProvider));
+        }
 
         public override Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
         {
             switch (moniker)
             {
-                case MonikerPackageSources: return LoadPackageSourcesOrThrow<T>(_vsSettings);
+                case MonikerPackageSources: return LoadPackageSourcesOrThrow<T>();
                 default: break;
             }
 
@@ -34,32 +38,28 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            //if (moniker == MonikerPackageSources)
-            //{
-            //    if (value is bool boolValue)
-            //    {
+            if (moniker == MonikerPackageSources)
+            {
+                var list = value as List<Dictionary<string, object>>;
+                //_packageSourceProvider.SavePackageSources()
+                //    if (value is bool boolValue)
+                //    {
 
-            //        return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
-            //    }
-            //}
+                //        return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                //    }
+            }
 
             // Shouldn't happen as these are monikers we declared in registration.json.
             throw new InvalidOperationException();
         }
 
-        private static Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>(ISettings settings)
+        private Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>()
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
             ExternalSettingOperationResult<T> result;
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                var provider = new PackageSourceProvider(settings);
-                List<PackageSource> packageSources = provider.LoadPackageSources().ToList();
+                List<PackageSource> packageSources = _packageSourceProvider.LoadPackageSources().ToList();
 
                 var packageSourcesList = new List<Dictionary<string, object>>(capacity: packageSources.Count);
 
@@ -68,9 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     var dict = new Dictionary<string, object>(capacity: 1)
                     {
+                        { "isEnabled", packageSource.IsEnabled },
                         { "sourceName", packageSource.Name },
                         { "sourceUrl", packageSource.SourceUri },
-                        { "isEnabled", packageSource.IsEnabled }
                     };
 
                     packageSourcesList.Add(dict);

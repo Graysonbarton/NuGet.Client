@@ -159,6 +159,8 @@
               },
               "sourceUrl": {
                 "type": "string",
+                "format": "path",
+                "pathKind": "folderOrUri",
                 "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                 "messages": [
                   {
