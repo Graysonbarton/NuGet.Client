@@ -340,6 +340,24 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Machine-wide package sources.
+        /// </summary>
+        internal static string Text_PackageSources_MachineWide {
+            get {
+                return ResourceManager.GetString("Text_PackageSources_MachineWide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package sources.
+        /// </summary>
+        internal static string Text_PackageSources_NotMachineWide {
+            get {
+                return ResourceManager.GetString("Text_PackageSources_NotMachineWide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source.
         /// </summary>
         internal static string Text_PackageSourceUrl_Header {
