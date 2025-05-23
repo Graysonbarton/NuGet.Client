@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILMerge" PrivateAssets="All" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " />
+    <PackageReference Include="ILRepack" PrivateAssets="All" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " />
     <None Include="$(BuildCommonDirectory)NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
@@ -120,8 +120,9 @@
     <MakeDir Directories="$(ILMergeResultDir)" />
 
     <PropertyGroup>
-      <IlmergeCommand>$(ILMergeConsolePath) ^
+      <IlmergeCommand>$(ILRepack) ^
         /out:$(PathToMergedNuGetPack) ^
+        /log:$(OutputDir)\ILMerge.$(TargetFramework).txt ^
         $(ILMergePlatformArg) ^
         /allowDup ^
         /lib:$(OutputPath)publish ^
@@ -141,6 +142,7 @@
       </IlmergeCommand>
 
     </PropertyGroup>
+    <Error Condition="'$(ILRepack)' == ''" Text="ILRepack not found" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
