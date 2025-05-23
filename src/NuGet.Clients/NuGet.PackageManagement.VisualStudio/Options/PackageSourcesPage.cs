@@ -41,34 +41,73 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         public override Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
             var packageSourcesList = value as IList<IDictionary<string, object>>;
-            if ((moniker != MonikerPackageSources && moniker != MonikerMachineWideSources)
-                || packageSourcesList is null)
+            if (packageSourcesList is null)
             {
                 // Shouldn't happen as these are monikers we declared in registration.json.
                 throw new InvalidOperationException();
             }
 
-            bool isMachineWide = moniker == MonikerMachineWideSources;
-            List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourcesList.Count);
-
-            foreach (Dictionary<string, object> packageSourceDictionary in packageSourcesList)
+            switch (moniker)
             {
-                string name = packageSourceDictionary["sourceName"].ToString();
-                string source = packageSourceDictionary["sourceUrl"].ToString();
-                bool isEnabled = (bool)packageSourceDictionary["isEnabled"];
+                case MonikerPackageSources:
+                    {
+                        List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourcesList.Count);
 
-                PackageSource packageSource = new PackageSource(source, name, isEnabled);
-                packageSource.IsMachineWide = isMachineWide;
+                        foreach (Dictionary<string, object> packageSourceDictionary in packageSourcesList)
+                        {
+                            string name = packageSourceDictionary["sourceName"].ToString();
+                            string source = packageSourceDictionary["sourceUrl"].ToString();
+                            bool isEnabled = (bool)packageSourceDictionary["isEnabled"];
 
-                if (packageSource.IsHttp && !packageSource.IsHttps)
-                {
-                    packageSource.AllowInsecureConnections = true;
-                }
-                packageSources.Add(packageSource);
+                            PackageSource packageSource = new PackageSource(source, name, isEnabled);
+
+                            if (packageSource.IsHttp && !packageSource.IsHttps)
+                            {
+                                packageSource.AllowInsecureConnections = true;
+                            }
+                            packageSources.Add(packageSource);
+                        }
+
+                        _packageSourceProvider.SavePackageSources(packageSources);
+                        return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                    }
+                case MonikerMachineWideSources:
+                    {
+                        List<PackageSource> originalMachineWidePackageSources = LoadPackageSources(isMachineWidePackageSource: true);
+
+                        foreach (PackageSource originalMachineWideSource in originalMachineWidePackageSources)
+                        {
+                            string originalPackageSourceName = originalMachineWideSource.Name;
+                            IDictionary<string, object> targetPackageSource = packageSourcesList
+                                .SingleOrDefault(packageSourceDictionary =>
+                                    packageSourceDictionary["sourceName"].ToString() == originalPackageSourceName);
+
+                            bool originalIsEnabled = originalMachineWideSource.IsEnabled;
+                            bool targetIsEnabled = (bool)targetPackageSource["isEnabled"];
+
+                            if (originalIsEnabled != targetIsEnabled)
+                            {
+                                if (targetIsEnabled)
+                                {
+                                    _packageSourceProvider.EnablePackageSource(originalPackageSourceName);
+                                }
+                                else
+                                {
+                                    _packageSourceProvider.DisablePackageSource(originalPackageSourceName);
+                                }
+                            }
+
+                            // Only one value can be set at a time from Unified Settings, so we're done once a change is made.
+                            break;
+                        }
+
+                        return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                    }
+                default: break;
             }
 
-            _packageSourceProvider.SavePackageSources(packageSources);
-            return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+            // Shouldn't happen as these are monikers we declared in registration.json.
+            throw new InvalidOperationException();
         }
 
         private Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>(bool isMachineWidePackageSource)
@@ -77,9 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                List<PackageSource> packageSources = _packageSourceProvider.LoadPackageSources()
-                    .Where(packageSource => packageSource.IsMachineWide == isMachineWidePackageSource)
-                    .ToList();
+                List<PackageSource> packageSources = LoadPackageSources(isMachineWidePackageSource);
 
                 var packageSourcesList = new List<Dictionary<string, object>>(capacity: packageSources.Count);
 
@@ -96,8 +133,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     packageSourcesList.Add(dict);
                 }
 
-                var castedConfigPaths = (T)(object)packageSourcesList;
-                result = ExternalSettingOperationResult.SuccessResult(castedConfigPaths);
+                var castedPackageSources = (T)(object)packageSourcesList;
+                result = ExternalSettingOperationResult.SuccessResult(castedPackageSources);
             }
             catch (Exception ex)
             {
@@ -106,6 +143,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning restore CA1031 // Do not catch general exception types
 
             return Task.FromResult(result);
+        }
+
+        private List<PackageSource> LoadPackageSources(bool isMachineWidePackageSource)
+        {
+            return _packageSourceProvider.LoadPackageSources()
+                .Where(packageSource => packageSource.IsMachineWide == isMachineWidePackageSource)
+                .ToList();
         }
     }
 }
