@@ -64,6 +64,16 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return failure;
         }
 
+        public static ExternalSettingOperationResult CreateSettingErrorResult(string errorMessage)
+        {
+            var failure = new ExternalSettingOperationResult.Failure(
+                errorMessage,
+                scope: ExternalSettingsErrorScope.SingleSettingOnly,
+                isTransient: true);
+
+            return failure;
+        }
+
         public static Task<ExternalSettingOperationResult<T>> ConvertValueOrThrow<T>(object input) where T : notnull
         {
             if (input is T value)

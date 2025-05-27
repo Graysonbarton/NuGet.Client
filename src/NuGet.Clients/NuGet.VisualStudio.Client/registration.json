@@ -154,18 +154,35 @@
               },
               "sourceName": {
                 "type": "string",
-                "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+                "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "default": "Package source"
               },
               "sourceUrl": {
                 "type": "string",
                 "format": "path",
                 "pathKind": "folderOrUri",
                 "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "default": "https://packagesource",
                 "messages": [
                   {
                     "text": "@Text_HttpSource_Warning;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "${config:sourceUrl} ~= '(?i)^http\\\\:'",
                     "severity": "warning"
+                  },
+                  {
+                    "text": "A name must be provided.",
+                    "visibleWhen": "${config:sourceName} ~= '^\\\\s*$'",
+                    "severity": "error"
+                  },
+                  {
+                    "text": "A source must be provided.",
+                    "visibleWhen": "${config:sourceUrl} ~= '^\\\\s*$'",
+                    "severity": "error"
+                  },
+                  {
+                    "text": "A hostname must be provided.",
+                    "visibleWhen": "${config:sourceUrl} ~= '(?i)^https?\\\\://$'",
+                    "severity": "error"
                   }
                 ]
               }

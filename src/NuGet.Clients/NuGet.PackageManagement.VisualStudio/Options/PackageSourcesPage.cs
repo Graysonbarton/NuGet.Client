@@ -94,8 +94,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         private Task<ExternalSettingOperationResult> SetValuePackageSources<T>(IList<IDictionary<string, object>> packageSourcesList)
         {
-            ExternalSettingOperationResult<T> result;
-
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
@@ -117,15 +115,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 }
 
                 _packageSourceProvider.SavePackageSources(packageSources);
-                return Task.FromResult(ExternalSettingOperationResult.Success.Instance as ExternalSettingOperationResult);
+                return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
             }
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerPackageSources + "')");
+                var errorResult = CreateSettingErrorResult(ex.Message + " ('" + MonikerPackageSources + "')");
+                return Task.FromResult(errorResult);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
-
-            return Task.FromResult(result as ExternalSettingOperationResult);
         }
 
         private Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>(bool isMachineWidePackageSource)
