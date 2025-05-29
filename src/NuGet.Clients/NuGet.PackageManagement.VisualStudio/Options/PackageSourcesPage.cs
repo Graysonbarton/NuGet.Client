@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -29,8 +30,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             switch (moniker)
             {
-                case MonikerPackageSources: return LoadPackageSourcesOrThrow<T>(isMachineWidePackageSource: false);
-                case MonikerMachineWideSources: return LoadPackageSourcesOrThrow<T>(isMachineWidePackageSource: true);
+                case MonikerPackageSources: return LoadPackageSources<T>(isMachineWidePackageSource: false);
+                case MonikerMachineWideSources: return LoadPackageSources<T>(isMachineWidePackageSource: true);
                 default: break;
             }
 
@@ -125,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
-        private Task<ExternalSettingOperationResult<T>> LoadPackageSourcesOrThrow<T>(bool isMachineWidePackageSource)
+        private Task<ExternalSettingOperationResult<T>> LoadPackageSources<T>(bool isMachineWidePackageSource)
         {
             ExternalSettingOperationResult<T> result;
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -153,7 +154,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult<T>(ex.Message + " ('" + MonikerPackageSources + "')");
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.Message);
+                result = CreateSettingErrorResult<T>(errorMessage);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 

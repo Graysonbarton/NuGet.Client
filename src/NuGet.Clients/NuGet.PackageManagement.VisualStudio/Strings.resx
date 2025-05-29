@@ -292,4 +292,7 @@
   <data name="VSOptions_Button_Open" xml:space="preserve">
     <value>_Open</value>
   </data>
+  <data name="Error_NuGetConfig_InvalidState" xml:space="preserve">
+    <value>One or more NuGet.Config file contains an error: {0}</value>
+  </data>
 </root>
