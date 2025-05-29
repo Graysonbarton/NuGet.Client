@@ -1,6 +1,8 @@
 # NuGet Files
 *.nuget.targets
 *.nuget.props
+# Visual Studio Solution Files
+*.sln
 
 # Project K
 project.lock.json
