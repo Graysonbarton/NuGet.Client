@@ -293,6 +293,6 @@
     <value>_Open</value>
   </data>
   <data name="Error_NuGetConfig_InvalidState" xml:space="preserve">
-    <value>One or more NuGet.Config file contains an error: {0}</value>
+    <value>One or more NuGet.Config files contain an error: {0}</value>
   </data>
 </root>

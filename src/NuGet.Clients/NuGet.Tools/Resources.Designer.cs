@@ -106,6 +106,33 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A name must be provided..
+        /// </summary>
+        internal static string Error_PackageSourceName_Missing {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceName_Missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A source must be provided..
+        /// </summary>
+        internal static string Error_PackageSourceUri_Missing {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceUri_Missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A hostname must be provided..
+        /// </summary>
+        internal static string Error_PackageSourceUriHostname_Missing {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceUriHostname_Missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operation failed.
         /// </summary>
         internal static string ErrorDialogBoxTitle {

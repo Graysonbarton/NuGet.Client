@@ -170,17 +170,17 @@
                     "severity": "warning"
                   },
                   {
-                    "text": "A name must be provided.",
+                    "text": "@Error_PackageSourceName_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "${config:sourceName} ~= '^\\\\s*$'",
                     "severity": "error"
                   },
                   {
-                    "text": "A source must be provided.",
+                    "text": "@Error_PackageSourceUri_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "${config:sourceUrl} ~= '^\\\\s*$'",
                     "severity": "error"
                   },
                   {
-                    "text": "A hostname must be provided.",
+                    "text": "@Error_PackageSourceUriHostname_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "${config:sourceUrl} ~= '(?i)^https?\\\\://$'",
                     "severity": "error"
                   }
