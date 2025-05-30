@@ -183,6 +183,11 @@
                     "text": "@Error_PackageSourceUriHostname_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "${config:sourceUrl} ~= '(?i)^https?\\\\://$'",
                     "severity": "error"
+                  },
+                  {
+                    "text": "@Error_PackageSourceUriProtocol_NotSupported;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                    "visibleWhen": "${config:sourceUrl} ~= '^\\\\b(?:https?\\\\://[^\\\\s]+|[a-zA-Z]\\\\:\\\\[^\\s]*) == false'",
+                    "severity": "error"
                   }
                 ]
               }

@@ -124,11 +124,20 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A hostname must be provided..
+        ///   Looks up a localized string similar to A hostname must be provided after &apos;://&apos;..
         /// </summary>
         internal static string Error_PackageSourceUriHostname_Missing {
             get {
                 return ResourceManager.GetString("Error_PackageSourceUriHostname_Missing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only the HTTP(S) protocol is supported..
+        /// </summary>
+        internal static string Error_PackageSourceUriProtocol_NotSupported {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceUriProtocol_NotSupported", resourceCulture);
             }
         }
         
