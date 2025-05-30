@@ -214,6 +214,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to apply NuGet Package Manager settings. Please report a problem using Help &amp;gt; Send Feedback &amp;gt; Report a Problem..
+        /// </summary>
+        public static string Error_ApplySetting_Failed {
+            get {
+                return ResourceManager.GetString("Error_ApplySetting_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create parent folder for file &apos;{0}&apos; in project {1}..
         /// </summary>
         public static string Error_FailedToCreateParentFolder {

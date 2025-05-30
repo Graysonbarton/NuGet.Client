@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
 
@@ -18,11 +19,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     {
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
+        internal const string MonikerSourceName = "sourceName";
+        internal const string MonikerSourceUrl = "sourceUrl";
+        internal const string MonikerIsEnabled = "isEnabled";
         private IPackageSourceProvider _packageSourceProvider;
-
         internal List<PackageSource> _packageSources;
         internal List<PackageSource> _machineWidePackageSources;
-
 
         public PackageSourcesPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider)
             : base(vsSettings)
@@ -97,10 +99,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string originalPackageSourceName = originalMachineWideSource.Name;
                     IDictionary<string, object> targetPackageSource = packageSourcesList
                         .Single(packageSourceDictionary =>
-                            packageSourceDictionary["sourceName"].ToString() == originalPackageSourceName);
+                            packageSourceDictionary[MonikerSourceName].ToString() == originalPackageSourceName);
 
                     bool originalIsEnabled = originalMachineWideSource.IsEnabled;
-                    bool targetIsEnabled = (bool)targetPackageSource["isEnabled"];
+                    bool targetIsEnabled = (bool)targetPackageSource[MonikerIsEnabled];
 
                     if (originalIsEnabled != targetIsEnabled)
                     {
@@ -140,9 +142,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 foreach (Dictionary<string, object> packageSourceDictionary in packageSourcesList)
                 {
-                    string name = packageSourceDictionary["sourceName"].ToString();
-                    string source = packageSourceDictionary["sourceUrl"].ToString();
-                    bool isEnabled = (bool)packageSourceDictionary["isEnabled"];
+                    string name = packageSourceDictionary[MonikerSourceName].ToString();
+                    string source = packageSourceDictionary[MonikerSourceUrl].ToString();
+                    bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
 
                     PackageSource packageSource = new PackageSource(source, name, isEnabled);
 
@@ -159,7 +161,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult(ex.Message + " ('" + MonikerPackageSources + "')");
+                result = CreateSettingErrorResult(Strings.Error_ApplySetting_Failed + " " + ex.Message);
+                ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
@@ -175,13 +178,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 var packageSourcesList = new List<Dictionary<string, object>>(capacity: packageSources.Count);
 
                 // Each list item is represented by a dictionary, which in this case will have a single key-value pair for ConfigPath.
-                foreach (var packageSource in packageSources)
+                foreach (PackageSource packageSource in packageSources)
                 {
                     var dict = new Dictionary<string, object>(capacity: 3)
                     {
-                        { "isEnabled", packageSource.IsEnabled },
-                        { "sourceName", packageSource.Name },
-                        { "sourceUrl", packageSource.SourceUri },
+                        { MonikerSourceName, packageSource.Name },
+                        { MonikerSourceUrl, packageSource.SourceUri },
+                        { MonikerIsEnabled, packageSource.IsEnabled },
                     };
 
                     packageSourcesList.Add(dict);
