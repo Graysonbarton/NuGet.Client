@@ -73,14 +73,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             switch (moniker)
             {
-                case MonikerPackageSources:
-                    {
-                        return SetValuePackageSources<T>(packageSourcesList);
-                    }
-                case MonikerMachineWideSources:
-                    {
-                        return SetEnabledOnPackageSource(packageSourcesList);
-                    }
+                case MonikerPackageSources: return SetValuePackageSources<T>(packageSourcesList);
+                case MonikerMachineWideSources: return SetEnabledOnPackageSource(packageSourcesList);
                 default: break;
             }
 
