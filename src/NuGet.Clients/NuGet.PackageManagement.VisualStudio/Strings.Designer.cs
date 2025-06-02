@@ -268,6 +268,33 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The source specified is invalid..
+        /// </summary>
+        public static string Error_PackageSource_InvalidSource {
+            get {
+                return ResourceManager.GetString("Error_PackageSource_InvalidSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources..
+        /// </summary>
+        public static string Error_PackageSource_UniqueName {
+            get {
+                return ResourceManager.GetString("Error_PackageSource_UniqueName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources..
+        /// </summary>
+        public static string Error_PackageSource_UniqueSource {
+            get {
+                return ResourceManager.GetString("Error_PackageSource_UniqueSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error occurred while getting package vulnerability data: {0}.
         /// </summary>
         public static string Error_VulnerabilityDataFetch {

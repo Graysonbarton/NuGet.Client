@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio.Models;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
@@ -53,8 +56,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             switch (moniker)
             {
-                case MonikerPackageSources: return LoadPackageSourcesSetting<T>(_packageSources);
-                case MonikerMachineWideSources: return LoadPackageSourcesSetting<T>(_machineWidePackageSources);
+                case MonikerPackageSources: return GetValuePackageSources<T>(_packageSources);
+                case MonikerMachineWideSources: return GetValuePackageSources<T>(_machineWidePackageSources);
                 default: break;
             }
 
@@ -73,8 +76,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             switch (moniker)
             {
-                case MonikerPackageSources: return SetValuePackageSources<T>(packageSourcesList);
-                case MonikerMachineWideSources: return SetEnabledOnPackageSource(packageSourcesList);
+                case MonikerPackageSources: return SavePackageSources<T>(packageSourcesList);
+                case MonikerMachineWideSources: return SetIsEnabledOnMachineWidePackageSources(packageSourcesList);
                 default: break;
             }
 
@@ -82,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             throw new InvalidOperationException();
         }
 
-        private Task<ExternalSettingOperationResult> SetEnabledOnPackageSource(IList<IDictionary<string, object>> packageSourcesList)
+        private Task<ExternalSettingOperationResult> SetIsEnabledOnMachineWidePackageSources(IList<IDictionary<string, object>> packageSourcesList)
         {
             ExternalSettingOperationResult result;
 
@@ -126,7 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return Task.FromResult(result);
         }
 
-        private Task<ExternalSettingOperationResult> SetValuePackageSources<T>(IList<IDictionary<string, object>> packageSourcesList)
+        private Task<ExternalSettingOperationResult> SavePackageSources<T>(IList<IDictionary<string, object>> packageSourcesList)
         {
             ExternalSettingOperationResult result;
 
@@ -140,12 +143,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string source = packageSourceDictionary[MonikerSourceUrl].ToString();
                     bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
 
+                    //TODO: Use validator
                     PackageSource packageSource = new PackageSource(source, name, isEnabled);
-
                     if (packageSource.IsHttp && !packageSource.IsHttps)
                     {
                         packageSource.AllowInsecureConnections = true;
                     }
+
                     packageSources.Add(packageSource);
                 }
 
@@ -163,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return Task.FromResult(result);
         }
 
-        private static Task<ExternalSettingOperationResult<T>> LoadPackageSourcesSetting<T>(List<PackageSource> packageSources)
+        private static Task<ExternalSettingOperationResult<T>> GetValuePackageSources<T>(List<PackageSource> packageSources)
         {
             ExternalSettingOperationResult<T> result;
 
@@ -177,7 +181,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     var dict = new Dictionary<string, object>(capacity: 3)
                     {
                         { MonikerSourceName, packageSource.Name },
-                        { MonikerSourceUrl, packageSource.SourceUri },
+                        { MonikerSourceUrl, packageSource.SourceUri }, // Throws if Source is an invalid URI
                         { MonikerIsEnabled, packageSource.IsEnabled },
                     };
 
