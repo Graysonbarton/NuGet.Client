@@ -2458,7 +2458,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A path to a project, solution file, assets file, or directory..
+        ///   Looks up a localized string similar to A path to a project, solution file, project assets file, or directory..
         /// </summary>
         internal static string WhyCommand_PathArgument_Description {
             get {

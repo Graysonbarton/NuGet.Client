@@ -921,7 +921,7 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
     <value>Shows the dependency graph for a particular package for a given project or solution.</value>
   </data>
   <data name="WhyCommand_PathArgument_Description" xml:space="preserve">
-    <value>A path to a project, solution file, assets file, or directory.</value>
+    <value>A path to a project, solution file, project assets file, or directory.</value>
   </data>
   <data name="WhyCommand_PackageArgument_Description" xml:space="preserve">
     <value>The package name to lookup in the dependency graph.</value>
