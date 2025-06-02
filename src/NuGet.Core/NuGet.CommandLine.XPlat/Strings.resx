@@ -1040,4 +1040,7 @@ Do not translate "PackageVersion"</comment>
   <data name="PackageUpdate_PackageArgumentDescription" xml:space="preserve">
     <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
   </data>
+  <data name="WhyCommand_no_restoreArgument_Description" xml:space="preserve">
+    <value>Do not restore before running the command</value>
+  </data>
 </root>

@@ -54,6 +54,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageY.Id,
                     [projectFramework],
+                    true,
                     logger,
                     CancellationToken.None);
 
@@ -97,6 +98,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageZ.Id,
                     [projectFramework],
+                    true,
                     logger,
                     CancellationToken.None);
 
@@ -131,6 +133,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageY.Id,
                     [projectFramework],
+                    true,
                     logger,
                     CancellationToken.None);
 
@@ -154,6 +157,7 @@ namespace NuGet.XPlat.FuncTest
                     "",
                     "PackageX",
                     [],
+                    true,
                     logger,
                     CancellationToken.None);
 
@@ -181,6 +185,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     "",
                     [],
+                    true,
                     logger,
                     CancellationToken.None);
 
@@ -206,6 +211,7 @@ namespace NuGet.XPlat.FuncTest
                     fakeProjectPath,
                     "PackageX",
                     [],
+                    true,
                     logger,
                     CancellationToken.None);
 
@@ -250,6 +256,7 @@ namespace NuGet.XPlat.FuncTest
                     project.ProjectPath,
                     packageY.Id,
                     [inputFrameworksOption, projectFramework],
+                    true,
                     logger,
                     CancellationToken.None);
 

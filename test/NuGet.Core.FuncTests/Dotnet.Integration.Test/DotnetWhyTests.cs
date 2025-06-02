@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 using Xunit;
@@ -299,6 +301,56 @@ namespace Dotnet.Integration.Test
 
             // Assert
             result.AllOutput.Should().Contain("https://aka.ms/dotnet/nuget/why");
+        }
+
+        [Fact]
+        public void WhyCommand_ProjectWithoutAssetsFile_LogsAnError()
+        {
+            // Arrange
+            SimpleTestPathContext pathContext = new SimpleTestPathContext();
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK("ProjectA", pathContext.SolutionRoot, "net8.0");
+            project.Type = ProjectStyle.PackageReference;
+            project.SingleTargetFramework = true;
+
+            solution.Projects.Add(project);
+            solution.Create(pathContext.SolutionRoot);
+            string args = $"nuget why {project.ProjectPath} packageId --no-restore";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, args, testOutputHelper: _testOutputHelper);
+
+            // Assert
+            result.AllOutput.Should().Contain(string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Error_AssetsFileNotFound,
+                project.ProjectPath));
+        }
+
+        [Fact]
+        public void WhyCommand_ProjectWithoutAssetsFile_RestoreEnabled_SucceedsWithNoErrors()
+        {
+            // Arrange
+            SimpleTestPathContext pathContext = new SimpleTestPathContext();
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK("ProjectA", pathContext.SolutionRoot, "net9.0");
+            project.Type = ProjectStyle.PackageReference;
+            project.SingleTargetFramework = true;
+
+            solution.Projects.Add(project);
+            solution.Create(pathContext.SolutionRoot);
+            string args = $"nuget why {project.ProjectPath} packageId";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.WorkingDirectory, args, testOutputHelper: _testOutputHelper);
+
+            // Assert
+            result.AllOutput.Should().NotContain(string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Error_AssetsFileNotFound,
+                project.ProjectPath));
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
@@ -36,6 +37,14 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             IAsyncEnumerable<(string assetsFilePath, string? projectPath)> assetsFiles;
             try
             {
+                if (!whyCommandArgs.NoRestore &&
+                    (whyCommandArgs.Path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                    whyCommandArgs.Path.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase) ||
+                    whyCommandArgs.Path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)))
+                {
+                    await ImplicitRestore.RestoreAsync(whyCommandArgs.Path, whyCommandArgs.Logger);
+                }
+
                 assetsFiles = FindAssetsFilesAsync(whyCommandArgs.Path, whyCommandArgs.Logger, whyCommandArgs.CancellationToken);
             }
             catch (ArgumentException ex)

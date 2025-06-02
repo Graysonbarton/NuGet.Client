@@ -88,6 +88,12 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                 Arity = ArgumentArity.OneOrMore
             };
 
+            Option<bool> noRestore = new Option<bool>("--no-restore")
+            {
+                Description = Strings.WhyCommand_no_restoreArgument_Description,
+                Arity = ArgumentArity.Zero
+            };
+
             HelpOption help = new HelpOption()
             {
                 Arity = ArgumentArity.Zero
@@ -96,6 +102,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             whyCommand.Arguments.Add(path);
             whyCommand.Arguments.Add(package);
             whyCommand.Options.Add(frameworks);
+            whyCommand.Options.Add(noRestore);
             whyCommand.Options.Add(help);
 
             whyCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -108,6 +115,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                         parseResult.GetValue(path),
                         parseResult.GetValue(package),
                         parseResult.GetValue(frameworks),
+                        parseResult.GetValue(noRestore),
                         logger,
                         cancellationToken);
 
