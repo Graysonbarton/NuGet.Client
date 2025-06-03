@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.Options;
 using Xunit;
@@ -31,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
-            Assert.Equal(Strings.Error_PackageSource_UniqueName, exception.Message);
+            exception.Message.Should().Be(Strings.Error_PackageSource_UniqueName);
         }
 
         [Theory]
@@ -48,8 +49,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
                 new PackageSource(source: "https://testsource2.com", name2)
             };
 
-            // Act & Assert
+            // Act
             PackageSourceValidator.PrepareForSave(packageSources);
+
+            // Assert
+            // No exception should be thrown, indicating success.
         }
 
         [Theory]
@@ -69,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
-            Assert.Equal(Strings.Error_PackageSource_UniqueSource, exception.Message);
+            exception.Message.Should().Be(Strings.Error_PackageSource_UniqueSource);
         }
 
         [Theory]
@@ -88,14 +92,28 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
-            Assert.Equal(Strings.Error_PackageSource_UniqueSource, exception.Message);
+            exception.Message.Should().Be(Strings.Error_PackageSource_UniqueSource);
         }
 
-        //[Theory]
-        //[InlineData(@"C")]
-        //[InlineData(@"C:")]
-        //[InlineData(@"\\server\invalid\*\")]
-        //[InlineData(@"https://test")]
-        //[InlineData(@"..\packages")]
+        [Theory]
+        [InlineData(@"C")]
+        [InlineData(@"C:")]
+        [InlineData(@"\\server\invalid\*\")]
+        [InlineData(@"..\packages")]
+        public void ValidatePathOrThrow_InvalidPath_ThrowsArgumentOutOfRangeException(string invalidSource)
+        {
+            // Arrange
+            var packageSource = new PackageSource(source: invalidSource, name: "TestInvalidSource");
+
+            // Act
+            Action act = () => PackageSourceValidator.ValidatePathOrThrow(packageSource);
+
+            // Assert
+            ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(act);
+            exception.ParamName.Should().Be(nameof(PackageSource.Source));
+            exception.Message.Should().StartWith(Strings.Error_PackageSource_InvalidSource);
+        }
+
+        //[InlineData(@"https://test")] // Valid
     }
 }

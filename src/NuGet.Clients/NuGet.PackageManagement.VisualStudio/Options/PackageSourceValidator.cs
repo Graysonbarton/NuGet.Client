@@ -12,6 +12,26 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 {
     public static class PackageSourceValidator
     {
+        public static void ValidatePathOrThrow(PackageSource packageSource)
+        {
+            if (packageSource is null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+
+            string source = packageSource.Source;
+
+            if (!Common.PathValidator.IsValidLocalPath(source) &&
+                !Common.PathValidator.IsValidUncPath(source) &&
+                !Common.PathValidator.IsValidUrl(source))
+            {
+                throw new ArgumentOutOfRangeException(
+                    paramName: nameof(PackageSource.Source),
+                    actualValue: source,
+                    Strings.Error_PackageSource_InvalidSource);
+            }
+        }
+
         public static void PrepareForSave(List<PackageSource> packageSources)
         {
             if (packageSources is null)
