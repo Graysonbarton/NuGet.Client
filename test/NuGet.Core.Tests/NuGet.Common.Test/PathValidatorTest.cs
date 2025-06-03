@@ -48,6 +48,7 @@ namespace NuGet.Common
         }
 
         [Theory]
+        [InlineData(@"C")]
         [InlineData(@"C:")]
         [InlineData(@"\\server\invalid\*\")]
         [InlineData(@"https://test")]
