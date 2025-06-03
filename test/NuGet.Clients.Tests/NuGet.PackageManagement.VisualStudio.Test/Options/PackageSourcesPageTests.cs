@@ -6,16 +6,26 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.VisualStudio.Sdk.TestFramework;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio.Options;
+using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test.Options
 {
+    [Collection(MockedVS.Collection)]
     public class PackageSourcesPageTests : NuGetExternalSettingsProviderTests<PackageSourcesPage>
     {
+        public PackageSourcesPageTests(GlobalServiceProvider sp)
+        {
+            sp.Reset();
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(ThreadHelper.JoinableTaskFactory);
+        }
+
         protected override PackageSourcesPage CreateInstance(VSSettings vsSettings)
         {
             TestPackageSourceProvider packageSourceProvider = new(
@@ -49,8 +59,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
                 CancellationToken.None);
 
             // Assert
-            result.Should()
-                .BeEquivalentTo(ExternalSettingOperationResult.Failure.FailureResultTask<List<Dictionary<string, object>>>);
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ExternalSettingOperationResult.Failure>();
+
+            var failure = result as ExternalSettingOperationResult.Failure;
+            failure.IsTransient.Should().BeTrue();
+            failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
+            failure.ErrorMessage.Should().StartWith(Strings.Error_ApplySetting_Failed);
         }
     }
 }

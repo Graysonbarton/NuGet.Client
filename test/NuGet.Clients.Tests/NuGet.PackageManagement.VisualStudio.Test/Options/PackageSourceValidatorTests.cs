@@ -48,12 +48,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
                 new PackageSource(source: "https://testsource2.com", name2)
             };
 
-            // Act
+            // Act & Assert
             PackageSourceValidator.PrepareForSave(packageSources);
-
-            // Assert
-            //ArgumentException exception = Assert.Throws<ArgumentException>(act);
-            //Assert.Equal(Strings.Error_PackageSource_UniqueName, exception.Message);
         }
 
         [Theory]

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -13,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio.Models;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
@@ -36,6 +36,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             LoadPackageSources();
         }
 
+        [MemberNotNull(nameof(_packageSources))]
+        [MemberNotNull(nameof(_machineWidePackageSources))]
         private void LoadPackageSources()
         {
             IEnumerable<PackageSource> all = _packageSourceProvider.LoadPackageSources();
@@ -139,19 +141,16 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 foreach (Dictionary<string, object> packageSourceDictionary in packageSourcesList)
                 {
-                    string name = packageSourceDictionary[MonikerSourceName].ToString();
-                    string source = packageSourceDictionary[MonikerSourceUrl].ToString();
+                    string name = packageSourceDictionary[MonikerSourceName].ToString().Trim();
+                    string source = packageSourceDictionary[MonikerSourceUrl].ToString().Trim();
                     bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
 
-                    //TODO: Use validator
                     PackageSource packageSource = new PackageSource(source, name, isEnabled);
-                    if (packageSource.IsHttp && !packageSource.IsHttps)
-                    {
-                        packageSource.AllowInsecureConnections = true;
-                    }
-
                     packageSources.Add(packageSource);
                 }
+
+                // Throw any validation errors before saving.
+                PackageSourceValidator.PrepareForSave(packageSources);
 
                 _packageSourceProvider.SavePackageSources(packageSources);
                 result = ExternalSettingOperationResult.Success.Instance;
