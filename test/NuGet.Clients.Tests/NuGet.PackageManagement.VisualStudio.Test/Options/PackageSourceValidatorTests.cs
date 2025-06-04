@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.PrepareForSave(packageSources);
+            Action act = () => PackageSourceValidator.ValidateForSave(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSourceValidator.PrepareForSave(packageSources);
+            PackageSourceValidator.ValidateForSave(packageSources);
 
             // Assert
             // No exception should be thrown, indicating success.
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.PrepareForSave(packageSources);
+            Action act = () => PackageSourceValidator.ValidateForSave(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.PrepareForSave(packageSources);
+            Action act = () => PackageSourceValidator.ValidateForSave(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);

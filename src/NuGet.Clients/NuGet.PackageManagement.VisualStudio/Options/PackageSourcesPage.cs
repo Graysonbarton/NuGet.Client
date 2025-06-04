@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -26,40 +25,31 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const string MonikerSourceUrl = "sourceUrl";
         internal const string MonikerIsEnabled = "isEnabled";
         private IPackageSourceProvider _packageSourceProvider;
-        internal List<PackageSource> _packageSources;
-        internal List<PackageSource> _machineWidePackageSources;
 
         public PackageSourcesPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider)
             : base(vsSettings)
         {
             _packageSourceProvider = packageSourceProvider ?? throw new ArgumentNullException(nameof(packageSourceProvider));
-            LoadPackageSources();
         }
 
-        [MemberNotNull(nameof(_packageSources))]
-        [MemberNotNull(nameof(_machineWidePackageSources))]
-        private void LoadPackageSources()
+        private List<PackageSource> LoadPackageSources(bool isMachineWide)
         {
             IEnumerable<PackageSource> all = _packageSourceProvider.LoadPackageSources();
-            _packageSources = all.Where(packageSource => packageSource.IsMachineWide == false).ToList();
-            _machineWidePackageSources = all.Where(packageSource => packageSource.IsMachineWide == true).ToList();
-        }
-
-        /// <summary>
-        /// Reset any cached values for this specific page instance when the settings change.
-        /// </summary>
-        internal override void VsSettings_SettingsChanged(object sender, EventArgs e)
-        {
-            LoadPackageSources();
-            base.VsSettings_SettingsChanged(sender, e);
+            List<PackageSource> filteredPackageSources = all
+                .Where(packageSource => packageSource.IsMachineWide == isMachineWide).ToList();
+            return filteredPackageSources;
         }
 
         public override Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
         {
             switch (moniker)
             {
-                case MonikerPackageSources: return GetValuePackageSources<T>(_packageSources);
-                case MonikerMachineWideSources: return GetValuePackageSources<T>(_machineWidePackageSources);
+                case MonikerPackageSources:
+                    var packageSources = LoadPackageSources(isMachineWide: false);
+                    return GetValuePackageSources<T>(packageSources);
+                case MonikerMachineWideSources:
+                    var machineWidePackageSources = LoadPackageSources(isMachineWide: true);
+                    return GetValuePackageSources<T>(machineWidePackageSources);
                 default: break;
             }
 
@@ -93,7 +83,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             try
             {
-                foreach (PackageSource originalMachineWideSource in _machineWidePackageSources)
+                var machineWidePackageSources = LoadPackageSources(isMachineWide: true);
+
+                foreach (PackageSource originalMachineWideSource in machineWidePackageSources)
                 {
                     string originalPackageSourceName = originalMachineWideSource.Name;
                     IDictionary<string, object> targetPackageSource = packageSourcesList
@@ -131,28 +123,36 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return Task.FromResult(result);
         }
 
-        private Task<ExternalSettingOperationResult> SavePackageSources<T>(IList<IDictionary<string, object>> packageSourcesList)
+        private Task<ExternalSettingOperationResult> SavePackageSources<T>(IList<IDictionary<string, object>> packageSourceDictionaryList)
         {
             ExternalSettingOperationResult result;
 
             try
             {
-                List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourcesList.Count);
+                List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
+                List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
 
-                foreach (Dictionary<string, object> packageSourceDictionary in packageSourcesList)
+                foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
                 {
-                    string name = packageSourceDictionary[MonikerSourceName].ToString().Trim();
-                    string source = packageSourceDictionary[MonikerSourceUrl].ToString().Trim();
+                    string name = packageSourceDictionary[MonikerSourceName].ToString();
+                    string source = packageSourceDictionary[MonikerSourceUrl].ToString();
                     bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
 
-                    PackageSource packageSource = new PackageSource(source, name, isEnabled);
+                    PackageSource packageSource =
+                        PackageSourceValidator.FindExistingOrCreate(
+                            source,
+                            name,
+                            isEnabled,
+                            existingPackageSources);
+
                     packageSources.Add(packageSource);
                 }
 
                 // Throw any validation errors before saving.
-                PackageSourceValidator.PrepareForSave(packageSources);
+                PackageSourceValidator.ValidateForSave(packageSources);
 
                 _packageSourceProvider.SavePackageSources(packageSources);
+
                 result = ExternalSettingOperationResult.Success.Instance;
             }
 #pragma warning disable CA1031 // Do not catch general exception types

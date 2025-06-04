@@ -10,14 +10,40 @@ using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
-    public static class PackageSourceValidator
+    internal static class PackageSourceValidator
     {
-        public static void ValidatePathOrThrow(PackageSource packageSource)
+        internal static PackageSource FindExistingOrCreate(
+            string source,
+            string name,
+            bool isEnabled,
+            List<PackageSource> packageSources)
         {
-            if (packageSource is null)
+            string trimmedSource = source?.Trim() ?? string.Empty;
+            string trimmedName = name?.Trim() ?? string.Empty;
+
+            PackageSource? foundByName = FindByName(trimmedName, packageSources);
+            if (foundByName is not null)
             {
-                throw new ArgumentNullException(nameof(packageSource));
+                return foundByName;
             }
+
+            PackageSource? foundBySource = FindBySource(trimmedSource, packageSources);
+            if (foundBySource is not null)
+            {
+                return foundBySource;
+            }
+
+            // Create and validate a new Package Source since none was found by name or source.
+            var packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
+            SetAllowInsecureConnectionsProperty(packageSource);
+            ValidatePathOrThrow(packageSource);
+
+            return packageSource;
+        }
+
+        internal static void ValidatePathOrThrow(PackageSource packageSource)
+        {
+            _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
 
             string source = packageSource.Source;
 
@@ -32,76 +58,91 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
         }
 
-        public static void PrepareForSave(List<PackageSource> packageSources)
+        internal static void ValidateForSave(List<PackageSource> packageSources)
         {
-            if (packageSources is null)
-            {
-                throw new ArgumentNullException(nameof(packageSources));
-            }
+            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
             ValidateUniquenessOrThrow(packageSources);
         }
 
-        public static void ValidateUniquenessOrThrow(List<PackageSource> targetPackageSources)
+        internal static void ValidateUniquenessOrThrow(List<PackageSource> packageSources)
         {
-            EnsureUniqueNames(targetPackageSources);
-            EnsureUniqueSources(targetPackageSources);
+            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+
+            EnsureUniqueNames(packageSources);
+            EnsureUniqueSources(packageSources);
         }
 
-        private static void EnsureUniqueNames(List<PackageSource> targetPackageSources)
+        private static void EnsureUniqueNames(List<PackageSource> packageSources)
         {
-            var seen = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
+            var seen = new HashSet<string>(
+                capacity: packageSources.Count,
+                comparer: StringComparer.CurrentCultureIgnoreCase);
 
-            foreach (PackageSource packageSource in targetPackageSources)
+            foreach (PackageSource packageSource in packageSources)
             {
                 if (!seen.Add(packageSource.Name))
                 {
-                    throw new ArgumentException(Strings.Error_PackageSource_UniqueName);
+                    throw new ArgumentException(message: Strings.Error_PackageSource_UniqueName);
                 }
             }
         }
 
-        private static void EnsureUniqueSources(List<PackageSource> targetPackageSources)
+        private static void EnsureUniqueSources(List<PackageSource> packageSources)
         {
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (PackageSource packageSource in targetPackageSources)
+            foreach (PackageSource packageSource in packageSources)
             {
                 if (!seen.Add(packageSource.Source)
                     || !seen.Add(PathValidator.GetCanonicalPath(packageSource.Source)))
                 {
-                    throw new ArgumentException(Strings.Error_PackageSource_UniqueSource);
+                    throw new ArgumentException(message: Strings.Error_PackageSource_UniqueSource);
                 }
             }
         }
 
-        public static PackageSource? FindByName(PackageSource targetPackageSource, List<PackageSource> existingPackageSources)
+        private static void SetAllowInsecureConnectionsProperty(PackageSource packageSource)
         {
-            if (targetPackageSource is null || existingPackageSources is null)
+            _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
+
+            if (packageSource.IsHttp && !packageSource.IsHttps)
+            {
+                packageSource.AllowInsecureConnections = true;
+            }
+        }
+
+        private static PackageSource? FindByName(string name, List<PackageSource> packageSources)
+        {
+            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+
+            if (name is null)
             {
                 return null;
             }
 
-            PackageSource existingPackageSource = existingPackageSources
+            PackageSource existingPackageSource = packageSources
                 .SingleOrDefault(packageSource =>
-                    string.Equals(packageSource.Name, targetPackageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+                    string.Equals(packageSource.Name, name, StringComparison.CurrentCultureIgnoreCase));
 
             return existingPackageSource;
         }
 
-        public static PackageSource? FindBySource(PackageSource targetPackageSource, List<PackageSource> existingPackageSources)
+        private static PackageSource? FindBySource(string source, List<PackageSource> packageSources)
         {
-            if (targetPackageSource is null || existingPackageSources is null)
+            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
+
+            if (source is null)
             {
                 return null;
             }
 
-            PackageSource existingPackageSource = existingPackageSources
+            PackageSource existingPackageSource = packageSources
                 .SingleOrDefault(packageSource =>
-                    string.Equals(packageSource.Source, targetPackageSource.Source, StringComparison.OrdinalIgnoreCase)
+                    string.Equals(packageSource.Source, source, StringComparison.OrdinalIgnoreCase)
                     && string.Equals(
                         PathValidator.GetCanonicalPath(packageSource.Source),
-                        PathValidator.GetCanonicalPath(targetPackageSource.Source),
+                        PathValidator.GetCanonicalPath(source),
                         StringComparison.OrdinalIgnoreCase));
 
             return existingPackageSource;
