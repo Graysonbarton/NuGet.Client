@@ -152,13 +152,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 PackageSourceValidator.ValidateForSave(packageSources);
 
                 _packageSourceProvider.SavePackageSources(packageSources);
-
                 result = ExternalSettingOperationResult.Success.Instance;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                result = CreateSettingErrorResult(Strings.Error_ApplySetting_Failed + " " + ex.Message);
+                result = CreateSettingErrorResult(ex.Message);
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
             }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -193,8 +192,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                var errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.Message);
-                result = CreateSettingErrorResult<T>(errorMessage);
+                var userErrorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.Message);
+                result = CreateSettingErrorResult<T>(userErrorMessage);
+
+                var logErrorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.ToString());
+                ActivityLog.LogError(ExceptionHelper.LogEntrySource, logErrorMessage);
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
