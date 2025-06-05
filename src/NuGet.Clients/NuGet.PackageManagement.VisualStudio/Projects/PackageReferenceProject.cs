@@ -117,7 +117,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return (packageSpec, assetsPath);
         }
 
-        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitiveOrigins, CancellationToken token) => await GetInstalledAndTransitivePackagesAsync(includeTransitivePackages: true, includeTransitiveOrigins, token);
+        public virtual async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitiveOrigins, CancellationToken token)
+        {
+            IsInstalledAndTransitiveComputationNeeded = true;
+            return await GetInstalledAndTransitivePackagesAsync(includeTransitivePackages: true, includeTransitiveOrigins, token);
+        }
 
         internal async Task<ProjectPackages> GetInstalledAndTransitivePackagesAsync(bool includeTransitivePackages, bool includeTransitiveOrigins, CancellationToken token)
         {
@@ -177,6 +181,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
+            targetsList = await GetTargetsListAsync(assetsFilePath, token);
             // get installed packages
             List<PackageReference> calculatedInstalledPackages = packageSpec
                 .TargetFrameworks

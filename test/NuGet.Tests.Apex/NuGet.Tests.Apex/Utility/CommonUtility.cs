@@ -216,7 +216,7 @@ namespace NuGet.Tests.Apex
 
         public static List<LibraryDependency> GetPackageReferences(ProjectTestExtension project)
         {
-            project.Save();
+            //project.Save();
             var doc = XDocument.Load(project.FullPath);
 
             return doc.Root.Descendants()

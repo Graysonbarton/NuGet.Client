@@ -104,6 +104,7 @@ namespace NuGet.PackageManagement.UI
         public override async Task RefreshAsync(CancellationToken cancellationToken)
         {
             await UpdateInstalledVersionsAsync(cancellationToken);
+            await CreateVersionsAndUpdateInstallUninstallAsync();
         }
 
         public string InstalledVersions
@@ -145,6 +146,7 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     IPackageReferenceContextInfo packageContext = await GetPackageContextAsync(project.NuGetProject, Id, cancellationToken);
+                    IEnumerable<IPackageReferenceContextInfo> allPackageContexts = await GetAllPackagesContextAsync(project.NuGetProject, Id, cancellationToken);
 
                     project.InstalledVersionMaxVulnerability = -1;
                     project.RequestedVersion = null;
@@ -211,6 +213,18 @@ namespace NuGet.PackageManagement.UI
 
             ITransitivePackageReferenceContextInfo transitivePackage = installedAndTransitivePackages.TransitivePackages
                 .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId));
+            return installedPackage ?? transitivePackage;
+        }
+
+        private async Task<IEnumerable<IPackageReferenceContextInfo>> GetAllPackagesContextAsync(
+            IProjectContextInfo project,
+            string packageId,
+            CancellationToken cancellationToken)
+        {
+            IInstalledAndTransitivePackages installedAndTransitivePackages = await project.GetInstalledAndTransitivePackagesAsync(ServiceBroker, cancellationToken);
+            var installedPackage = installedAndTransitivePackages.InstalledPackages;
+
+            var transitivePackage = installedAndTransitivePackages.TransitivePackages;
             return installedPackage ?? transitivePackage;
         }
 

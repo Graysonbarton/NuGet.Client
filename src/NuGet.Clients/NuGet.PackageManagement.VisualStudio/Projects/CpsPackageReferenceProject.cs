@@ -263,7 +263,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 
-            if (installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
+            if (installationContext.AreAllPackagesConditional || installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
             {
                 // This is the "partial install" case. That is, install the package to only a subset of the frameworks
                 // supported by this project.
@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (string.IsNullOrEmpty(packageId)) throw new ArgumentException(string.Format(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
             if (installationContext == null) throw new ArgumentNullException(nameof(installationContext));
 
-            if (installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
+            if (installationContext.AreAllPackagesConditional || installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
             {
                 var conditionalService = _unconfiguredProject
                     .Services

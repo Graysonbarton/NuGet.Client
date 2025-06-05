@@ -37,7 +37,11 @@
           </Setter.Value>
         </Setter>
         <Style.Triggers>
-          <DataTrigger Binding="{Binding VulnerableVersions.Count}" Value="1">
+          <MultiDataTrigger>
+            <MultiDataTrigger.Conditions>
+              <Condition Binding="{Binding VulnerableVersions.Count}" Value="1"/>
+              <Condition Binding="{Binding TopLevelInstalledVersions.Count}" Value="1"/>
+            </MultiDataTrigger.Conditions>
             <Setter Property="Text">
               <Setter.Value>
                 <MultiBinding Converter="{StaticResource StringFormatConverter}">
@@ -46,7 +50,7 @@
                 </MultiBinding>
               </Setter.Value>
             </Setter>
-          </DataTrigger>
+          </MultiDataTrigger>
         </Style.Triggers>
       </Style>
       
@@ -356,7 +360,60 @@
               </StackPanel>
             </imaging:CrispImage.ToolTip>
           </imaging:CrispImage>
+          <imaging:CrispImage
+              x:Name="_multiTargeting"
+              VerticalAlignment="Center"
+              ToolTip="Multi-targetting detected for this package, package information displayed corresponds to lowest framework installed."
+              AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
+              Moniker="{x:Static catalog:KnownMonikers.StatusInformationOutline}">
+            <imaging:CrispImage.Style>
+              <Style TargetType="imaging:CrispImage">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                  <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                      <Condition Binding="{Binding Path=PackageLevel}" Value="Transitive"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </MultiDataTrigger>
+                  <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                      <Condition Binding="{Binding NuGetFrameworks.Count}" Value="1" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </MultiDataTrigger>
+                </Style.Triggers>
+              </Style>
+            </imaging:CrispImage.Style>
+          </imaging:CrispImage>
         </StackPanel>
+
+        <!--<Style TargetType="TextBlock" x:Key="VulnerabilitiesCountText">
+          <Setter Property="Text">
+            <Setter.Value>
+              <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                <Binding Source="{x:Static nuget:Resources.Label_MultiplePackageVulnerableVersionToolTip}" />
+                <Binding Path="VulnerableVersionsString" />
+              </MultiBinding>
+            </Setter.Value>
+          </Setter>
+          <Style.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding VulnerableVersions.Count}" Value="1"/>
+                <Condition Binding="{Binding TopLevelInstalledVersions.Count}" Value="1"/>
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Text">
+                <Setter.Value>
+                  <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                    <Binding Source="{x:Static nuget:Resources.Label_PackageVulnerableToolTip}" />
+                    <Binding Path="VulnerabilityMaxSeverity" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                  </MultiBinding>
+                </Setter.Value>
+              </Setter>
+            </MultiDataTrigger>
+          </Style.Triggers>
+        </Style>-->
 
         <!-- installed version -->
         <TextBlock
@@ -367,13 +424,26 @@
                       VerticalAlignment="Center"
                       HorizontalAlignment="Right"
                       Visibility="{Binding IsNotInstalled, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
-                      Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}">
+          >
+                      <!--Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}"-->
           <TextBlock.ToolTip>
             <MultiBinding Converter="{StaticResource StringFormatConverter}">
               <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
               <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
             </MultiBinding>
           </TextBlock.ToolTip>
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Text" Value="{x:Static nuget:Resources.Multiple_Versions_Installed}" >
+              </Setter>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding TopLevelInstalledVersions.Count}" Value="1">
+                  <Setter Property="Text" Value="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=N}">
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
           <AutomationProperties.Name>
             <MultiBinding Converter="{StaticResource StringFormatConverter}">
               <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />

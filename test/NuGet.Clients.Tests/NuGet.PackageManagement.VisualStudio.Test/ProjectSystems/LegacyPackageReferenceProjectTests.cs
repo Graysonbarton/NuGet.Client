@@ -627,11 +627,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var projectServices = new TestProjectSystemServices();
 
                 LibraryDependency actualDependency = null;
-                Mock.Get(projectServices.References)
-                    .Setup(x => x.AddOrUpdatePackageReferenceAsync(
-                        It.IsAny<LibraryDependency>(), CancellationToken.None))
-                    .Callback<LibraryDependency, CancellationToken>((d, _) => actualDependency = d)
-                    .Returns(Task.CompletedTask);
+                //Mock.Get(projectServices.References)
+                //    .Setup(x => x.AddOrUpdatePackageReferenceAsync(
+                //        It.IsAny<LibraryDependency>(), CancellationToken.None))
+                //    .Callback<LibraryDependency, CancellationToken>((d, _) => actualDependency = d)
+                //    .Returns(Task.CompletedTask);
 
                 var testProject = new LegacyPackageReferenceProject(
                     projectAdapter,

@@ -43,6 +43,26 @@ namespace NuGet.Tests.Apex
         }
 
         [TestMethod]
+        [Timeout(LongerTimeout)]
+        public void SimpleInstallFromIVsInstaller2()
+        {
+            // Arrange
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution();
+            ProjectTestExtension projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+
+            EnvDTE.Project project = VisualStudio.Dte.Solution.Projects.Item(1);
+
+            // Act
+            nugetTestService.InstallPackage(project.UniqueName, "newtonsoft.json");
+
+            // Assert
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, projExt, "newtonsoft.json", "13.0.3", Logger);
+        }
+
+        [TestMethod]
         [Timeout(DefaultTimeout)]
         public void SimpleUninstallFromIVsInstaller()
         {

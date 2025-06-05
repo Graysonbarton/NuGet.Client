@@ -18,6 +18,7 @@ using Microsoft;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Frameworks;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -252,6 +253,41 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 return _transitiveInstalledVersions;
+            }
+        }
+
+        private List<NuGetFramework> _nuGetFrameworks;
+        public List<NuGetFramework> NuGetFrameworks
+        {
+            get
+            {
+                if (_nuGetFrameworks == null)
+                {
+                    _nuGetFrameworks = new();
+                }
+                return _nuGetFrameworks;
+            }
+            set
+            {
+                if (value != _nuGetFrameworks)
+                {
+                    _nuGetFrameworks = value;
+                    OnPropertyChanged(nameof(NuGetFrameworks));
+                }
+            }
+        }
+
+        private List<(NuGetVersion InstalledVersion, string TargetFramework)> _topLevelInstalledVersions;
+        public List<(NuGetVersion InstalledVersion, string TargetFramework)> TopLevelInstalledVersions
+        {
+            get
+            {
+                return _topLevelInstalledVersions;
+            }
+            set
+            {
+                _topLevelInstalledVersions = value;
+                OnPropertyChanged(nameof(TopLevelInstalledVersions));
             }
         }
 
@@ -939,9 +975,17 @@ namespace NuGet.PackageManagement.UI
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages, bool clearCache = false)
         {
             // Get the maximum version installed in any target project/solution
-            InstalledVersion = installedPackages
-                .GetPackageVersions(Id)
-                .MaxOrDefault();
+            var packages = installedPackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id));
+            TopLevelInstalledVersions = packages
+                .SelectMany(p => p.PackageReferences.Select(s => (InstalledVersion: p.Version, TargetFramework: s.Framework.GetShortFolderName())))
+                .ToList();
+            NuGetFrameworks = packages
+                .SelectMany(p => p.PackageReferences.Select(s => s.Framework))
+                .Distinct()
+                .ToList();
+
+            InstalledVersion = installedPackages.GetPackageVersions(Id).MaxOrDefault();
 
             if (clearCache && InstalledVersion != null)
             {
