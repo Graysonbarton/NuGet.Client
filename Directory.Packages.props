@@ -24,7 +24,7 @@
   <PropertyGroup>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion Condition="'$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
+    <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.2.0</MicrosoftWebXdtPackageVersion>
     <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
     <SystemMemoryPackageVersion Condition="'$(SystemMemoryPackageVersion)' == ''">4.6.3</SystemMemoryPackageVersion>
     <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">9.0.6</SystemSecurityCryptographyPkcsVersion>
@@ -51,6 +51,8 @@
     <PackageVersion Include="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Feed" Version="6.0.0-beta.20528.5" />
     <PackageVersion Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.24415.2" />
+    <PackageVersion Include="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25260.104" />
+    <PackageVersion Include="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25260.104" />
     <PackageVersion Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19253.5" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
@@ -131,7 +133,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="1.0.0" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " />
+    <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " GeneratePathProperty="true" />
+    <!-- Temporary while waiting for https://github.com/dotnet/arcade/pull/15967 -->
+    <GlobalPackageReference Include="MicroBuild.Core" Version="0.3.1" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " GeneratePathProperty="true"/>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">
