@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 }
 
                 // Throw any validation errors before saving.
-                PackageSourceValidator.ValidateForSave(packageSources);
+                PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
 
                 _packageSourceProvider.SavePackageSources(packageSources);
                 result = ExternalSettingOperationResult.Success.Instance;
@@ -186,7 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     packageSourcesList.Add(dict);
                 }
 
-                var castedPackageSources = (T)(object)packageSourcesList;
+                T castedPackageSources = (T)(object)packageSourcesList;
                 result = ExternalSettingOperationResult.SuccessResult(castedPackageSources);
             }
 #pragma warning disable CA1031 // Do not catch general exception types

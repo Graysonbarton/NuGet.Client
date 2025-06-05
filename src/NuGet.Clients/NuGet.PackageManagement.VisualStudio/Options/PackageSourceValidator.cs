@@ -45,6 +45,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         {
             _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
 
+            if (packageSource.IsHttp)
+            {
+                return;
+            }
+
             string source = packageSource.Source;
 
             if (!Common.PathValidator.IsValidLocalPath(source) &&
@@ -56,13 +61,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     actualValue: source,
                     Strings.Error_PackageSource_InvalidSource);
             }
-        }
-
-        internal static void ValidateForSave(List<PackageSource> packageSources)
-        {
-            _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
-
-            ValidateUniquenessOrThrow(packageSources);
         }
 
         internal static void ValidateUniquenessOrThrow(List<PackageSource> packageSources)
@@ -94,6 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             foreach (PackageSource packageSource in packageSources)
             {
+                //TODO this is off because canonical path is being seen as a duplicate.
                 if (!seen.Add(packageSource.Source)
                     || !seen.Add(PathValidator.GetCanonicalPath(packageSource.Source)))
                 {
