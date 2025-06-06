@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
@@ -36,26 +37,48 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             // Create and validate a new Package Source since none was found by name or source.
             var packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
             SetAllowInsecureConnectionsProperty(packageSource);
-            ValidatePathOrThrow(packageSource);
+            EnsureValidSources(packageSource);
 
             return packageSource;
         }
 
-        internal static void ValidatePathOrThrow(PackageSource packageSource)
+        /// <summary>
+        /// Validates the Uri of a remote or local package source.
+        /// The regex used here matches the the error message declared in the Unified Settings registration.json file
+        /// for the package sources page.
+        /// </summary>
+        /// <param name="packageSource"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        internal static void EnsureValidSources(PackageSource packageSource)
         {
             _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
+            string source = packageSource.Source;
 
             if (packageSource.IsHttp)
             {
-                return;
+                // This check is copied from the registration.json and should be kept in sync.See section:
+                // 'nuGetPackageManager.packageSources.externalSettings -> properties -> packageSources -> properties -> sourceUrl'.
+                if (!Regex.IsMatch(
+                    input: source,
+                    pattern: "^(?:https?://[^\\s]+)"))
+                {
+                    throw new ArgumentOutOfRangeException(
+                        paramName: nameof(PackageSource.Source),
+                        actualValue: source,
+                        message: Strings.Error_PackageSourceUriProtocol_NotSupported);
+                }
             }
-
-            string source = packageSource.Source;
-
-            if (!Common.PathValidator.IsValidLocalPath(source) &&
+            else if (!Common.PathValidator.IsValidLocalPath(source) &&
                 !Common.PathValidator.IsValidUncPath(source) &&
                 !Common.PathValidator.IsValidUrl(source))
             {
+                // This check is copied from the registration.json and should be kept in sync.See section:
+                // 'nuGetPackageManager.packageSources.externalSettings -> properties -> packageSources -> properties -> sourceUrl'.
+                //Regex.Match(
+                //    input: source,
+                //    pattern: "^(?:https?://[^\\s]+)");
+                //| [a - zA - Z]\\\\:\\\\\\\\[^\\\\s] *
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(PackageSource.Source),
                     actualValue: source,
@@ -79,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             foreach (PackageSource packageSource in packageSources)
             {
-                if (!seen.Add(packageSource.Name))
+                if (!seen.Add(packageSource.Name.Trim()))
                 {
                     throw new ArgumentException(message: Strings.Error_PackageSource_UniqueName);
                 }
@@ -92,8 +115,20 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             foreach (PackageSource packageSource in packageSources)
             {
-                if (!seen.Add(packageSource.Source)
-                    && !seen.Add(PathValidator.GetCanonicalPath(packageSource.Source)))
+                string trimmedSource = packageSource.Source?.Trim() ?? string.Empty;
+
+                bool isDuplicate;
+                if (packageSource.IsLocal)
+                {
+                    string canonicalPath = PathValidator.GetCanonicalPath(trimmedSource);
+                    isDuplicate = !seen.Add(canonicalPath);
+                }
+                else
+                {
+                    isDuplicate = !seen.Add(trimmedSource);
+                }
+
+                if (isDuplicate)
                 {
                     throw new ArgumentException(message: Strings.Error_PackageSource_UniqueSource);
                 }
@@ -119,9 +154,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 return null;
             }
 
+            string trimmedName = name?.Trim() ?? string.Empty;
+
             PackageSource existingPackageSource = packageSources
                 .SingleOrDefault(packageSource =>
-                    string.Equals(packageSource.Name, name, StringComparison.CurrentCultureIgnoreCase));
+                    string.Equals(packageSource.Name, trimmedName, StringComparison.CurrentCultureIgnoreCase));
 
             return existingPackageSource;
         }
@@ -135,13 +172,23 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 return null;
             }
 
+            string trimmedSource = source?.Trim() ?? string.Empty;
+
             PackageSource existingPackageSource = packageSources
                 .SingleOrDefault(packageSource =>
-                    string.Equals(packageSource.Source, source, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(
-                        PathValidator.GetCanonicalPath(packageSource.Source),
-                        PathValidator.GetCanonicalPath(source),
-                        StringComparison.OrdinalIgnoreCase));
+                {
+                    string trimmedTargetSource = packageSource.Source?.Trim() ?? string.Empty;
+                    bool areTrimmedStringsEqual =
+                        string.Equals(
+                            trimmedTargetSource,
+                            trimmedSource,
+                            StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(
+                            PathValidator.GetCanonicalPath(trimmedTargetSource),
+                            PathValidator.GetCanonicalPath(trimmedSource),
+                            StringComparison.OrdinalIgnoreCase);
+                    return areTrimmedStringsEqual;
+                });
 
             return existingPackageSource;
         }
