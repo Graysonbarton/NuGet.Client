@@ -92,9 +92,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             foreach (PackageSource packageSource in packageSources)
             {
-                //TODO this is off because canonical path is being seen as a duplicate.
                 if (!seen.Add(packageSource.Source)
-                    || !seen.Add(PathValidator.GetCanonicalPath(packageSource.Source)))
+                    && !seen.Add(PathValidator.GetCanonicalPath(packageSource.Source)))
                 {
                     throw new ArgumentException(message: Strings.Error_PackageSource_UniqueSource);
                 }
