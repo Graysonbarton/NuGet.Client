@@ -168,26 +168,6 @@
                     "text": "@Text_HttpSource_Warning;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                     "visibleWhen": "${config:sourceUrl} ~= '(?i)^http\\\\:'",
                     "severity": "warning"
-                  },
-                  {
-                    "text": "@Error_PackageSourceName_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                    "visibleWhen": "${config:sourceName} ~= '^\\\\s*$'",
-                    "severity": "error"
-                  },
-                  {
-                    "text": "@Error_PackageSourceUri_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                    "visibleWhen": "${config:sourceUrl} ~= '^\\\\s*$'",
-                    "severity": "error"
-                  },
-                  {
-                    "text": "@Error_PackageSourceUriHostname_Missing;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                    "visibleWhen": "${config:sourceUrl} ~= '(?i)^https?\\\\://$'",
-                    "severity": "error"
-                  },
-                  {
-                    "text": "@Error_PackageSourceUriProtocol_NotSupported;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                    "visibleWhen": "(${config:sourceUrl} ~= '^(?:https?\\\\://[^\\\\s]+|[a-zA-Z]\\\\:\\\\\\\\[^\\\\s]*)') == false",
-                    "severity": "error"
                   }
                 ]
               }

@@ -156,11 +156,17 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             string trimmedName = name?.Trim() ?? string.Empty;
 
-            PackageSource existingPackageSource = packageSources
-                .SingleOrDefault(packageSource =>
-                    string.Equals(packageSource.Name, trimmedName, StringComparison.CurrentCultureIgnoreCase));
+            List<PackageSource> existingPackageSource = packageSources
+                .Where(packageSource =>
+                    string.Equals(packageSource.Name, trimmedName, StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
 
-            return existingPackageSource;
+            if (existingPackageSource.Count > 1)
+            {
+                throw new InvalidOperationException(message: Strings.Error_PackageSource_UniqueName);
+            }
+
+            return existingPackageSource.SingleOrDefault();
         }
 
         private static PackageSource? FindBySource(string source, List<PackageSource> packageSources)
@@ -174,8 +180,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             string trimmedSource = source?.Trim() ?? string.Empty;
 
-            PackageSource existingPackageSource = packageSources
-                .SingleOrDefault(packageSource =>
+            List<PackageSource> existingPackageSource = packageSources
+                .Where(packageSource =>
                 {
                     string trimmedTargetSource = packageSource.Source?.Trim() ?? string.Empty;
                     bool areTrimmedStringsEqual =
@@ -188,9 +194,15 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                             PathValidator.GetCanonicalPath(trimmedSource),
                             StringComparison.OrdinalIgnoreCase);
                     return areTrimmedStringsEqual;
-                });
+                })
+                .ToList();
 
-            return existingPackageSource;
+            if (existingPackageSource.Count > 1)
+            {
+                throw new InvalidOperationException(message: Strings.Error_PackageSource_UniqueSource);
+            }
+
+            return existingPackageSource.SingleOrDefault();
         }
     }
 }
