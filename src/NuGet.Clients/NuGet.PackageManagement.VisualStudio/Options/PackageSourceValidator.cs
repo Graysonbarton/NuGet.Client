@@ -23,15 +23,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             string trimmedName = name?.Trim() ?? string.Empty;
 
             PackageSource? foundByName = FindByName(trimmedName, packageSources);
-            if (foundByName is not null)
+            PackageSource? foundBySource = FindBySource(trimmedSource, packageSources);
+
+            if (foundByName is not null
+                && foundBySource is not null
+                && (string.Equals(foundByName.Name, foundBySource.Name, StringComparison.CurrentCultureIgnoreCase)
+                    || string.Equals(foundByName.Source, foundBySource.Source, StringComparison.OrdinalIgnoreCase)))
             {
                 return foundByName;
-            }
-
-            PackageSource? foundBySource = FindBySource(trimmedSource, packageSources);
-            if (foundBySource is not null)
-            {
-                return foundBySource;
             }
 
             // Create and validate a new Package Source since none was found by name or source.
@@ -57,8 +56,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             if (packageSource.IsHttp)
             {
-                // This check is copied from the registration.json and should be kept in sync.See section:
-                // 'nuGetPackageManager.packageSources.externalSettings -> properties -> packageSources -> properties -> sourceUrl'.
                 if (!Regex.IsMatch(
                     input: source,
                     pattern: "^(?:https?://[^\\s]+)"))
@@ -73,12 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 !Common.PathValidator.IsValidUncPath(source) &&
                 !Common.PathValidator.IsValidUrl(source))
             {
-                // This check is copied from the registration.json and should be kept in sync.See section:
-                // 'nuGetPackageManager.packageSources.externalSettings -> properties -> packageSources -> properties -> sourceUrl'.
-                //Regex.Match(
-                //    input: source,
-                //    pattern: "^(?:https?://[^\\s]+)");
-                //| [a - zA - Z]\\\\:\\\\\\\\[^\\\\s] *
                 throw new ArgumentOutOfRangeException(
                     paramName: nameof(PackageSource.Source),
                     actualValue: source,
