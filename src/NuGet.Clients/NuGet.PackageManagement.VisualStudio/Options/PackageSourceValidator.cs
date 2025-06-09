@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
@@ -100,19 +99,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             _ = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
             string source = packageSource.Source;
 
-            if (packageSource.IsHttp)
-            {
-                if (!Regex.IsMatch(
-                    input: source,
-                    pattern: "^(?:https?://[^\\s]+)"))
-                {
-                    throw new ArgumentOutOfRangeException(
-                        paramName: nameof(PackageSource.Source),
-                        actualValue: source,
-                        message: Strings.Error_PackageSourceUriProtocol_NotSupported);
-                }
-            }
-            else if (!Common.PathValidator.IsValidLocalPath(source) &&
+            if (!Common.PathValidator.IsValidLocalPath(source) &&
                 !Common.PathValidator.IsValidUncPath(source) &&
                 !Common.PathValidator.IsValidUrl(source))
             {

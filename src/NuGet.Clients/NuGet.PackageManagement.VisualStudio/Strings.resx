@@ -304,7 +304,4 @@
   <data name="Error_PackageSource_UniqueSource" xml:space="preserve">
     <value>The source specified has already been added to the list of available package sources.</value>
   </data>
-  <data name="Error_PackageSourceUriProtocol_NotSupported" xml:space="preserve">
-    <value>Only the HTTP(S) protocol is supported.</value>
-  </data>
 </root>

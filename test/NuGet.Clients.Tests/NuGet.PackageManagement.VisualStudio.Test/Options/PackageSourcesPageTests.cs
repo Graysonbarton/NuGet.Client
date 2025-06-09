@@ -34,16 +34,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             return new PackageSourcesPage(vsSettings, packageSourceProvider);
         }
 
-        [Fact]
-        public async Task SetValueAsync_WithIncompleteUri_ReturnsFailureResultTaskAsync()
+        [Theory]
+        [InlineData(@"http://")]
+        [InlineData(@"https://")]
+        [InlineData(@"https:// ")]
+        [InlineData(@" https://")]
+        [InlineData(@"ftp://")]
+        [InlineData(@"http:/")]
+        public async Task SetValueAsync_WithInvalidRemoteSource_ReturnsFailureResultTaskAsync(string invalidSource)
         {
             // Arrange
             PackageSourcesPage instance = CreateInstance(_vsSettings);
-            string inputIncompleteUri = "https://";
             Dictionary<string, object> packageSourceDictionary = new Dictionary<string, object>();
 
             packageSourceDictionary["sourceName"] = "unitTestingSourceName";
-            packageSourceDictionary["sourceUrl"] = inputIncompleteUri;
+            packageSourceDictionary["sourceUrl"] = invalidSource;
             packageSourceDictionary["isEnabled"] = true;
 
             IList<IDictionary<string, object>> packageSourceDictionaryList =
@@ -65,7 +70,50 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             var failure = result as ExternalSettingOperationResult.Failure;
             failure.IsTransient.Should().BeTrue();
             failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
-            //failure.ErrorMessage.Should().StartWith(Strings.Error_ApplySetting_Failed);
+            failure.ErrorMessage.Should().StartWith(Strings.Error_PackageSource_InvalidSource);
+        }
+
+        [Theory]
+        [InlineData(@"C")]
+        [InlineData(@"http")] // Missing :// causes this to be treated as a file path.
+        [InlineData(@"http:")]
+        [InlineData(@"ftp")] // Missing :// causes this to be treated as a file path.
+        [InlineData(@"C:")]
+        [InlineData(@"C:\invalid\*\'\chars")]
+        [InlineData(@"\\server\invalid\*\")]
+        [InlineData(@"..\packages")]
+        [InlineData(@"./configs/source.config")]
+        [InlineData(@"../local-packages/")]
+        public async Task SetValueAsync_WithInvalidUncPath_ReturnsFailureResultTaskAsync(string invalidSource)
+        {
+            // Arrange
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+            Dictionary<string, object> packageSourceDictionary = new Dictionary<string, object>();
+
+            packageSourceDictionary["sourceName"] = "unitTestingSourceName";
+            packageSourceDictionary["sourceUrl"] = invalidSource;
+            packageSourceDictionary["isEnabled"] = true;
+
+            IList<IDictionary<string, object>> packageSourceDictionaryList =
+                new List<IDictionary<string, object>>(capacity: 1)
+                {
+                    packageSourceDictionary
+                };
+
+            // Act
+            ExternalSettingOperationResult result = await instance.SetValueAsync(
+                PackageSourcesPage.MonikerPackageSources,
+                packageSourceDictionaryList,
+                CancellationToken.None);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ExternalSettingOperationResult.Failure>();
+
+            var failure = result as ExternalSettingOperationResult.Failure;
+            failure.IsTransient.Should().BeTrue();
+            failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
+            failure.ErrorMessage.Should().StartWith(Strings.Error_PackageSource_InvalidSource);
         }
     }
 }

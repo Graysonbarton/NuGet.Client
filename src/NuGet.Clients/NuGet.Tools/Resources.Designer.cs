@@ -133,15 +133,6 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only the HTTP(S) protocol is supported..
-        /// </summary>
-        internal static string Error_PackageSourceUriProtocol_NotSupported {
-            get {
-                return ResourceManager.GetString("Error_PackageSourceUriProtocol_NotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Operation failed.
         /// </summary>
         internal static string ErrorDialogBoxTitle {

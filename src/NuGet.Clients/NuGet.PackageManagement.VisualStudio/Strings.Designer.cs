@@ -286,15 +286,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only the HTTP(S) protocol is supported..
-        /// </summary>
-        public static string Error_PackageSourceUriProtocol_NotSupported {
-            get {
-                return ResourceManager.GetString("Error_PackageSourceUriProtocol_NotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Error occurred while getting package vulnerability data: {0}.
         /// </summary>
         public static string Error_VulnerabilityDataFetch {

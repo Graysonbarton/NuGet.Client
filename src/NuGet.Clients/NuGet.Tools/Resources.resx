@@ -230,7 +230,4 @@
   <data name="Error_PackageSourceUriHostname_Missing" xml:space="preserve">
     <value>A hostname must be provided after '://'.</value>
   </data>
-  <data name="Error_PackageSourceUriProtocol_NotSupported" xml:space="preserve">
-    <value>Only the HTTP(S) protocol is supported.</value>
-  </data>
 </root>

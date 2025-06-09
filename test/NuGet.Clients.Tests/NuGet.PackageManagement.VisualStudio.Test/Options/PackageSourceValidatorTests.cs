@@ -145,7 +145,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             // Assert
             ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(act);
             exception.ParamName.Should().Be(nameof(PackageSource.Source));
-            exception.Message.Should().StartWith(Strings.Error_PackageSourceUriProtocol_NotSupported);
+            exception.Message.Should().StartWith(Strings.Error_PackageSource_InvalidSource);
         }
 
         [Theory]
@@ -296,7 +296,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             bool originalAllowInsecureConnections = true;
             bool originalDisableTLSCertificateValidation = true;
-            PackageSourceCredential originalCredential = new(originalName, "user", "pass", true, "basic");
+            PackageSourceCredential originalCredential = GetTestPackageSourceCredential(name);
 
             var packageSources = new List<PackageSource>
             {
@@ -336,7 +336,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             bool originalAllowInsecureConnections = true;
             bool originalDisableTLSCertificateValidation = true;
-            PackageSourceCredential originalCredential = new(originalName, "user", "pass", true, "basic");
+            PackageSourceCredential originalCredential = GetTestPackageSourceCredential(name);
 
             var packageSources = new List<PackageSource>
             {
@@ -375,11 +375,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             bool originalAllowInsecureConnections = true;
             bool originalDisableTLSCertificateValidation = true;
-            PackageSourceCredential originalCredential = new(name, "user", "pass", true, "basic");
+            PackageSourceCredential originalCredential = GetTestPackageSourceCredential(name);
 
             var packageSources = new List<PackageSource>
             {
-                new PackageSource(source, name, isEnabled)
+                new PackageSource(source, name, originalIsEnabled)
                 {
                     AllowInsecureConnections = originalAllowInsecureConnections,
                     DisableTLSCertificateValidation = originalDisableTLSCertificateValidation,
@@ -401,6 +401,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only IsEnabled should have changed.");
             result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only IsEnabled should have changed.");
             result.IsEnabled.Should().Be(isEnabled, because: "Only IsEnabled should have changed.");
+        }
+
+        private static PackageSourceCredential GetTestPackageSourceCredential(string packageSourceName)
+        {
+            return new(
+                source: packageSourceName,
+                username: "user",
+                passwordText: "pass",
+                isPasswordClearText: true,
+                validAuthenticationTypesText: "basic");
         }
     }
 }
