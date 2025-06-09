@@ -40,15 +40,15 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return filteredPackageSources;
         }
 
-        public override Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
+        public override async Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken)
         {
             switch (moniker)
             {
                 case MonikerPackageSources:
-                    var packageSources = LoadPackageSources(isMachineWide: false);
+                    var packageSources = await Task.Run(() => LoadPackageSources(isMachineWide: false), cancellationToken);
                     return GetValuePackageSources<T>(packageSources);
                 case MonikerMachineWideSources:
-                    var machineWidePackageSources = LoadPackageSources(isMachineWide: true);
+                    var machineWidePackageSources = await Task.Run(() => LoadPackageSources(isMachineWide: true), cancellationToken);
                     return GetValuePackageSources<T>(machineWidePackageSources);
                 default: break;
             }
@@ -57,27 +57,37 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             throw new InvalidOperationException();
         }
 
-        public override Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
+        public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
             var packageSourcesList = value as IList<IDictionary<string, object>>;
             if (packageSourcesList is null)
             {
-                // Shouldn't happen as these are monikers we declared in registration.json.
                 throw new InvalidOperationException();
             }
 
-            switch (moniker)
+            try
             {
-                case MonikerPackageSources: return SavePackageSources<T>(packageSourcesList);
-                case MonikerMachineWideSources: return SetIsEnabledOnMachineWidePackageSources(packageSourcesList);
-                default: break;
-            }
+                // Stop listening to setting changes while saving.
+                _suppressSettingValuesChanged = true;
 
-            // Shouldn't happen as these are monikers we declared in registration.json.
-            throw new InvalidOperationException();
+                switch (moniker)
+                {
+                    case MonikerPackageSources:
+                        return await Task.Run(() => SavePackageSources<T>(packageSourcesList), cancellationToken);
+                    case MonikerMachineWideSources:
+                        return await Task.Run(() => SetIsEnabledOnMachineWidePackageSources(packageSourcesList), cancellationToken);
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+            finally
+            {
+                // Resume listening to setting changes after saving.
+                _suppressSettingValuesChanged = false;
+            }
         }
 
-        private Task<ExternalSettingOperationResult> SetIsEnabledOnMachineWidePackageSources(IList<IDictionary<string, object>> packageSourcesList)
+        private ExternalSettingOperationResult SetIsEnabledOnMachineWidePackageSources(IList<IDictionary<string, object>> packageSourcesList)
         {
             ExternalSettingOperationResult result;
 
@@ -120,10 +130,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 result = CreateSettingErrorResult(ex.Message + " ('" + MonikerMachineWideSources + "')");
             }
 
-            return Task.FromResult(result);
+            return result;
         }
 
-        private Task<ExternalSettingOperationResult> SavePackageSources<T>(IList<IDictionary<string, object>> packageSourceDictionaryList)
+        private ExternalSettingOperationResult SavePackageSources<T>(IList<IDictionary<string, object>> packageSourceDictionaryList)
         {
             ExternalSettingOperationResult result;
 
@@ -162,10 +172,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
             }
 
-            return Task.FromResult(result);
+            return result;
         }
 
-        private static Task<ExternalSettingOperationResult<T>> GetValuePackageSources<T>(List<PackageSource> packageSources)
+        private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(List<PackageSource> packageSources)
         {
             ExternalSettingOperationResult<T> result;
 
@@ -200,7 +210,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, logErrorMessage);
             }
 
-            return Task.FromResult(result);
+            return result;
         }
     }
 }

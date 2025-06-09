@@ -15,6 +15,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     public abstract class NuGetExternalSettingsProvider : IExternalSettingsProvider
     {
         protected readonly VSSettings _vsSettings;
+        protected bool _suppressSettingValuesChanged;
 
         protected NuGetExternalSettingsProvider(VSSettings vsSettings)
         {
@@ -39,6 +40,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         internal virtual void VsSettings_SettingsChanged(object sender, EventArgs e)
         {
+            if (_suppressSettingValuesChanged)
+            {
+                return; // Suppress the event invocation
+            }
+
             SettingValuesChanged?.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
         }
 
