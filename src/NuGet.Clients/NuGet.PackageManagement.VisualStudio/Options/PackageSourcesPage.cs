@@ -115,10 +115,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 result = CreateSettingErrorResult(ex.Message + " ('" + MonikerMachineWideSources + "')");
             }
-#pragma warning restore CA1031 // Do not catch general exception types
 
             return Task.FromResult(result);
         }
@@ -156,11 +156,11 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 result = CreateSettingErrorResult(ex.Message);
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
             }
-#pragma warning restore CA1031 // Do not catch general exception types
 
             return Task.FromResult(result);
         }
@@ -191,6 +191,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 var userErrorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.Message);
                 result = CreateSettingErrorResult<T>(userErrorMessage);
@@ -198,7 +199,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 var logErrorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.ToString());
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, logErrorMessage);
             }
-#pragma warning restore CA1031 // Do not catch general exception types
 
             return Task.FromResult(result);
         }

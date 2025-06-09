@@ -135,7 +135,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         private static void EnsureUniqueSources(List<PackageSource> packageSources)
         {
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var seen = new HashSet<string>(
+                capacity: packageSources.Count,
+                comparer: StringComparer.OrdinalIgnoreCase);
 
             foreach (PackageSource packageSource in packageSources)
             {
