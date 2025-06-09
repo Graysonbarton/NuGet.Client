@@ -45,11 +45,19 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             switch (moniker)
             {
                 case MonikerPackageSources:
-                    var packageSources = await Task.Run(() => LoadPackageSources(isMachineWide: false), cancellationToken);
+                    var packageSources = await Task.Run(
+                        () => LoadPackageSources(isMachineWide: false),
+                        cancellationToken);
+
                     return GetValuePackageSources<T>(packageSources);
+
                 case MonikerMachineWideSources:
-                    var machineWidePackageSources = await Task.Run(() => LoadPackageSources(isMachineWide: true), cancellationToken);
+                    var machineWidePackageSources = await Task.Run(
+                        () => LoadPackageSources(isMachineWide: true),
+                        cancellationToken);
+
                     return GetValuePackageSources<T>(machineWidePackageSources);
+
                 default: break;
             }
 
@@ -73,9 +81,15 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 switch (moniker)
                 {
                     case MonikerPackageSources:
-                        return await Task.Run(() => SavePackageSources<T>(packageSourcesList), cancellationToken);
+                        return await Task.Run(
+                            () => SavePackageSources<T>(packageSourcesList, cancellationToken),
+                            cancellationToken);
+
                     case MonikerMachineWideSources:
-                        return await Task.Run(() => SetIsEnabledOnMachineWidePackageSources(packageSourcesList), cancellationToken);
+                        return await Task.Run(
+                            () => SetIsEnabledOnMachineWidePackageSources(packageSourcesList, cancellationToken),
+                            cancellationToken);
+
                     default:
                         throw new InvalidOperationException();
                 }
@@ -87,7 +101,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
         }
 
-        private ExternalSettingOperationResult SetIsEnabledOnMachineWidePackageSources(IList<IDictionary<string, object>> packageSourcesList)
+        private ExternalSettingOperationResult SetIsEnabledOnMachineWidePackageSources(
+            IList<IDictionary<string, object>> packageSourcesList,
+            CancellationToken cancellationToken)
         {
             ExternalSettingOperationResult result;
 
@@ -97,6 +113,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 foreach (PackageSource originalMachineWideSource in machineWidePackageSources)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     string originalPackageSourceName = originalMachineWideSource.Name;
                     IDictionary<string, object> targetPackageSource = packageSourcesList
                         .Single(packageSourceDictionary =>
@@ -123,6 +141,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 result = ExternalSettingOperationResult.Success.Instance;
             }
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                throw ex;
+            }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -133,7 +155,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return result;
         }
 
-        private ExternalSettingOperationResult SavePackageSources<T>(IList<IDictionary<string, object>> packageSourceDictionaryList)
+        private ExternalSettingOperationResult SavePackageSources<T>(IList<IDictionary<string, object>> packageSourceDictionaryList, CancellationToken cancellationToken)
         {
             ExternalSettingOperationResult result;
 
@@ -144,6 +166,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     string name = packageSourceDictionary[MonikerSourceName].ToString();
                     string source = packageSourceDictionary[MonikerSourceUrl].ToString();
                     bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
@@ -163,6 +187,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 _packageSourceProvider.SavePackageSources(packageSources);
                 result = ExternalSettingOperationResult.Success.Instance;
+            }
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                throw ex;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
