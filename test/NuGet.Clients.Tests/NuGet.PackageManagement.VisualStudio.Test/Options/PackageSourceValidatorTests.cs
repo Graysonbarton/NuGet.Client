@@ -215,8 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Theory]
-        //C:\, C:\path, C:\path\to\
-        [InlineData(@"C:\")] // Valid UNC
+        [InlineData(@"C:\")]
         [InlineData(@"C:\path")]
         [InlineData(@"C:\path\")]
         [InlineData(@"C:\path\to")]
@@ -231,6 +230,177 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             // Assert
             // No exception should be thrown, indicating success.
+        }
+
+        [Fact]
+        public void FindExistingOrCreate_NewSource_CreatesNewSource()
+        {
+            // Arrange
+            string name = "TestSource3";
+            string source = "https://testsource3.com";
+            bool isEnabled = true;
+
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource(source: "https://testsource1.com", name: "TestSource1", isEnabled: true),
+                new PackageSource(source: "https://testsource2.com", name: "TestSource2", isEnabled: true)
+            };
+
+            // Act
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Name.Should().Be(name);
+            result.Source.Should().Be(source);
+            result.IsEnabled.Should().Be(isEnabled);
+        }
+
+        [Fact]
+        public void FindExistingOrCreate_NewHttpSource_CreatesNewSource_WithAllowInsecureConnectionsSetToTrue()
+        {
+            // Arrange
+            string name = "TestSource3";
+            string source = "http://testsource3.com";
+            bool isEnabled = true;
+
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource(source: "https://testsource1.com", name: "TestSource1", isEnabled: true),
+                new PackageSource(source: "https://testsource2.com", name: "TestSource2", isEnabled: true)
+            };
+
+            // Act
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Name.Should().Be(name);
+            result.Source.Should().Be(source);
+            result.IsEnabled.Should().Be(isEnabled);
+            result.AllowInsecureConnections
+                .Should()
+                .BeTrue(because: "New HTTP sources should allow insecure connections by default.");
+        }
+
+        [Fact]
+        public void FindExistingOrCreate_FoundExistingBySource_UpdatesName()
+        {
+            // Arrange
+            string originalName = "TestSource1";
+            string originalSource = "http://testsource1.com";
+
+            string name = "TestSource2";
+            string source = originalSource;
+            bool isEnabled = true;
+
+            bool originalAllowInsecureConnections = true;
+            bool originalDisableTLSCertificateValidation = true;
+            PackageSourceCredential originalCredential = new(originalName, "user", "pass", true, "basic");
+
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource(source: originalSource, name: originalName, isEnabled)
+                {
+                    AllowInsecureConnections = originalAllowInsecureConnections,
+                    DisableTLSCertificateValidation = originalDisableTLSCertificateValidation,
+                    Credentials = originalCredential
+                }
+            };
+
+            // Act
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Name.Should().Be(name, because: "A rename was expected.");
+
+            // Verify unchanged properties.
+            result.Source.Should().Be(source, because: "Only the name should have changed.");
+            result.AllowInsecureConnections.Should().Be(originalAllowInsecureConnections, because: "Only the name should have changed.");
+            result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only the name should have changed.");
+            result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only the name should have changed.");
+            result.IsEnabled.Should().Be(isEnabled, because: "Only the name should have changed.");
+        }
+
+        [Fact]
+        public void FindExistingOrCreate_FoundExistingByName_UpdatesSource()
+        {
+            // Arrange
+            string originalName = "TestSource1";
+            string originalSource = "http://testsource1.com";
+
+            string name = originalName;
+            string source = "https://testsource2.com";
+            bool isEnabled = true;
+
+            bool originalAllowInsecureConnections = true;
+            bool originalDisableTLSCertificateValidation = true;
+            PackageSourceCredential originalCredential = new(originalName, "user", "pass", true, "basic");
+
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource(source: originalSource, name: originalName, isEnabled)
+                {
+                    AllowInsecureConnections = originalAllowInsecureConnections,
+                    DisableTLSCertificateValidation = originalDisableTLSCertificateValidation,
+                    Credentials = originalCredential
+                }
+            };
+
+            // Act
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Source.Should().Be(source, because: "A source change was expected.");
+
+            // Verify unchanged properties.
+            result.Name.Should().Be(originalName, because: "Only the source should have changed.");
+            result.AllowInsecureConnections.Should().Be(originalAllowInsecureConnections, because: "Only the source should have changed.");
+            result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only the source should have changed.");
+            result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only the source should have changed.");
+            result.IsEnabled.Should().Be(isEnabled, because: "Only the source should have changed.");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FindExistingOrCreate_FoundExistingByNameAndSource_UpdatesIsEnabled(bool originalIsEnabled)
+        {
+            // Arrange
+            string name = "TestSource1";
+            string source = "http://testsource1.com";
+            bool isEnabled = !originalIsEnabled; // Toggle the enabled state
+
+            bool originalAllowInsecureConnections = true;
+            bool originalDisableTLSCertificateValidation = true;
+            PackageSourceCredential originalCredential = new(name, "user", "pass", true, "basic");
+
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource(source, name, isEnabled)
+                {
+                    AllowInsecureConnections = originalAllowInsecureConnections,
+                    DisableTLSCertificateValidation = originalDisableTLSCertificateValidation,
+                    Credentials = originalCredential
+                }
+            };
+
+            // Act
+            PackageSource result = PackageSourceValidator.FindExistingOrCreate(source, name, isEnabled, packageSources);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsEnabled.Should().Be(isEnabled, because: "The IsEnabled state should have been toggled.");
+
+            // Verify unchanged properties.
+            result.Name.Should().Be(name, because: "Only IsEnabled should have changed.");
+            result.Source.Should().Be(source, because: "Only IsEnabled should have changed.");
+            result.AllowInsecureConnections.Should().Be(originalAllowInsecureConnections, because: "Only IsEnabled should have changed.");
+            result.DisableTLSCertificateValidation.Should().Be(originalDisableTLSCertificateValidation, because: "Only IsEnabled should have changed.");
+            result.Credentials.Should().BeEquivalentTo(originalCredential, because: "Only IsEnabled should have changed.");
+            result.IsEnabled.Should().Be(isEnabled, because: "Only IsEnabled should have changed.");
         }
     }
 }
