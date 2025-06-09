@@ -25,25 +25,71 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             PackageSource? foundByName = FindByName(trimmedName, packageSources);
             PackageSource? foundBySource = FindBySource(trimmedSource, packageSources);
 
-            if (foundByName is not null
-                && foundBySource is not null
-                && (string.Equals(foundByName.Name, foundBySource.Name, StringComparison.CurrentCultureIgnoreCase)
-                    || string.Equals(foundByName.Source, foundBySource.Source, StringComparison.OrdinalIgnoreCase)))
-            {
-                return foundByName;
-            }
+            PackageSource packageSource;
 
             // Create and validate a new Package Source since none was found by name or source.
-            var packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
-            SetAllowInsecureConnectionsProperty(packageSource);
-            EnsureValidSources(packageSource);
+            if (foundByName is null && foundBySource is null)
+            {
+                packageSource = new PackageSource(trimmedSource, trimmedName, isEnabled);
+                SetAllowInsecureConnectionsProperty(packageSource);
+                EnsureValidSources(packageSource);
+            }
+            // If both name and source match, use the existing PackageSource.
+            else if (foundByName is not null && foundBySource is not null)
+            {
+                // Only the IsEnabled property could be changing.
+                foundByName.IsEnabled = isEnabled;
+                packageSource = foundByName;
+            }
+            // The source is changing on an existing PackageSource.
+            else if (foundByName is not null)
+            {
+                // Preserve existing properties by cloning the package source.
+                packageSource = new PackageSource(
+                    trimmedSource,
+                    foundByName.Name,
+                    isEnabled,
+                    foundByName.IsOfficial,
+                    foundByName.IsPersistable)
+                {
+                    IsMachineWide = foundByName.IsMachineWide,
+                    Credentials = foundByName.Credentials,
+                    ClientCertificates = foundByName.ClientCertificates,
+                    Description = foundByName.Description,
+                    ProtocolVersion = foundByName.ProtocolVersion,
+                    AllowInsecureConnections = foundByName.AllowInsecureConnections,
+                    DisableTLSCertificateValidation = foundByName.DisableTLSCertificateValidation,
+                    MaxHttpRequestsPerSource = foundByName.MaxHttpRequestsPerSource,
+                };
+            }
+            // The name is changing on an existing PackageSource.
+            else
+            {
+                // Preserve existing properties by cloning the package source.
+                packageSource = new PackageSource(
+                    foundBySource!.Source,
+                    trimmedName,
+                    isEnabled,
+                    foundBySource.IsOfficial,
+                    foundBySource.IsPersistable)
+                {
+                    IsMachineWide = foundBySource.IsMachineWide,
+                    Credentials = foundBySource.Credentials,
+                    ClientCertificates = foundBySource.ClientCertificates,
+                    Description = foundBySource.Description,
+                    ProtocolVersion = foundBySource.ProtocolVersion,
+                    AllowInsecureConnections = foundBySource.AllowInsecureConnections,
+                    DisableTLSCertificateValidation = foundBySource.DisableTLSCertificateValidation,
+                    MaxHttpRequestsPerSource = foundBySource.MaxHttpRequestsPerSource,
+                };
+            }
 
             return packageSource;
         }
 
         /// <summary>
         /// Validates the Uri of a remote or local package source.
-        /// The regex used here matches the the error message declared in the Unified Settings registration.json file
+        /// The regex used here will eventually be supported in the Unified Settings registration.json file
         /// for the package sources page.
         /// </summary>
         /// <param name="packageSource"></param>
