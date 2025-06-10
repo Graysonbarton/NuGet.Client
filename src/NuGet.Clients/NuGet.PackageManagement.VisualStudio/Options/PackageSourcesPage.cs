@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -231,10 +230,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                var userErrorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.Message);
+                var userErrorMessage = Strings.Error_NuGetConfig_InvalidState + " " + ex.Message;
                 result = CreateSettingErrorResult<T>(userErrorMessage);
 
-                var logErrorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_NuGetConfig_InvalidState, ex.ToString());
+                var logErrorMessage = Strings.Error_NuGetConfig_InvalidState + " " + ex.ToString();
                 ActivityLog.LogError(ExceptionHelper.LogEntrySource, logErrorMessage);
             }
 

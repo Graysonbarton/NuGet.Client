@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -20,18 +22,48 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
     [Collection(MockedVS.Collection)]
     public class PackageSourcesPageTests : NuGetExternalSettingsProviderTests<PackageSourcesPage>
     {
+        private IEnumerable<PackageSource>? _packageSources;
+
         public PackageSourcesPageTests(GlobalServiceProvider sp)
         {
             sp.Reset();
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(ThreadHelper.JoinableTaskFactory);
+            _packageSources = Enumerable.Empty<PackageSource>();
         }
 
-        protected override PackageSourcesPage CreateInstance(VSSettings vsSettings)
+        protected override PackageSourcesPage CreateInstance(VSSettings? vsSettings)
         {
-            TestPackageSourceProvider packageSourceProvider = new(
-                packageSources: Enumerable.Empty<PackageSource>());
+            TestPackageSourceProvider packageSourceProvider = new(_packageSources);
 
-            return new PackageSourcesPage(vsSettings, packageSourceProvider);
+            return new PackageSourcesPage(vsSettings!, packageSourceProvider);
+        }
+
+        [Fact]
+        public async Task GetValueAsync_WhenNuGetConfigHasInvalidSource_ReturnsFailureResultTaskAsync()
+        {
+            // Arrange
+            string invalidSource = "http://";
+            _packageSources =
+            [
+                new PackageSource(invalidSource, "unitTestingSourceName")
+            ];
+
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+
+            // Act
+            var result = await instance.GetValueAsync<List<Dictionary<string, object>>>(
+                PackageSourcesPage.MonikerPackageSources,
+                CancellationToken.None);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ExternalSettingOperationResult<List<Dictionary<string, object>>>.Failure>();
+
+            var failure = result as ExternalSettingOperationResult<List<Dictionary<string, object>>>.Failure;
+            failure.Should().NotBeNull();
+            failure.IsTransient.Should().BeTrue();
+            failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
+            failure.ErrorMessage.Should().StartWith(Strings.Error_NuGetConfig_InvalidState);
         }
 
         [Theory]
@@ -68,6 +100,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.Should().BeOfType<ExternalSettingOperationResult.Failure>();
 
             var failure = result as ExternalSettingOperationResult.Failure;
+            failure.Should().NotBeNull();
             failure.IsTransient.Should().BeTrue();
             failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
             failure.ErrorMessage.Should().StartWith(Strings.Error_PackageSource_InvalidSource);
@@ -111,6 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.Should().BeOfType<ExternalSettingOperationResult.Failure>();
 
             var failure = result as ExternalSettingOperationResult.Failure;
+            failure.Should().NotBeNull();
             failure.IsTransient.Should().BeTrue();
             failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
             failure.ErrorMessage.Should().StartWith(Strings.Error_PackageSource_InvalidSource);

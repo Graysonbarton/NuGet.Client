@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One or more NuGet.Config files contain an error: {0}.
+        ///   Looks up a localized string similar to One or more NuGet.Config files contain an error..
         /// </summary>
         public static string Error_NuGetConfig_InvalidState {
             get {
