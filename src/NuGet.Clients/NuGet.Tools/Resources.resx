@@ -213,7 +213,7 @@
     <value>Enabled</value>
   </data>
   <data name="Text_HttpSource_Warning" xml:space="preserve">
-    <value>HTTP sources are insecure. Consider using HTTPS instead.</value>
+    <value>HTTP sources are insecure. 'AllowInsecureConnections' is enabled and allows HTTP access. For more information about secure options, see https://aka.ms/nuget-https-everywhere.</value>
   </data>
   <data name="Text_PackageSources_MachineWide" xml:space="preserve">
     <value>Machine-wide package sources</value>

@@ -349,7 +349,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to HTTP sources are insecure. Consider using HTTPS instead..
+        ///   Looks up a localized string similar to HTTP sources are insecure. &apos;AllowInsecureConnections&apos; is enabled and allows HTTP access. For more information about secure options, see https://aka.ms/nuget-https-everywhere..
         /// </summary>
         internal static string Text_HttpSource_Warning {
             get {
