@@ -220,6 +220,35 @@
           "allowAdditionsAndRemovals": false
         }
       }
+    },
+    "nuGetPackageManager.packageSourceMapping.externalSettings": {
+      "type": "external",
+      "title": "@116;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "backingStoreDescription": "@SettingsStoredInNuGetConfiguration;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+
+      "callback": {
+        "packageId": "5fcc8577-4feb-4d04-ad72-d6c629b083cc",
+        "serviceId": "ACE317DA-8399-4DA4-9828-107E02244D45"
+      },
+
+      "realtimeNotifications": true,
+
+      // Settings within this external settings region.  Unlike "normal" settings, these have no registered default values.
+      // Their values are retrieved via IExternalSettingsProvider.GetValueAsync; when the user edits them, the new values are passed to
+      // IExternalSettingsProvider.SetValueAsync.
+      "properties": {
+        "packageSourceMapping": {
+          "type": "array",
+          "title": "Package Source Mapping",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [ "puppies", "kittens", "warthogs" ],
+            "enumItemLabels": [ "Puppies", "Kittens", "Warthogs" ]
+          },
+          "default": []
+        }
+      }
     }
   },
   "categories": {
@@ -249,6 +278,11 @@
       "title": "@114;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "legacyOptionPageId": "2819C3B6-FC75-4CD5-8C77-877903DE864C",
       "order": 2
+    },
+    "nuGetPackageManager.packageSourceMapping": {
+      "title": "@116;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "legacyOptionPageId": "F175964E-89F5-4521-8FE2-C10C07BB968C",
+      "order": 3
     }
   }
 }
