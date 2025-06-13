@@ -175,12 +175,6 @@
                     "severity": "error"
                   }
                 ]
-              },
-              "allowInsecureConnections": {
-                "type" : "boolean",
-                "title": "", // No title, this is a hidden property
-                "default": false,
-                "visibleWhen": "false" // Only used to determine whether to show the warning/error messages above.
               }
             }
           },
