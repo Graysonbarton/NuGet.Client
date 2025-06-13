@@ -241,12 +241,32 @@
           "type": "array",
           "title": "Package Source Mapping",
           "uniqueItems": true,
+
+          // Metadata about items in this array
           "items": {
-            "type": "string",
-            "enum": [ "puppies", "kittens", "warthogs" ],
-            "enumItemLabels": [ "Puppies", "Kittens", "Warthogs" ]
+            "type": "object",
+
+            // The properties of items in this array
+            "properties": {
+              "packageId": {
+                "type": "string",
+                "title": "Package ID or Pattern",
+                "default": "Example: Contoso.Contracts or System.*"
+              },
+              "sourceName": {
+                "type": "string",
+                "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "enum": [ "nugetorg", "dotnetpublic" ],
+                "enumItemLabels": [ "nuget.org", "dotnet-public" ],
+                "default": "nugetorg"
+              }
+            }
           },
-          "default": []
+
+          // The actual items that appear by default; in most cases, you'd leave this array empty.
+          "default": [],
+          "allowItemEditing": true,
+          "allowAdditionsAndRemovals": true,
         }
       }
     }
