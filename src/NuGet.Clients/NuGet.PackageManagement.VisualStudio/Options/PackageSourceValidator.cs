@@ -90,6 +90,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     DisableTLSCertificateValidation = foundBySource.DisableTLSCertificateValidation,
                     MaxHttpRequestsPerSource = foundBySource.MaxHttpRequestsPerSource,
                 };
+
+                SetAllowInsecureConnectionsProperty(packageSource);
             }
 
             return packageSource;
@@ -177,6 +179,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             if (packageSource.IsHttp && !packageSource.IsHttps)
             {
                 packageSource.AllowInsecureConnections = true;
+            }
+
+            // An HTTP source has been changed to HTTPS, so allowing insecure connections
+            // is no longer needed.
+            if (packageSource.AllowInsecureConnections && packageSource.IsHttps)
+            {
+                packageSource.AllowInsecureConnections = false;
             }
         }
 
