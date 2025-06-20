@@ -255,6 +255,7 @@
               },
               "sourceName": {
                 "type": "string",
+                "uniqueItems": true,
                 "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                 "enum": [ "nugetorg", "dotnetpublic" ],
                 "enumItemLabels": [ "nuget.org", "dotnet-public" ],
@@ -266,7 +267,7 @@
           // The actual items that appear by default; in most cases, you'd leave this array empty.
           "default": [],
           "allowItemEditing": true,
-          "allowAdditionsAndRemovals": true,
+          "allowAdditionsAndRemovals": true
         }
       }
     }

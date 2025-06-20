@@ -210,6 +210,7 @@ namespace NuGetVSExtension
 
             VSSettings vsSettings = Settings.Value as VSSettings;
             PackageSourceProvider packageSourceProvider = new(Settings.Value);
+            PackageSourceMappingProvider packageSourceMappingProvider = new(Settings.Value);
 
             AddService(typeof(GeneralPage),
                 (container, ct, serviceType) => Task.FromResult<object>(new GeneralPage(vsSettings)),
@@ -221,7 +222,7 @@ namespace NuGetVSExtension
                 (container, ct, serviceType) => Task.FromResult<object>(new PackageSourcesPage(vsSettings, packageSourceProvider)),
                 promote: true);
             AddService(typeof(PackageSourceMappingPage),
-                (container, ct, serviceType) => Task.FromResult<object>(new PackageSourceMappingPage(vsSettings)),
+                (container, ct, serviceType) => Task.FromResult<object>(new PackageSourceMappingPage(vsSettings, packageSourceMappingProvider)),
                 promote: true);
 
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
