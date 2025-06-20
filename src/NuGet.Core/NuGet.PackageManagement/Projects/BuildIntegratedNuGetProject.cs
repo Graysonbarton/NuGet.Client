@@ -14,8 +14,8 @@ using NuGet.Versioning;
 namespace NuGet.ProjectManagement.Projects
 {
     /// <summary>
-    /// A NuGet integrated MSBuild project.k
-    /// These projects contain a project.json or package references in CSProj
+    /// A NuGet integrated MSBuild project.
+    /// These projects contain package references in CSProj.
     /// </summary>
     [DebuggerDisplay("{ProjectName} [{ProjectStyle}]")]
     public abstract class BuildIntegratedNuGetProject
