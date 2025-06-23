@@ -61,11 +61,21 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 throw new InvalidOperationException();
             }
 
-            if (moniker == MonikerPackageSourceMapping)
+            try
             {
-                return await Task.Run(
-                    () => SavePackageSourceMappings(packageSourceMappingList, cancellationToken),
-                    cancellationToken);
+                // Stop listening to setting changes while saving.
+                _suppressSettingValuesChanged = true;
+                if (moniker == MonikerPackageSourceMapping)
+                {
+                    return await Task.Run(
+                        () => SavePackageSourceMappings(packageSourceMappingList, cancellationToken),
+                        cancellationToken);
+                }
+            }
+            finally
+            {
+                // Resume listening to setting changes after saving.
+                _suppressSettingValuesChanged = false;
             }
 
             // Shouldn't happen as these are monikers we declared in registration.json.
