@@ -53,9 +53,122 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             throw new InvalidOperationException();
         }
 
-        public override Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
+        public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var packageSourceMappingList = value as IReadOnlyList<IDictionary<string, object>>;
+            if (packageSourceMappingList is null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            if (moniker == MonikerPackageSourceMapping)
+            {
+                return await Task.Run(
+                    () => SavePackageSourceMappings(packageSourceMappingList, cancellationToken),
+                    cancellationToken);
+            }
+
+            // Shouldn't happen as these are monikers we declared in registration.json.
+            throw new InvalidOperationException();
+        }
+
+        private ExternalSettingOperationResult SavePackageSourceMappings(IReadOnlyList<IDictionary<string, object>> packageSourceMappingList, CancellationToken cancellationToken)
+        {
+            ExternalSettingOperationResult result;
+
+            try
+            {
+                List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceMappingList.Count);
+                List<(string, IEnumerable<string>)> packageSourceNamesToPackageIdPatterns = new List<(string, IEnumerable<string>)>(capacity: packageSourceMappingList.Count);
+
+                foreach (Dictionary<string, object> packageSourceMappingDictionary in packageSourceMappingList)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    string packageIdPattern = packageSourceMappingDictionary[MonikerPackageId].ToString();
+                    var sourceObjects = (IEnumerable<object>)packageSourceMappingDictionary[MonikerSourceNames];
+                    List<string> sources = sourceObjects.Select(sourceObject => sourceObject.ToString()).ToList();
+                    packageSourceNamesToPackageIdPatterns.Add((packageIdPattern, sources));
+                }
+
+                IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings = _packageSourceMappingProvider.GetPackageSourceMappingItems();
+                IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems = ConvertPackageIdAndSourcesToSourceMappingsSourceItems(packageSourceNamesToPackageIdPatterns);
+
+                if (SourceMappingsChanged(originalPackageSourceMappings, packageSourceMappingsSourceItems))
+                {
+                    _packageSourceMappingProvider.SavePackageSourceMappings(packageSourceMappingsSourceItems);
+                }
+
+                result = ExternalSettingOperationResult.Success.Instance;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex) when (!(ex is OperationCanceledException && cancellationToken.IsCancellationRequested))
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                result = CreateSettingErrorResult(ex.Message, isTransient: true);
+                ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
+            }
+
+            return result;
+        }
+
+        private static IReadOnlyList<PackageSourceMappingSourceItem> ConvertPackageIdAndSourcesToSourceMappingsSourceItems(List<(string packageIdOrPattern, IEnumerable<string> sources)> packageSourceNamesToPackageIdPatterns)
+        {
+            var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
+            foreach ((string packageIdOrPattern, IEnumerable<string> sources) packageSourceMapping in packageSourceNamesToPackageIdPatterns)
+            {
+                foreach (string source in packageSourceMapping.sources)
+                {
+                    if (!sourceNamesToPackagePatterns.Keys.Contains(source))
+                    {
+                        sourceNamesToPackagePatterns[source] = new List<PackagePatternItem>();
+                    }
+                    var packagePatternItem = new PackagePatternItem(packageSourceMapping.packageIdOrPattern);
+                    if (!sourceNamesToPackagePatterns[source].Any(id => id.Pattern == packagePatternItem.Pattern))
+                    {
+                        sourceNamesToPackagePatterns[source].Add(packagePatternItem);
+                    }
+                }
+            }
+
+            var packageSourceMappingsSourceItems = new List<PackageSourceMappingSourceItem>();
+            foreach (KeyValuePair<string, List<PackagePatternItem>> item in sourceNamesToPackagePatterns)
+            {
+                string source = item.Key;
+                List<PackagePatternItem> packagePatterns = item.Value;
+                packageSourceMappingsSourceItems.Add(new PackageSourceMappingSourceItem(source, packagePatterns));
+            }
+            return packageSourceMappingsSourceItems.AsReadOnly();
+        }
+
+        private static bool SourceMappingsChanged(IReadOnlyList<PackageSourceMappingSourceItem>? existingSourceMappings, IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappings)
+        {
+            if (existingSourceMappings == null || existingSourceMappings.Count != packageSourceMappings.Count)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < existingSourceMappings.Count; ++i)
+            {
+                //checks to see if keys match
+                if (existingSourceMappings[i] != packageSourceMappings[i])
+                {
+                    return true;
+                }
+                //checks to see if all patterns match
+                if (existingSourceMappings[i].Patterns.Count != packageSourceMappings[i].Patterns.Count)
+                {
+                    return true;
+                }
+                for (int j = 0; j < existingSourceMappings[i].Patterns.Count; ++j)
+                {
+                    if (existingSourceMappings[i].Patterns[j] != packageSourceMappings[i].Patterns[j])
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public override async Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
@@ -70,7 +183,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                List<EnumChoice> enumChoices = sourceNames.Select(sourceName => new EnumChoice(sourceName, sourceName)).ToList();
+                List<EnumChoice> enumChoices = sourceNames
+                    .Select(sourceName => new EnumChoice(Moniker: sourceName, Title: sourceName))
+                    .ToList();
+
                 return ExternalSettingOperationResult.SuccessResult((IReadOnlyList<EnumChoice>)enumChoices.AsReadOnly());
             }
 
