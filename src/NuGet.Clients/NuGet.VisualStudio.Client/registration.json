@@ -254,12 +254,15 @@
                 "default": "Example: Contoso.Contracts or System.*"
               },
               "sourceName": {
-                "type": "string",
+                "type": "array",
                 "uniqueItems": true,
-                "title": "@Text_PackageSourceName_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-                "enum": [ "nugetorg", "dotnetpublic" ],
-                "enumItemLabels": [ "nuget.org", "dotnet-public" ],
-                "default": "nugetorg"
+                "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "items": {
+                  "type": "string",
+                  "enum": [ "nuget.org", "dotnet-public" ],
+                  "enumItemLabels": [ "nuget.org", "dotnet-public" ]
+                },
+                "default": []
               }
             }
           },
