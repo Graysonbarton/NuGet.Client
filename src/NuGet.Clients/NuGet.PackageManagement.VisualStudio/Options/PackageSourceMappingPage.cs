@@ -21,14 +21,17 @@ namespace NuGet.PackageManagement.VisualStudio.Options
     public class PackageSourceMappingPage : NuGetExternalSettingsProvider
     {
         internal const string MonikerPackageSourceMapping = "packageSourceMapping";
+        internal const string MonikerSourceNameEnum = "packageSourceMapping.sourceName";
         internal const string MonikerPackageId = "packageId";
-        internal const string MonikerSourceName = "sourceName";
+        internal const string MonikerSourceNames = "sourceName";
 
+        private readonly IPackageSourceProvider _packageSourceProvider;
         private readonly PackageSourceMappingProvider _packageSourceMappingProvider;
 
-        public PackageSourceMappingPage(VSSettings vsSettings, PackageSourceMappingProvider packageSourceMappingProvider)
+        public PackageSourceMappingPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider, PackageSourceMappingProvider packageSourceMappingProvider)
             : base(vsSettings)
         {
+            _packageSourceProvider = packageSourceProvider ?? throw new ArgumentNullException(nameof(packageSourceProvider));
             _packageSourceMappingProvider = packageSourceMappingProvider ?? throw new ArgumentNullException(nameof(packageSourceMappingProvider));
         }
 
@@ -55,6 +58,25 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             throw new NotImplementedException();
         }
 
+        public override async Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
+        {
+            if (enumSettingMoniker == MonikerSourceNameEnum)
+            {
+                List<PackageSource> packageSources = await Task.Run(() => _packageSourceProvider.LoadPackageSources().ToList());
+
+                // Source names should be unique, but in case validation was bypassed and multiple were added, de-duplicate them for the options shown for source mappings.
+                List<string> sourceNames = packageSources
+                    .Select(packageSource => packageSource.Name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                List<EnumChoice> enumChoices = sourceNames.Select(sourceName => new EnumChoice(sourceName, sourceName)).ToList();
+                return ExternalSettingOperationResult.SuccessResult((IReadOnlyList<EnumChoice>)enumChoices.AsReadOnly());
+            }
+
+            return await base.GetEnumChoicesAsync(enumSettingMoniker, cancellationToken);
+        }
+
         private static ExternalSettingOperationResult<T> GetValuePackageSourceMappings<T>(ImmutableSortedDictionary<string, List<PackageSourceContextInfo>> packageSourceMappingsDictionary)
         {
             ExternalSettingOperationResult<T> result;
@@ -68,12 +90,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 {
                     string packageIdOrPattern = packageSourceMapping.Key;
                     List<PackageSourceContextInfo> packageSources = packageSourceMapping.Value;
-                    string sourcesString = string.Join(", ", packageSources.Select(source => source.Name));
+                    IEnumerable<string> packageSourceNames = packageSources.Select(source => source.Name);
+                    //string sourcesString = string.Join(", ", packageSourceNames);
 
                     var dict = new Dictionary<string, object>(capacity: 2)
                     {
                         { MonikerPackageId, packageIdOrPattern },
-                        { MonikerSourceName, sourcesString },
+                        { MonikerSourceNames, packageSourceNames },
                     };
 
                     packageSourceMappingsList.Add(dict);

@@ -222,7 +222,7 @@ namespace NuGetVSExtension
                 (container, ct, serviceType) => Task.FromResult<object>(new PackageSourcesPage(vsSettings, packageSourceProvider)),
                 promote: true);
             AddService(typeof(PackageSourceMappingPage),
-                (container, ct, serviceType) => Task.FromResult<object>(new PackageSourceMappingPage(vsSettings, packageSourceMappingProvider)),
+                (container, ct, serviceType) => Task.FromResult<object>(new PackageSourceMappingPage(vsSettings, packageSourceProvider, packageSourceMappingProvider)),
                 promote: true);
 
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
