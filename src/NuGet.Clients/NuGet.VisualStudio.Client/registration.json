@@ -250,8 +250,8 @@
             "properties": {
               "packageId": {
                 "type": "string",
-                "title": "Package ID or Pattern",
-                "default": "Example: Contoso.Contracts or System.*"
+                "title": "@Text_PackageSourceMappingPattern_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+                "example": "@Text_Watermark_ExamplePackageIdPattern;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
               },
               "sourceName": {
                 "type": "array",
@@ -259,8 +259,8 @@
                 "title": "@Text_PackageSourceUrl_Header;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
                 "items": {
                   "type": "string",
-                  "enum": [ "nuget.org", "dotnet-public" ],
-                  "enumItemLabels": [ "nuget.org", "dotnet-public" ]
+                  "enum": [], // These are set by PackageSourceMappingPage external settings provider.
+                  "enumItemLabels": [] // These are set by PackageSourceMappingPage external settings provider.
                 },
                 "default": []
               }

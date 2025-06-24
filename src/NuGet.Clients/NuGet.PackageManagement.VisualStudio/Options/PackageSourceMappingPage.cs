@@ -88,8 +88,10 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             try
             {
-                List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceMappingList.Count);
                 List<(string, IEnumerable<string>)> packageSourceNamesToPackageIdPatterns = new List<(string, IEnumerable<string>)>(capacity: packageSourceMappingList.Count);
+
+                IReadOnlyList<PackageSource> existingPackageSources = _packageSourceProvider.LoadPackageSources().ToList().AsReadOnly();
+                IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings = _packageSourceMappingProvider.GetPackageSourceMappingItems();
 
                 foreach (Dictionary<string, object> packageSourceMappingDictionary in packageSourceMappingList)
                 {
@@ -101,13 +103,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     packageSourceNamesToPackageIdPatterns.Add((packageIdPattern, sources));
                 }
 
-                IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings = _packageSourceMappingProvider.GetPackageSourceMappingItems();
-                IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems = ConvertPackageIdAndSourcesToSourceMappingsSourceItems(packageSourceNamesToPackageIdPatterns);
+                List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems =
+                    ConvertPackageIdAndSourcesToSourceMappingsSourceItems(packageSourceNamesToPackageIdPatterns);
 
-                if (SourceMappingsChanged(originalPackageSourceMappings, packageSourceMappingsSourceItems))
-                {
-                    _packageSourceMappingProvider.SavePackageSourceMappings(packageSourceMappingsSourceItems);
-                }
+                // Add back any mappings for package sources that are not configured.
+                PreserveInvalidPackageSourceMappings(existingPackageSources, originalPackageSourceMappings, packageSourceMappingsSourceItems);
+
+                _packageSourceMappingProvider.SavePackageSourceMappings(packageSourceMappingsSourceItems);
 
                 result = ExternalSettingOperationResult.Success.Instance;
             }
@@ -122,7 +124,35 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return result;
         }
 
-        private static IReadOnlyList<PackageSourceMappingSourceItem> ConvertPackageIdAndSourcesToSourceMappingsSourceItems(List<(string packageIdOrPattern, IEnumerable<string> sources)> packageSourceNamesToPackageIdPatterns)
+        /// <summary>
+        /// For existing package source mappings configured with package sources which don't exist, keep those invalid package source mappings in place.
+        /// Add any <paramref name="originalPackageSourceMappings"/> configured with package sources not in <paramref name="existingPackageSources"/>
+        /// back into <paramref name="packageSourceMappingsSourceItems"/>.
+        /// </summary>
+        private static void PreserveInvalidPackageSourceMappings(
+            IReadOnlyList<PackageSource> existingPackageSources,
+            IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings,
+            List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems)
+        {
+            IEnumerable<string> originalMappingSourceNames = originalPackageSourceMappings.Select(mapping => mapping.Key);
+
+            List<string> configuredPackageSourceNames = existingPackageSources
+                .Select(packageSource => packageSource.Name)
+                .ToList();
+
+            foreach (PackageSourceMappingSourceItem originalMapping in originalPackageSourceMappings)
+            {
+                string originalSourceName = originalMapping.Key;
+                if (!configuredPackageSourceNames.Contains(originalSourceName, StringComparer.OrdinalIgnoreCase))
+                {
+                    // Keep this invalid package source mapping.
+                    packageSourceMappingsSourceItems.Add(originalMapping);
+                }
+            }
+        }
+
+        private static List<PackageSourceMappingSourceItem> ConvertPackageIdAndSourcesToSourceMappingsSourceItems(
+            IReadOnlyList<(string packageIdOrPattern, IEnumerable<string> sources)> packageSourceNamesToPackageIdPatterns)
         {
             var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
             foreach ((string packageIdOrPattern, IEnumerable<string> sources) packageSourceMapping in packageSourceNamesToPackageIdPatterns)
@@ -148,37 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 List<PackagePatternItem> packagePatterns = item.Value;
                 packageSourceMappingsSourceItems.Add(new PackageSourceMappingSourceItem(source, packagePatterns));
             }
-            return packageSourceMappingsSourceItems.AsReadOnly();
-        }
-
-        private static bool SourceMappingsChanged(IReadOnlyList<PackageSourceMappingSourceItem>? existingSourceMappings, IReadOnlyList<PackageSourceMappingSourceItem> packageSourceMappings)
-        {
-            if (existingSourceMappings == null || existingSourceMappings.Count != packageSourceMappings.Count)
-            {
-                return true;
-            }
-
-            for (int i = 0; i < existingSourceMappings.Count; ++i)
-            {
-                //checks to see if keys match
-                if (existingSourceMappings[i] != packageSourceMappings[i])
-                {
-                    return true;
-                }
-                //checks to see if all patterns match
-                if (existingSourceMappings[i].Patterns.Count != packageSourceMappings[i].Patterns.Count)
-                {
-                    return true;
-                }
-                for (int j = 0; j < existingSourceMappings[i].Patterns.Count; ++j)
-                {
-                    if (existingSourceMappings[i].Patterns[j] != packageSourceMappings[i].Patterns[j])
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return packageSourceMappingsSourceItems;
         }
 
         public override async Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
