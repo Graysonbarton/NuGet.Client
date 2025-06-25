@@ -306,7 +306,8 @@
     "nuGetPackageManager.packageSourceMapping": {
       "title": "@116;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "legacyOptionPageId": "F175964E-89F5-4521-8FE2-C10C07BB968C",
-      "order": 3
+      "order": 3,
+      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-source-mapping"
     }
   }
 }
