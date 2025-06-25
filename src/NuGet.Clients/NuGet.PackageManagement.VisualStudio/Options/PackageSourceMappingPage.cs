@@ -25,6 +25,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const string MonikerPackageId = "packageId";
         internal const string MonikerSourceNames = "sourceName";
 
+        public override event EventHandler<EnumSettingChoicesChangedEventArgs>? EnumSettingChoicesChanged;
+
         private readonly IPackageSourceProvider _packageSourceProvider;
         internal readonly PackageSourceMappingProvider _packageSourceMappingProvider;
 
@@ -51,6 +53,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             // Shouldn't happen as these are monikers we declared in registration.json.
             throw new InvalidOperationException();
+        }
+
+        internal override void VsSettings_SettingsChanged(object sender, EventArgs e)
+        {
+            EnumSettingChoicesChanged?.Invoke(this, new EnumSettingChoicesChangedEventArgs(MonikerSourceNameEnum));
+            base.VsSettings_SettingsChanged(sender, e);
         }
 
         public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
