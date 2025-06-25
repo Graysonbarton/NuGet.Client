@@ -103,11 +103,13 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     packageSourceNamesToPackageIdPatterns.Add((packageIdPattern, sources));
                 }
 
+                var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
+
                 List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems =
-                    ConvertPackageIdAndSourcesToSourceMappingsSourceItems(packageSourceNamesToPackageIdPatterns);
+                    ConvertPackageIdAndSourcesToSourceMappingsSourceItems(sourceNamesToPackagePatterns, packageSourceNamesToPackageIdPatterns);
 
                 // Add back any mappings for package sources that are not configured.
-                PreserveInvalidPackageSourceMappings(existingPackageSources, originalPackageSourceMappings, packageSourceMappingsSourceItems);
+                PreserveInvalidPackageSourceMappings(packageSourceMappingsSourceItems, existingPackageSources, originalPackageSourceMappings);
 
                 _packageSourceMappingProvider.SavePackageSourceMappings(packageSourceMappingsSourceItems);
 
@@ -127,12 +129,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// <summary>
         /// For existing package source mappings configured with package sources which don't exist, keep those invalid package source mappings in place.
         /// Add any <paramref name="originalPackageSourceMappings"/> configured with package sources not in <paramref name="existingPackageSources"/>
-        /// back into <paramref name="packageSourceMappingsSourceItems"/>.
+        /// back into <paramref name="sourceNamesToPackagePatterns"/>.
         /// </summary>
         private static void PreserveInvalidPackageSourceMappings(
+            List<PackageSourceMappingSourceItem> sourceNamesToPackagePatterns,
             IReadOnlyList<PackageSource> existingPackageSources,
-            IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings,
-            List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems)
+            IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings)
         {
             IEnumerable<string> originalMappingSourceNames = originalPackageSourceMappings.Select(mapping => mapping.Key);
 
@@ -146,28 +148,20 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 if (!configuredPackageSourceNames.Contains(originalSourceName, StringComparer.OrdinalIgnoreCase))
                 {
                     // Keep this invalid package source mapping.
-                    packageSourceMappingsSourceItems.Add(originalMapping);
+                    sourceNamesToPackagePatterns.Add(new PackageSourceMappingSourceItem(originalMapping.Key, originalMapping.Patterns));
                 }
             }
         }
 
         private static List<PackageSourceMappingSourceItem> ConvertPackageIdAndSourcesToSourceMappingsSourceItems(
-            IReadOnlyList<(string packageIdOrPattern, IEnumerable<string> sources)> packageSourceNamesToPackageIdPatterns)
+            Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
+            IReadOnlyList<(string packageIdOrPatterns, IEnumerable<string> sources)> packagePatternToSources)
         {
-            var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
-            foreach ((string packageIdOrPattern, IEnumerable<string> sources) packageSourceMapping in packageSourceNamesToPackageIdPatterns)
+            foreach ((string packageIdOrPatterns, IEnumerable<string> sources) packagePatternToSource in packagePatternToSources)
             {
-                foreach (string source in packageSourceMapping.sources)
+                foreach (string source in packagePatternToSource.sources)
                 {
-                    if (!sourceNamesToPackagePatterns.Keys.Contains(source))
-                    {
-                        sourceNamesToPackagePatterns[source] = new List<PackagePatternItem>();
-                    }
-                    var packagePatternItem = new PackagePatternItem(packageSourceMapping.packageIdOrPattern);
-                    if (!sourceNamesToPackagePatterns[source].Any(id => id.Pattern == packagePatternItem.Pattern))
-                    {
-                        sourceNamesToPackagePatterns[source].Add(packagePatternItem);
-                    }
+                    AddOrUpdateSource(sourceNamesToPackagePatterns, [packagePatternToSource.packageIdOrPatterns], source);
                 }
             }
 
@@ -179,6 +173,26 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 packageSourceMappingsSourceItems.Add(new PackageSourceMappingSourceItem(source, packagePatterns));
             }
             return packageSourceMappingsSourceItems;
+        }
+
+        private static void AddOrUpdateSource(
+            Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
+            IList<string> packageIdOrPatterns,
+            string source)
+        {
+            if (!sourceNamesToPackagePatterns.Keys.Contains(source, StringComparer.OrdinalIgnoreCase))
+            {
+                sourceNamesToPackagePatterns[source] = new List<PackagePatternItem>();
+            }
+
+            foreach (string packageIdOrPattern in packageIdOrPatterns)
+            {
+                var packagePatternItem = new PackagePatternItem(packageIdOrPattern);
+                if (!sourceNamesToPackagePatterns[source].Any(id => id.Pattern == packagePatternItem.Pattern))
+                {
+                    sourceNamesToPackagePatterns[source].Add(packagePatternItem);
+                }
+            }
         }
 
         public override async Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
