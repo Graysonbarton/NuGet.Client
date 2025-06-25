@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const string MonikerSourceNames = "sourceName";
 
         private readonly IPackageSourceProvider _packageSourceProvider;
-        private readonly PackageSourceMappingProvider _packageSourceMappingProvider;
+        internal readonly PackageSourceMappingProvider _packageSourceMappingProvider;
 
         public PackageSourceMappingPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider, PackageSourceMappingProvider packageSourceMappingProvider)
             : base(vsSettings)
