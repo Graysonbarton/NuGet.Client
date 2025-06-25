@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             try
             {
-                List<(string, IEnumerable<string>)> packageSourceNamesToPackageIdPatterns = new List<(string, IEnumerable<string>)>(capacity: packageSourceMappingList.Count);
+                List<(string, IEnumerable<string>)> packagePatternToSources = new List<(string, IEnumerable<string>)>(capacity: packageSourceMappingList.Count);
 
                 IReadOnlyList<PackageSource> existingPackageSources = _packageSourceProvider.LoadPackageSources().ToList().AsReadOnly();
                 IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings = _packageSourceMappingProvider.GetPackageSourceMappingItems();
@@ -100,18 +100,18 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string packageIdPattern = packageSourceMappingDictionary[MonikerPackageId].ToString();
                     var sourceObjects = (IEnumerable<object>)packageSourceMappingDictionary[MonikerSourceNames];
                     List<string> sources = sourceObjects.Select(sourceObject => sourceObject.ToString()).ToList();
-                    packageSourceNamesToPackageIdPatterns.Add((packageIdPattern, sources));
+                    packagePatternToSources.Add((packageIdPattern, sources));
                 }
 
                 var sourceNamesToPackagePatterns = new Dictionary<string, List<PackagePatternItem>>();
 
-                List<PackageSourceMappingSourceItem> packageSourceMappingsSourceItems =
-                    ConvertPackageIdAndSourcesToSourceMappingsSourceItems(sourceNamesToPackagePatterns, packageSourceNamesToPackageIdPatterns);
+                // Keep any existing source mappings for package sources that are not configured.
+                PreserveInvalidPackageSourceMappings(sourceNamesToPackagePatterns, existingPackageSources, originalPackageSourceMappings);
 
-                // Add back any mappings for package sources that are not configured.
-                PreserveInvalidPackageSourceMappings(packageSourceMappingsSourceItems, existingPackageSources, originalPackageSourceMappings);
+                List<PackageSourceMappingSourceItem> packageSourceMappingSourceItems =
+                    ConvertPackageIdAndSourcesToSourceMappingSourceItems(sourceNamesToPackagePatterns, packagePatternToSources);
 
-                _packageSourceMappingProvider.SavePackageSourceMappings(packageSourceMappingsSourceItems);
+                _packageSourceMappingProvider.SavePackageSourceMappings(packageSourceMappingSourceItems);
 
                 result = ExternalSettingOperationResult.Success.Instance;
             }
@@ -132,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         /// back into <paramref name="sourceNamesToPackagePatterns"/>.
         /// </summary>
         private static void PreserveInvalidPackageSourceMappings(
-            List<PackageSourceMappingSourceItem> sourceNamesToPackagePatterns,
+            Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
             IReadOnlyList<PackageSource> existingPackageSources,
             IReadOnlyList<PackageSourceMappingSourceItem> originalPackageSourceMappings)
         {
@@ -148,20 +148,22 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 if (!configuredPackageSourceNames.Contains(originalSourceName, StringComparer.OrdinalIgnoreCase))
                 {
                     // Keep this invalid package source mapping.
-                    sourceNamesToPackagePatterns.Add(new PackageSourceMappingSourceItem(originalMapping.Key, originalMapping.Patterns));
+                    AddOrUpdateSourceWithPackagePatterns(sourceNamesToPackagePatterns, originalMapping.Patterns, originalSourceName);
                 }
             }
         }
 
-        private static List<PackageSourceMappingSourceItem> ConvertPackageIdAndSourcesToSourceMappingsSourceItems(
+        private static List<PackageSourceMappingSourceItem> ConvertPackageIdAndSourcesToSourceMappingSourceItems(
             Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
-            IReadOnlyList<(string packageIdOrPatterns, IEnumerable<string> sources)> packagePatternToSources)
+            IReadOnlyList<(string packageIdOrPattern, IEnumerable<string> sources)> packagePatternToSources)
         {
-            foreach ((string packageIdOrPatterns, IEnumerable<string> sources) packagePatternToSource in packagePatternToSources)
+            foreach ((string packageIdOrPattern, IEnumerable<string> sources) packagePatternToSource in packagePatternToSources)
             {
                 foreach (string source in packagePatternToSource.sources)
                 {
-                    AddOrUpdateSource(sourceNamesToPackagePatterns, [packagePatternToSource.packageIdOrPatterns], source);
+                    string packageIdOrPattern = packagePatternToSource.packageIdOrPattern;
+                    PackagePatternItem packagePatternItem = new(packageIdOrPattern);
+                    AddOrUpdateSourceWithPackagePatterns(sourceNamesToPackagePatterns, [packagePatternItem], source);
                 }
             }
 
@@ -175,19 +177,18 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return packageSourceMappingsSourceItems;
         }
 
-        private static void AddOrUpdateSource(
-            Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
-            IList<string> packageIdOrPatterns,
-            string source)
+        private static void AddOrUpdateSourceWithPackagePatterns(
+           Dictionary<string, List<PackagePatternItem>> sourceNamesToPackagePatterns,
+           IList<PackagePatternItem> packageIdOrPatterns,
+           string source)
         {
             if (!sourceNamesToPackagePatterns.Keys.Contains(source, StringComparer.OrdinalIgnoreCase))
             {
                 sourceNamesToPackagePatterns[source] = new List<PackagePatternItem>();
             }
 
-            foreach (string packageIdOrPattern in packageIdOrPatterns)
+            foreach (PackagePatternItem packagePatternItem in packageIdOrPatterns)
             {
-                var packagePatternItem = new PackagePatternItem(packageIdOrPattern);
                 if (!sourceNamesToPackagePatterns[source].Any(id => id.Pattern == packagePatternItem.Pattern))
                 {
                     sourceNamesToPackagePatterns[source].Add(packagePatternItem);
@@ -231,7 +232,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     string packageIdOrPattern = packageSourceMapping.Key;
                     List<PackageSourceContextInfo> packageSources = packageSourceMapping.Value;
                     IEnumerable<string> packageSourceNames = packageSources.Select(source => source.Name);
-                    //string sourcesString = string.Join(", ", packageSourceNames);
 
                     var dict = new Dictionary<string, object>(capacity: 2)
                     {
