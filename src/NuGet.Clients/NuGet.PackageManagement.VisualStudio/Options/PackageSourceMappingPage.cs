@@ -57,7 +57,9 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         internal override void VsSettings_SettingsChanged(object sender, EventArgs e)
         {
+            // Possible values for Package Sources need to be refreshed, so tell Unified Settings that they have changed.
             EnumSettingChoicesChanged?.Invoke(this, new EnumSettingChoicesChangedEventArgs(MonikerSourceNameEnum));
+
             base.VsSettings_SettingsChanged(sender, e);
         }
 

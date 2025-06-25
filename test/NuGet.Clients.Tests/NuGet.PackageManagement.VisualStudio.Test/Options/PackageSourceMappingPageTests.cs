@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -37,6 +38,24 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
 
             PackageSourceMappingProvider sourceMappingProvider = new(vsSettings);
             return new PackageSourceMappingPage(vsSettings, mockedPackageSourceProvider.Object, sourceMappingProvider);
+        }
+
+        [Fact]
+        public void VsSettings_SettingsChanged_RaisesEnumSettingChoicesChanged()
+        {
+            // Arrange
+            bool wasEnumSettingChoicesChangedRaised = false;
+            PackageSourceMappingPage instance = CreateInstance(_vsSettings);
+            instance.EnumSettingChoicesChanged += (s, e) =>
+            {
+                wasEnumSettingChoicesChangedRaised = true;
+            };
+
+            // Act
+            instance.VsSettings_SettingsChanged(this, EventArgs.Empty);
+
+            // Assert
+            wasEnumSettingChoicesChangedRaised.Should().BeTrue();
         }
 
         [Fact]
