@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
@@ -49,7 +50,7 @@ namespace NuGet.XPlat.FuncTest
                 var testApp = new CommandLineApplication();
                 var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
                 mockCommandRunner
-                    .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
+                    .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>(), It.IsAny<IDGSpecFactory>()))
                     .ReturnsAsync(0);
 
                 testApp.Name = "dotnet nuget_test";
@@ -64,9 +65,10 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p =>
-                    p.PackageId == package &&
+                    p.Package.Id == package &&
                     p.ProjectPath == projectPath),
-                    It.IsAny<MSBuildAPIUtility>()));
+                    It.IsAny<MSBuildAPIUtility>(),
+                    It.IsAny<IDGSpecFactory>()));
 
                 Assert.Equal(0, result);
             }
@@ -101,8 +103,10 @@ namespace NuGet.XPlat.FuncTest
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, projectA);
                 var commandRunner = new RemovePackageReferenceCommandRunner();
 
+                var mockDgSpecFactory = new Mock<IDGSpecFactory>();
+
                 // Act
-                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
+                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger), mockDgSpecFactory.Object);
                 projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
@@ -126,10 +130,12 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new RemovePackageReferenceCommandRunner();
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
+                var mockDgSpecFactory = new Mock<IDGSpecFactory>();
+
                 Assert.True(XPlatTestUtils.ValidateNoReference(projectXmlRoot, unknownPackageId));
 
                 // Act
-                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
+                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger), mockDgSpecFactory.Object);
                 projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
@@ -167,8 +173,10 @@ namespace NuGet.XPlat.FuncTest
                 var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, projectA);
                 var commandRunner = new RemovePackageReferenceCommandRunner();
 
+                var mockDgSpecFactory = new Mock<IDGSpecFactory>();
+
                 // Act
-                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
+                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger), mockDgSpecFactory.Object);
                 projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert

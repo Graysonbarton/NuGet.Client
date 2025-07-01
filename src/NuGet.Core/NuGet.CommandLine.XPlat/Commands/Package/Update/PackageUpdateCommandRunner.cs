@@ -155,7 +155,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
         }
 
         internal static async Task<(PackageDependency?, List<NuGetFramework>?)> GetPackageToUpdateAsync(
-            IReadOnlyList<Package> packages,
+            IReadOnlyList<PackageWithVersion> packages,
             PackageSpec project,
             IVersionChooser versionChooser,
             ISettings settings,

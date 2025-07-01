@@ -1680,6 +1680,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project file to operate on. If a file is not specified, the command will search the current directory for one..
+        /// </summary>
+        internal static string ProjectArgumentDescription {
+            get {
+                return ResourceManager.GetString("ProjectArgumentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pushes a package to the server and publishes it..
         /// </summary>
         internal static string Push_Description {
@@ -2310,6 +2319,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string UpdateSourceCommandDescription {
             get {
                 return ResourceManager.GetString("UpdateSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot specify --version when the package argument already contains a version..
+        /// </summary>
+        internal static string ValidationFailedDuplicateVersion {
+            get {
+                return ResourceManager.GetString("ValidationFailedDuplicateVersion", resourceCulture);
             }
         }
         

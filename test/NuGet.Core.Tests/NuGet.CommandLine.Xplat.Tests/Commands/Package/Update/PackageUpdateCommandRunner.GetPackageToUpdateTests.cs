@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Package;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
@@ -16,8 +17,6 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
-
-using Pkg = NuGet.CommandLine.XPlat.Commands.Package.Update.Package;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
 {
@@ -34,7 +33,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         public async Task RequestSinglePackage_GetsRequestedVersion()
         {
             // Arrange
-            Pkg package = new()
+            PackageWithVersion package = new()
             {
                 Id = "Contoso.Utils",
                 VersionRange = new VersionRange(new NuGetVersion("1.2.3"))
@@ -70,7 +69,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         public async Task RequestPackageWithoutVersion_GetsLatestVersion()
         {
             // Arrange
-            Pkg package = new()
+            PackageWithVersion package = new()
             {
                 Id = "Contoso.Utils",
                 VersionRange = null
@@ -111,7 +110,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         public async Task RequestSinglePackageWithRangeSyntax_GetsRequestedVersion()
         {
             // Arrange
-            Pkg package = new()
+            PackageWithVersion package = new()
             {
                 Id = "Contoso.Utils",
                 VersionRange = VersionRange.Parse("[1.2.3,2.0.0)")
@@ -147,7 +146,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
         public async Task RequestPackageNotOnSource_LogsError()
         {
             // Arrange
-            Pkg package = new()
+            PackageWithVersion package = new()
             {
                 Id = "Contoso.Utils",
                 VersionRange = null

@@ -46,9 +46,9 @@ namespace NuGet.XPlat.FuncTest
                 packageY);
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
-            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var (addPackageArgs, dgSpecFactory) = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger), dgSpecFactory);
 
             var whyCommandArgs = new WhyCommandArgs(
                     project.ProjectPath,
@@ -89,9 +89,9 @@ namespace NuGet.XPlat.FuncTest
                 packageZ);
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
-            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var (addPackageArgs, dgSpecFactory) = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger));
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, new MSBuildAPIUtility(logger), dgSpecFactory);
 
             var whyCommandArgs = new WhyCommandArgs(
                     project.ProjectPath,
@@ -242,9 +242,9 @@ namespace NuGet.XPlat.FuncTest
                 packageY);
 
             var logger = new TestCommandOutputLogger(_testOutputHelper);
-            var addPackageCommandArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
+            var (addPackageCommandArgs, dgSpecFactory) = XPlatTestUtils.GetPackageReferenceArgs(logger, packageX.Id, packageX.Version, project);
             var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageCommandArgs, new MSBuildAPIUtility(logger));
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageCommandArgs, new MSBuildAPIUtility(logger), dgSpecFactory);
 
             var whyCommandArgs = new WhyCommandArgs(
                     project.ProjectPath,

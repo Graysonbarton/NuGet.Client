@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Threading.Tasks;
+using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Credentials;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -11,11 +12,11 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class RemovePackageReferenceCommandRunner : IPackageReferenceCommandRunner
     {
-        public Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
+        public Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild, IDGSpecFactory dGSpecFactory)
         {
             packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_RemovePkgRemovingReference,
-                packageReferenceArgs.PackageId,
+                packageReferenceArgs.Package.Id,
                 packageReferenceArgs.ProjectPath));
 
             //Setup the Credential Service - This allows the msbuild sdk resolver to auth if needed.
@@ -24,7 +25,7 @@ namespace NuGet.CommandLine.XPlat
             var libraryDependency = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(
-                    name: packageReferenceArgs.PackageId,
+                    name: packageReferenceArgs.Package.Id,
                     versionRange: VersionRange.All,
                     typeConstraint: LibraryDependencyTarget.Package)
             };

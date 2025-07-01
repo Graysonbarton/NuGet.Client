@@ -8,14 +8,18 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Package;
+using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -209,31 +213,43 @@ namespace NuGet.XPlat.FuncTest
 
         internal static PackageReferenceArgs GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, SimpleTestProjectContext project)
         {
-            return new PackageReferenceArgs(project.ProjectPath, logger)
+            return new PackageReferenceArgs
             {
-                PackageId = packageId
+                ProjectPath = project.ProjectPath,
+                Logger = logger,
+                Package = new PackageWithVersion { Id = packageId, VersionRange = null },
+                NoRestore = true,
+                Interactive = false,
+                Prerelease = false,
             };
         }
 
-        internal static PackageReferenceArgs GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, string packageVersion, SimpleTestProjectContext project, string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false)
+        internal static (PackageReferenceArgs, IDGSpecFactory) GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, string packageVersion, SimpleTestProjectContext project, string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool prerelease = false)
         {
             var dgFilePath = string.Empty;
             if (!noRestore)
             {
                 dgFilePath = CreateDGFileForProject(project);
             }
-            return new PackageReferenceArgs(project.ProjectPath, logger)
+            VersionRange versionRange = string.IsNullOrEmpty(packageVersion) ? null : VersionRange.Parse(packageVersion);
+            var packageRefArgs = new PackageReferenceArgs
             {
+                ProjectPath = project.ProjectPath,
+                Logger = logger,
                 Frameworks = MSBuildStringUtility.Split(frameworks),
                 Sources = MSBuildStringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
-                NoVersion = noVersion,
-                DgFilePath = dgFilePath,
                 Prerelease = prerelease,
-                PackageVersion = packageVersion,
-                PackageId = packageId
+                Package = new PackageWithVersion { Id = packageId, VersionRange = versionRange },
+                Interactive = false,
             };
+
+            Mock<IDGSpecFactory> dgSpecFactory = new Mock<IDGSpecFactory>();
+            dgSpecFactory.Setup(f => f.GetDependencyGraphSpec(project.ProjectPath))
+                .Returns(() => DependencyGraphSpec.Load(dgFilePath));
+
+            return (packageRefArgs, dgSpecFactory.Object);
         }
 
         public static XDocument GetNetCoreNuspec(string package, string packageVersion, bool developmentDependency = false)

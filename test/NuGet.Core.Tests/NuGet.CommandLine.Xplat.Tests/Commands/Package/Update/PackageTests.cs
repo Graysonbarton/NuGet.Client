@@ -4,26 +4,25 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using FluentAssertions;
+using NuGet.CommandLine.XPlat.Commands.Package;
 using NuGet.Versioning;
 using Xunit;
-
-using Pkg = NuGet.CommandLine.XPlat.Commands.Package.Update.Package;
 
 namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
 {
     public class PackageTests
     {
         private RootCommand _command;
-        private Argument<IReadOnlyList<Pkg>> _packagesArgument;
+        private Argument<IReadOnlyList<PackageWithVersion>> _packagesArgument;
 
         public PackageTests()
         {
             _command = new RootCommand();
 
-            _packagesArgument = new Argument<IReadOnlyList<Pkg>>("packages")
+            _packagesArgument = new Argument<IReadOnlyList<PackageWithVersion>>("packages")
             {
                 Arity = ArgumentArity.ZeroOrMore,
-                CustomParser = Pkg.Parse
+                CustomParser = PackageWithVersion.Parse
             };
             _command.Arguments.Add(_packagesArgument);
         }
@@ -38,7 +37,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             var packages = result.GetValue(_packagesArgument);
 
             // Assert
-            IReadOnlyList<Pkg> expects = [new Pkg()
+            IReadOnlyList<PackageWithVersion> expects = [new PackageWithVersion()
             {
                 Id = "packageId",
                 VersionRange = null
@@ -56,9 +55,9 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             var packages = result.GetValue(_packagesArgument);
 
             // Assert
-            IReadOnlyList<Pkg> expects = [
-                new Pkg() { Id = "packageId1", VersionRange = null },
-                new Pkg() { Id = "packageId2", VersionRange = null }
+            IReadOnlyList<PackageWithVersion> expects = [
+                new PackageWithVersion() { Id = "packageId1", VersionRange = null },
+                new PackageWithVersion() { Id = "packageId2", VersionRange = null }
             ];
             packages.Should().BeEquivalentTo(expects);
         }
@@ -73,7 +72,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             var packages = result.GetValue(_packagesArgument);
 
             // Assert
-            IReadOnlyList<Pkg> expects = [new Pkg()
+            IReadOnlyList<PackageWithVersion> expects = [new PackageWithVersion()
             {
                 Id = "packageId",
                 VersionRange = VersionRange.Parse("1.2.3")
@@ -91,7 +90,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Update
             var packages = result.GetValue(_packagesArgument);
 
             // Assert
-            IReadOnlyList<Pkg> expects = [new Pkg()
+            IReadOnlyList<PackageWithVersion> expects = [new PackageWithVersion()
             {
                 Id = "packageId",
                 VersionRange = VersionRange.Parse("[1.2.3,2.0.0)")

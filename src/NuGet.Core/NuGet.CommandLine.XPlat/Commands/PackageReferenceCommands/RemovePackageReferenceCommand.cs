@@ -5,6 +5,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Commands.Package;
+using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
@@ -45,14 +47,18 @@ namespace NuGet.CommandLine.XPlat
                     ValidateArgument(projectPath, removePkg.Name);
                     ValidateProjectPath(projectPath, removePkg.Name);
                     var logger = getLogger();
-                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), logger)
+                    var packageRefArgs = new PackageReferenceArgs
                     {
+                        ProjectPath = projectPath.Value(),
+                        Logger = logger,
                         Interactive = interactive.HasValue(),
-                        PackageId = id.Value()
+                        Package = new PackageWithVersion { Id = id.Value(), VersionRange = null },
+                        Prerelease = false,
+                        NoRestore = true,
                     };
                     var msBuild = new MSBuildAPIUtility(logger);
                     var removePackageRefCommandRunner = getCommandRunner();
-                    return removePackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
+                    return removePackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild, new DGSpecFactory());
                 });
             });
         }

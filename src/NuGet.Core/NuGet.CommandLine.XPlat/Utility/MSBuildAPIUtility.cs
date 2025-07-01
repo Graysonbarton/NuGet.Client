@@ -225,10 +225,10 @@ namespace NuGet.CommandLine.XPlat
             }
 
             // PackageVersion should not be defined outside the project file.
-            var packageVersions = project.Items.Where(item => item.ItemType == PACKAGE_VERSION_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId) && !item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
+            var packageVersions = project.Items.Where(item => item.ItemType == PACKAGE_VERSION_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.Package.Id) && !item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
             if (packageVersions.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation, packageReferenceArgs.PackageId));
+                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation, packageReferenceArgs.Package.Id));
                 return false;
             }
 
@@ -236,16 +236,16 @@ namespace NuGet.CommandLine.XPlat
             var packageReferenceOutsideProjectFile = project.Items.Where(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
             if (packageReferenceOutsideProjectFile.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation, packageReferenceArgs.PackageId));
+                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation, packageReferenceArgs.Package.Id));
                 return false;
             }
 
-            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.PackageId));
+            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.Package.Id));
             ProjectItem packageVersionInProps = packageVersions.LastOrDefault();
-            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.PackageId));
+            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.Package.Id));
 
             // If package reference exists and the user defined a VersionOverride or PackageVersions but didn't specified a version, no-op
-            if (packageReference != null && (versionOverride != null || packageVersionInProps != null) && packageReferenceArgs.NoVersion)
+            if (packageReference != null && (versionOverride != null || packageVersionInProps != null) && packageReferenceArgs.Package.VersionRange is null)
             {
                 return false;
             }

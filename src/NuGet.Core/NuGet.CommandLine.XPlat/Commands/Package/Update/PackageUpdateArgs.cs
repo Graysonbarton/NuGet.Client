@@ -11,6 +11,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update
     {
         public required string Project { get; init; }
 
-        public required IReadOnlyList<Package> Packages { get; init; }
+        public required IReadOnlyList<PackageWithVersion> Packages { get; init; }
     }
 }

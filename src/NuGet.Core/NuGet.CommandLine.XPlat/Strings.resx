@@ -1040,4 +1040,10 @@ Do not translate "PackageVersion"</comment>
   <data name="PackageUpdate_PackageArgumentDescription" xml:space="preserve">
     <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
   </data>
+  <data name="ValidationFailedDuplicateVersion" xml:space="preserve">
+    <value>Cannot specify --version when the package argument already contains a version.</value>
+  </data>
+  <data name="ProjectArgumentDescription" xml:space="preserve">
+    <value>The project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+  </data>
 </root>

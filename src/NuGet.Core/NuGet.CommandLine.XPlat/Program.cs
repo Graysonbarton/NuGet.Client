@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Commands.Package.Add;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
 using NuGet.Commands;
 using NuGet.Common;
@@ -94,8 +95,15 @@ namespace NuGet.CommandLine.XPlat
                     var packageCommand = new Command("package");
                     rootCommand.Subcommands.Add(packageCommand);
 
+                    var interactiveOption = new Option<bool>("--interactive")
+                    {
+                        Description = Strings.AddPkg_InteractiveDescription,
+                        DefaultValueFactory = _ => !Console.IsOutputRedirected,
+                    };
+
                     PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
                     PackageUpdateCommand.Register(packageCommand, getHidePrefixLogger);
+                    PackageAddCommand.Register(packageCommand, addCommand: null, interactiveOption);
                 }
                 else
                 {
@@ -243,7 +251,7 @@ namespace NuGet.CommandLine.XPlat
             if (args.Length >= 2 && arg0 == "package")
             {
                 string arg1 = args[1];
-                if (arg1 == "search" || arg1 == "update")
+                if (arg1 == "search" || arg1 == "update" || arg1 == "add")
                 {
                     return true;
                 }
@@ -287,7 +295,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 // "dotnet * package" commands
                 app.Name = DotnetPackageAppName;
-                AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new ListPackageCommandRunner());
             }
