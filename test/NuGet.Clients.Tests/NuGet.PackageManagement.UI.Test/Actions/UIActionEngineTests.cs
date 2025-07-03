@@ -184,10 +184,10 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
-            TelemetryEvent lastTelemetryEvent = null;
+            List<TelemetryEvent> telemetryEvents = new List<TelemetryEvent>();
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
@@ -242,14 +242,22 @@ namespace NuGet.PackageManagement.UI.Test
             await uiEngine.PerformInstallOrUninstallAsync(uiService.Object, action, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(lastTelemetryEvent);
-            Assert.IsType<NuGetOperationStatus>(lastTelemetryEvent[nameof(ActionEventBase.Status)]);
-            Assert.Equal(NuGetProjectActionType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
-            Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
-            Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-            Assert.Equal(expectedPackageWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
-            // Package Source Mapping is considered enabled if mappings already existed when the action began.
-            Assert.Equal(false, lastTelemetryEvent[VSActionsTelemetryEvent.PackageSourceMappingIsMappingEnabled]);
+            Assert.NotEmpty(telemetryEvents);
+
+            telemetryEvents.Should().NotBeEmpty();
+            IEnumerable<TelemetryEvent> actionTelemetryEvents = telemetryEvents
+                .Where(eventData => eventData.Name
+                    .Equals(ActionsTelemetryEvent.NugetActionEventName));
+
+            actionTelemetryEvents.Should().HaveCount(1);
+
+            TelemetryEvent installTelemetryEvent = actionTelemetryEvents.Single();
+            installTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)].Should().Be(NuGetProjectActionType.Install);
+            installTelemetryEvent[nameof(ActionEventBase.Status)].Should().BeOfType<NuGetOperationStatus>();
+            installTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)].Should().Be(isSolutionLevel);
+            installTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)].Should().Be(activeTab);
+            installTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)].Should().Be(expectedPackageWasTransitive);
+            installTelemetryEvent[VSActionsTelemetryEvent.PackageSourceMappingIsMappingEnabled].Should().Be(false);
         }
 
         [Fact]
@@ -332,10 +340,10 @@ namespace NuGet.PackageManagement.UI.Test
             int expectedCountCreatedTopLevelSourceMappings = 42;
             int expectedCountCreatedTransitiveSourceMappings = 24;
             var telemetrySession = new Mock<ITelemetrySession>();
-            TelemetryEvent lastTelemetryEvent = null;
+            List<TelemetryEvent> listTelemetryEvents = new List<TelemetryEvent>(capacity: 5);
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+                .Callback<TelemetryEvent>(x => listTelemetryEvents.Add(x));
 
             var operationId = Guid.NewGuid().ToString();
 
@@ -378,8 +386,9 @@ namespace NuGet.PackageManagement.UI.Test
             service.EmitTelemetryEvent(actionTelemetryData);
 
             // Assert
-            Assert.Equal(expectedCountCreatedTopLevelSourceMappings, (int)lastTelemetryEvent["CreatedTopLevelSourceMappingsCount"]);
-            Assert.Equal(expectedCountCreatedTransitiveSourceMappings, (int)lastTelemetryEvent["CreatedTransitiveSourceMappingsCount"]);
+            TelemetryEvent emittedTelemetryEvent = listTelemetryEvents.Single(telemetryEvent => telemetryEvent.Equals(actionTelemetryData));
+            Assert.Equal(expectedCountCreatedTopLevelSourceMappings, (int)emittedTelemetryEvent["CreatedTopLevelSourceMappingsCount"]);
+            Assert.Equal(expectedCountCreatedTransitiveSourceMappings, (int)emittedTelemetryEvent["CreatedTransitiveSourceMappingsCount"]);
         }
 
         [Theory]
