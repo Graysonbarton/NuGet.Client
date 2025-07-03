@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
@@ -432,10 +433,10 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
-            TelemetryEvent lastTelemetryEvent = null;
+            List<TelemetryEvent> listTelemetryEvents = new List<TelemetryEvent>(capacity: 5);
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+                .Callback<TelemetryEvent>(x => listTelemetryEvents.Add(x));
             var telemetryService = new NuGetVSTelemetryService(telemetrySession.Object);
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
@@ -498,12 +499,20 @@ namespace NuGet.PackageManagement.UI.Test
             await uiEngine.PerformInstallOrUninstallAsync(uiService.Object, action, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(lastTelemetryEvent);
-            Assert.IsType<NuGetOperationStatus>(lastTelemetryEvent[nameof(ActionEventBase.Status)]);
-            Assert.Equal(NuGetProjectActionType.Install, lastTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)]);
-            Assert.Equal(isSolutionLevel, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)]);
-            Assert.Equal(activeTab, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)]);
-            Assert.Equal(expectedPackageWasTransitive, lastTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)]);
+            listTelemetryEvents.Should().NotBeEmpty();
+
+            IEnumerable<TelemetryEvent> actionTelemetryEvents = listTelemetryEvents
+                .Where(telemetryEvent => telemetryEvent.Name
+                    .Equals(ActionsTelemetryEvent.NugetActionEventName));
+
+            actionTelemetryEvents.Should().HaveCount(1);
+
+            TelemetryEvent installTelemetryEvent = actionTelemetryEvents.Single();
+            installTelemetryEvent[nameof(ActionsTelemetryEvent.OperationType)].Should().Be(NuGetProjectActionType.Install);
+            installTelemetryEvent[nameof(ActionEventBase.Status)].Should().BeOfType<NuGetOperationStatus>();
+            installTelemetryEvent[nameof(VSActionsTelemetryEvent.IsSolutionLevel)].Should().Be(isSolutionLevel);
+            installTelemetryEvent[nameof(VSActionsTelemetryEvent.Tab)].Should().Be(activeTab);
+            installTelemetryEvent[nameof(VSActionsTelemetryEvent.PackageToInstallWasTransitive)].Should().Be(expectedPackageWasTransitive);
         }
 
         [Fact]
