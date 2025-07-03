@@ -257,10 +257,10 @@ namespace NuGet.PackageManagement.UI.Test
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
-            TelemetryEvent lastTelemetryEvent = null;
+            List<TelemetryEvent> telemetryEvents = new List<TelemetryEvent>();
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+                .Callback<TelemetryEvent>(x => telemetryEvents.Add(x));
 
             var operationId = Guid.NewGuid().ToString();
 
@@ -303,26 +303,26 @@ namespace NuGet.PackageManagement.UI.Test
             service.EmitTelemetryEvent(actionTelemetryData);
 
             // Assert
-            Assert.NotNull(lastTelemetryEvent);
-            Assert.NotNull(lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>);
-            var topLevelPkgSeverities = lastTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
-            Assert.Equal(lastTelemetryEvent["TopLevelVulnerablePackagesCount"], topLevelPkgSeverities.Count());
-            Assert.Collection(topLevelPkgSeverities,
-                item => Assert.Equal(1, item),
-                item => Assert.Equal(1, item),
-                item => Assert.Equal(3, item));
-            Assert.Equal(3, topLevelPkgSeverities.Count());
+            telemetryEvents.Should().NotBeEmpty();
 
-            var transitivePkgSeverities = lastTelemetryEvent.ComplexData["TransitiveVulnerablePackagesMaxSeverities"] as List<int>;
-            Assert.Equal(lastTelemetryEvent["TransitiveVulnerablePackagesCount"], transitivePkgSeverities.Count());
-            Assert.Equal(lastTelemetryEvent["TransitiveVulnerablePackagesCount"], transitivePkgSeverities.Count());
-            Assert.Collection(transitivePkgSeverities,
-                item => Assert.Equal(2, item),
-                item => Assert.Equal(3, item));
-            Assert.Equal(2, transitivePkgSeverities.Count());
+            IEnumerable<TelemetryEvent> vulnerabilityTelemetryEvents = telemetryEvents
+                .Where(telemetryEvent => telemetryEvent.ComplexData.ContainsKey("TopLevelVulnerablePackagesMaxSeverities"));
 
-            Assert.Null(lastTelemetryEvent["CreatedTopLevelSourceMappingsCount"]);
-            Assert.Null(lastTelemetryEvent["CreatedTransitiveSourceMappingsCount"]);
+            vulnerabilityTelemetryEvents.Should().HaveCount(1);
+
+            TelemetryEvent vulnerabilityTelemetryEvent = vulnerabilityTelemetryEvents.Single();
+            var topLevelPkgSeverities = vulnerabilityTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] as List<int>;
+            topLevelPkgSeverities.Should().NotBeNull();
+            topLevelPkgSeverities.Should().HaveCount((int)vulnerabilityTelemetryEvent["TopLevelVulnerablePackagesCount"]);
+            topLevelPkgSeverities.Should().ContainInOrder(new[] { 1, 1, 3 });
+
+            var transitivePkgSeverities = vulnerabilityTelemetryEvent.ComplexData["TransitiveVulnerablePackagesMaxSeverities"] as List<int>;
+            transitivePkgSeverities.Should().NotBeNull();
+            transitivePkgSeverities.Should().HaveCount((int)vulnerabilityTelemetryEvent["TransitiveVulnerablePackagesCount"]);
+            transitivePkgSeverities.Should().ContainInOrder(new[] { 2, 3 });
+
+            vulnerabilityTelemetryEvent["CreatedTopLevelSourceMappingsCount"].Should().BeNull();
+            vulnerabilityTelemetryEvent["CreatedTransitiveSourceMappingsCount"].Should().BeNull();
         }
 
         [Fact]
