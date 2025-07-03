@@ -15,6 +15,7 @@ using Microsoft.Build.Execution;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using NuGet.CommandLine.XPlat.Commands.Package;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -172,12 +173,14 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Check if the project files format are correct for CPM
         /// </summary>
-        /// <param name="packageReferenceArgs">Arguments used in the command</param>
-        /// <param name="packageSpec"></param>
+        /// <param name="projectPath">Full path to the project file</param>
+        /// <param name="packageSpec">The restore inputs for the project (package spec)</param>
+        /// <param name="package">The package being added/upgraded</param>
+        /// <param name="logger">Logger for output</param>
         /// <returns></returns>
-        public bool AreCentralVersionRequirementsSatisfied(PackageReferenceArgs packageReferenceArgs, PackageSpec packageSpec)
+        public static bool AreCentralVersionRequirementsSatisfied(string projectPath, PackageSpec packageSpec, PackageWithVersion package, ILogger logger)
         {
-            var project = GetProject(packageReferenceArgs.ProjectPath);
+            var project = GetProject(projectPath);
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
 
             // Get VersionOverride if it exisits in the package reference.
@@ -189,7 +192,7 @@ namespace NuGet.CommandLine.XPlat
                 // Emit a error if VersionOverride was specified for a package reference but that functionality is disabled
                 foreach (var item in dependenciesWithVersionOverride)
                 {
-                    packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, string.Join(";", dependenciesWithVersionOverride.Select(d => d.Name))));
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionOverrideDisabled, string.Join(";", dependenciesWithVersionOverride.Select(d => d.Name))));
                     return false;
                 }
             }
@@ -198,19 +201,19 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = packageSpec.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced && d.VersionOverride == null));
             if (dependenciesWithDefinedVersion.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name))));
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name))));
                 return false;
             }
             IEnumerable<LibraryDependency> autoReferencedAndDefinedInCentralFile = packageSpec.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
             if (autoReferencedAndDefinedInCentralFile.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name))));
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name))));
                 return false;
             }
             IEnumerable<LibraryDependency> packageReferencedDependenciesWithoutCentralVersionDefined = packageSpec.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null));
             if (packageReferencedDependenciesWithoutCentralVersionDefined.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_MissingPackageVersion, string.Join(";", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name))));
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_MissingPackageVersion, string.Join(";", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name))));
                 return false;
             }
 
@@ -219,16 +222,16 @@ namespace NuGet.CommandLine.XPlat
                 var floatingVersionDependencies = packageSpec.TargetFrameworks.SelectMany(tfm => tfm.CentralPackageVersions.Values).Where(cpv => cpv.VersionRange.IsFloating);
                 if (floatingVersionDependencies.Any())
                 {
-                    packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
+                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
                     return false;
                 }
             }
 
             // PackageVersion should not be defined outside the project file.
-            var packageVersions = project.Items.Where(item => item.ItemType == PACKAGE_VERSION_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.Package.Id) && !item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
+            var packageVersions = project.Items.Where(item => item.ItemType == PACKAGE_VERSION_TYPE_TAG && item.EvaluatedInclude.Equals(package.Id) && !item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
             if (packageVersions.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation, packageReferenceArgs.Package.Id));
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageVersion_WrongLocation, package.Id));
                 return false;
             }
 
@@ -236,16 +239,16 @@ namespace NuGet.CommandLine.XPlat
             var packageReferenceOutsideProjectFile = project.Items.Where(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.Xml.ContainingProject.FullPath.Equals(directoryPackagesPropsPath));
             if (packageReferenceOutsideProjectFile.Any())
             {
-                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation, packageReferenceArgs.Package.Id));
+                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_AddPkg_CentralPackageVersions_PackageReference_WrongLocation, package.Id));
                 return false;
             }
 
-            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(packageReferenceArgs.Package.Id));
+            ProjectItem packageReference = project.Items.LastOrDefault(item => item.ItemType == PACKAGE_REFERENCE_TYPE_TAG && item.EvaluatedInclude.Equals(package.Id));
             ProjectItem packageVersionInProps = packageVersions.LastOrDefault();
-            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(packageReferenceArgs.Package.Id));
+            var versionOverride = dependenciesWithVersionOverride?.FirstOrDefault(d => d.Name.Equals(package.Id));
 
             // If package reference exists and the user defined a VersionOverride or PackageVersions but didn't specified a version, no-op
-            if (packageReference != null && (versionOverride != null || packageVersionInProps != null) && packageReferenceArgs.Package.VersionRange is null)
+            if (packageReference != null && (versionOverride != null || packageVersionInProps != null) && package.VersionRange is null)
             {
                 return false;
             }

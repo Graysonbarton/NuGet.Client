@@ -18,6 +18,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
@@ -31,11 +32,14 @@ namespace NuGet.CommandLine.XPlat
         {
             XPlatUtility.SetUserAgent();
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
+            X509TrustStore.InitializeForDotNetSdk(packageReferenceArgs.Logger);
+
+            string projectFullPath = XPlatUtility.GetProjectFromDirectory(packageReferenceArgs.ProjectPath);
 
             packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAddingReference,
-                packageReferenceArgs.Package,
-                packageReferenceArgs.ProjectPath));
+                packageReferenceArgs.Package.Id,
+                projectFullPath));
 
             if (packageReferenceArgs.NoRestore)
             {
@@ -63,7 +67,7 @@ namespace NuGet.CommandLine.XPlat
                         typeConstraint: LibraryDependencyTarget.Package)
                 };
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, noVersion);
+                msBuild.AddPackageReference(projectFullPath, libraryDependency, noVersion);
                 return 0;
             }
 
@@ -79,8 +83,6 @@ namespace NuGet.CommandLine.XPlat
             }
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 
-            var projectFullPath = Path.GetFullPath(packageReferenceArgs.ProjectPath);
-
             var matchingPackageSpecs = dgSpec
                 .Projects
                 .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference &&
@@ -93,8 +95,8 @@ namespace NuGet.CommandLine.XPlat
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_UnsupportedProject,
-                    packageReferenceArgs.Package,
-                    packageReferenceArgs.ProjectPath));
+                    packageReferenceArgs.Package.Id,
+                    projectFullPath));
             }
 
             // Parse the user specified frameworks once to avoid re-do's
@@ -109,7 +111,7 @@ namespace NuGet.CommandLine.XPlat
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
 
             // Check if the project files are correct for CPM
-            if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !msBuild.AreCentralVersionRequirementsSatisfied(packageReferenceArgs, originalPackageSpec))
+            if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !MSBuildAPIUtility.AreCentralVersionRequirementsSatisfied(projectFullPath, originalPackageSpec, packageReferenceArgs.Package, packageReferenceArgs.Logger))
             {
                 return 1;
             }
@@ -227,7 +229,7 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Error_AddPkgIncompatibleWithAllFrameworks,
                     packageReferenceArgs.Package.Id,
                     packageReferenceArgs.Frameworks?.Any() == true ? Strings.AddPkg_UserSpecified : Strings.AddPkg_All,
-                    packageReferenceArgs.ProjectPath));
+                    projectFullPath));
 
                 return 1;
             }
@@ -240,12 +242,12 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Info_AddPkgCompatibleWithAllFrameworks,
                     packageReferenceArgs.Package.Id,
-                    packageReferenceArgs.ProjectPath));
+                    projectFullPath));
 
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
                 var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.Package.VersionRange is null);
+                msBuild.AddPackageReference(projectFullPath, libraryDependency, packageReferenceArgs.Package.VersionRange is null);
             }
             else
             {
@@ -254,7 +256,7 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
                     packageReferenceArgs.Package.Id,
-                    packageReferenceArgs.ProjectPath));
+                    projectFullPath));
 
                 var compatibleOriginalFrameworks = compatibleFrameworks
                     .Select(e => GetAliasForFramework(originalPackageSpec, e))
@@ -263,7 +265,7 @@ namespace NuGet.CommandLine.XPlat
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
                 var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs.PackageDirectory, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
 
-                msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
+                msBuild.AddPackageReferencePerTFM(projectFullPath,
                     libraryDependency,
                     compatibleOriginalFrameworks,
                     packageReferenceArgs.Package.VersionRange is null);

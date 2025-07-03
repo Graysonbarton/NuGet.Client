@@ -121,6 +121,42 @@ namespace NuGet.CommandLine.XPlat
             return candidateFile;
         }
 
+        internal static string GetProjectFromDirectory(string directory)
+        {
+            var topLevelFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
+
+            string? candidateFile = null;
+            foreach (string file in topLevelFiles)
+            {
+                if (IsProjectFile(file))
+                {
+                    if (candidateFile == null)
+                    {
+                        candidateFile = file;
+                    }
+                    else
+                    {
+                        throw new ArgumentException(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                                directory));
+                    }
+                }
+            }
+
+            if (candidateFile == null)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_NoProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            return candidateFile;
+        }
+
         /// <summary>
         /// Checks if the given file is a solution file.
         /// </summary>
