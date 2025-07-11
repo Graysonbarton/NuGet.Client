@@ -37,6 +37,16 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: false
+- name: RunStaticAnalysis
+  displayName: Run static analysis
+  type: boolean
+  default: true
+- name: SigningType
+  displayName: Type of signing to use
+  type: string
+  values:
+  - Real
+  - Test
 
 stages:
 - stage: Initialize
@@ -110,7 +120,9 @@ stages:
           enabled: true
         signing:
           enabled: true
-          signType: "$(SigningType)"
+          signType: "${{ parameters.SigningType }}"
+          ${{ if and(eq(parameters.isOfficialBuild, true), eq(parameters.SigningType, 'Real')) }}:
+            signWithProd: true
         swix:
           enabled: true
         optprof:
@@ -252,7 +264,9 @@ stages:
           enabled: true
         signing:
           enabled: true
-          signType: "$(SigningType)"
+          signType: "${{ parameters.SigningType }}"
+          ${{ if and(eq(parameters.isOfficialBuild, true), eq(parameters.SigningType, 'Real')) }}:
+            signWithProd: true
         swix:
           enabled: true
         optprof:
