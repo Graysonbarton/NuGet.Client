@@ -312,13 +312,6 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/target:ValidateArtifacts /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\16.ValidateArtifactsLocalization.binlog"
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish BootstrapperInfo.json as a build artifact'
-  inputs:
-    PathtoPublish: $(Build.StagingDirectory)\MicroBuild\Output
-    ArtifactName: MicroBuildOutputs
-    ArtifactType: Container
-
 - task: artifactDropTask@0
   displayName: "Upload VS bootstapper Drop"
   inputs:
