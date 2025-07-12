@@ -82,27 +82,8 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-<<<<<<< HEAD
     msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true"
     maximumCpuCount: true
-=======
-    msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
-
-- task: PowerShell@1
-  displayName: "Set IncludeApex variable"
-  name: "includeapex"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        $IncludeApex = -not [bool]::Parse($env:BuildRTM)
-        Write-Host "IncludeApex URL: $IncludeApex"
-        Write-Host "##vso[task.setvariable variable=IncludeApex]$IncludeApex"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set IncludeApex: $_"
-        exit 1
-      }
->>>>>>> 6e080ea73 ([release-6.8.x] Use 1ES Templates in CI Pipelines (#5725))
 
 - task: MSBuild@1
   displayName: "Build for VS2019"
@@ -181,7 +162,6 @@ steps:
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
 
-<<<<<<< HEAD
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.CommandLine.Test as artifact"
   inputs:
@@ -189,16 +169,6 @@ steps:
     ArtifactName: "NuGet.CommandLine.Test"
     ArtifactType: "Container"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
-=======
-- task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
->>>>>>> 6e080ea73 ([release-6.8.x] Use 1ES Templates in CI Pipelines (#5725))
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
@@ -272,27 +242,16 @@ steps:
 - task: MicroBuildCodesignVerify@1
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
   inputs:
-<<<<<<< HEAD
-    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
-    WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-    WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-=======
     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
->>>>>>> 6e080ea73 ([release-6.8.x] Use 1ES Templates in CI Pipelines (#5725))
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
-<<<<<<< HEAD
-    msbuildArguments: "/property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateVSManifestForVSIX.binlog"
-=======
     msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
->>>>>>> 6e080ea73 ([release-6.8.x] Use 1ES Templates in CI Pipelines (#5725))
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -300,11 +259,7 @@ steps:
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-<<<<<<< HEAD
-    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateVSManifestForToolsVSIX.binlog"
-=======
     msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
->>>>>>> 6e080ea73 ([release-6.8.x] Use 1ES Templates in CI Pipelines (#5725))
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
@@ -312,11 +267,7 @@ steps:
   inputs:
     solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
     configuration: "$(BuildConfiguration)"
-<<<<<<< HEAD
-    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateVSManifestForToolsVSIX.binlog"
-=======
     msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.Repository.LocalPath)\\artifacts\\VS15 /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\16.CreateEndToEndTestPackage.binlog"
->>>>>>> 6e080ea73 ([release-6.8.x] Use 1ES Templates in CI Pipelines (#5725))
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: NuGetCommand@2
