@@ -23,7 +23,7 @@
 
     <PropertyGroup>
       <DryRunSigning Condition="'$(DryRunSigning)' == ''">true</DryRunSigning>
-      <TestSigning>false</TestSigning>
+      <TestSigning>true</TestSigning>
       <SigningTempDirectory Condition="'$(SigningTempDirectory)' == ''">$(ArtifactTempDirectory)</SigningTempDirectory>
       <SigningLogDirectory Condition="'$(SigningLogDirectory)' == ''">$(ArtifactTempDirectory)</SigningLogDirectory>
 
