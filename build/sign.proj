@@ -52,7 +52,7 @@
       <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
       <FileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1;.py;.ps1xml" CertificateName="Microsoft400" />
       <FileExtensionSignInfo Include=".dll;.exe;.mibc;.msi" CertificateName="Microsoft400" />
-      <FileExtensionSignInfo Include="*.xml" CertificateName="MicrosoftXmlSHA2" />
+      <FileExtensionSignInfo Include=".xml" CertificateName="MicrosoftXmlSHA2" />
 
       <FileSignInfo Include="Lucene.Net.dll" CertificateName="3PartySHA2" />
       <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
