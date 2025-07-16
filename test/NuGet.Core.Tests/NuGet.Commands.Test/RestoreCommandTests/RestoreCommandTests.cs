@@ -455,6 +455,61 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
+        public async Task RestoreCommand_ProjectJsonProjectType_LogsNU1016ErrorAsync()
+        {
+            // Arrange
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.3"": {
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+
+            using var workingDir = TestDirectory.Create();
+
+            var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+            var sourceDir = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+            var projectDir = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+            packagesDir.Create();
+            sourceDir.Create();
+            projectDir.Create();
+
+            File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), project1Json);
+
+            var specPath1 = Path.Combine(projectDir.FullName, "project.json");
+            var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).WithTestRestoreMetadata();
+            spec1.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
+
+            var logger = new TestLogger();
+            var request = new TestRestoreRequest(spec1, sources: Enumerable.Empty<PackageSource>(), packagesDirectory: packagesDir.FullName, logger)
+            {
+                LockFilePath = Path.Combine(projectDir.FullName, "project.lock.json")
+            };
+
+            // Act
+            var command = new RestoreCommand(request);
+            var result = await command.ExecuteAsync();
+            await result.CommitAsync(logger, CancellationToken.None);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.LockFile.LogMessages.Count.Should().BeGreaterThanOrEqualTo(1);
+
+            IAssetsLogMessage resultLogMessage = result.LockFile.LogMessages.SingleOrDefault(logMessage => logMessage.Code == NuGetLogCode.NU1016);
+            resultLogMessage.Level.Should().Be(LogLevel.Error);
+            resultLogMessage.Message.Should().Be(Strings.Error_ProjectJson_Deprecated);
+        }
+
+        [Fact]
         public async Task RestoreCommand_FileUriV3FolderAsync()
         {
             // Arrange
@@ -2910,6 +2965,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["UpdatedAssetsFile"] = value => value.Should().Be(true),
                 ["UpdatedMSBuildFiles"] = value => value.Should().Be(true),
                 ["NETSdkVersion"] = value => value.Should().Be(null),
+                ["Pruning.FrameworksEnabled.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksDisabled.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.FrameworksUnsupported.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.RemovablePackages.Count"] = value => value.Should().BeOfType<int>(),
+                ["Pruning.Pruned.Direct.Count"] = value => value.Should().BeOfType<int>(),
             };
 
             HashSet<string> actualProperties = new();
@@ -3022,7 +3082,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(35);
+            projectInformationEvent.Count.Should().Be(38);
+
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(true);
             projectInformationEvent["IsCentralVersionManagementEnabled"].Should().Be(false);
@@ -3058,6 +3119,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["UpdatedAssetsFile"].Should().Be(false);
             projectInformationEvent["UpdatedMSBuildFiles"].Should().Be(false);
             projectInformationEvent["NETSdkVersion"].Should().Be(NuGetVersion.Parse("10.0.100"));
+            projectInformationEvent["Pruning.FrameworksEnabled.Count"].Should().Be(0);
+            projectInformationEvent["Pruning.FrameworksDisabled.Count"].Should().Be(0);
+            projectInformationEvent["Pruning.FrameworksUnsupported.Count"].Should().Be(1);
         }
 
         [Fact]
@@ -3115,7 +3179,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(41);
+            projectInformationEvent.Count.Should().Be(46);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);
