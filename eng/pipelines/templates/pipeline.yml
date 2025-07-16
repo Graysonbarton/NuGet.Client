@@ -45,9 +45,10 @@ stages:
     displayName: Get NuGet.Client semantic version
     timeoutInMinutes: 10
     pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2019
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     steps:
     - template: /eng/pipelines/templates/Initialize_Build_SemanticVersion.yml@self
 
@@ -58,9 +59,10 @@ stages:
       SemanticVersion: $[dependencies.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
       BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 1)]
     pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2019
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     steps:
     - template: /eng/pipelines/templates/Initialize_Build.yml@self
 
@@ -72,9 +74,10 @@ stages:
     displayName: Run Static Source Analysis
     timeoutInMinutes: 15
     pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2019
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     steps:
     - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
       parameters:
@@ -98,6 +101,9 @@ stages:
       BuildRTM: "false"
     pool:
       name: VSEngSS-MicroBuild2019-1ES
+      os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     templateContext:
       mb:
         localization:
@@ -236,6 +242,10 @@ stages:
       BuildRTM: "true"
     pool:
       name: VSEngSS-MicroBuild2019-1ES
+      os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
+
     templateContext:
       mb:
         localization:
@@ -286,9 +296,10 @@ stages:
     dependsOn: Build_and_UnitTest_RTM
     timeoutInMinutes: 15
     pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2019
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     steps:
     - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
       parameters:
@@ -334,6 +345,9 @@ stages:
     condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
     pool:
       name: VSEngSS-MicroBuild2019-1ES
+      os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     strategy:
       matrix:
         IsDesktop:
@@ -442,9 +456,10 @@ stages:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2019
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
+      demands:
+      - ImageOverride -equals server2022-microbuildVS2019-1es
     templateContext:
       outputs:
       - output: pipelineArtifact
