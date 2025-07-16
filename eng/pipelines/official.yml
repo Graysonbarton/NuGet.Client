@@ -53,7 +53,7 @@ extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
     sdl:
-      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+      sourceAnalysisPool: VSEngSS-MicroBuild2019-1ES
       binskim:
         enabled: true
         scanOutputDirectoryOnly: true
@@ -61,7 +61,7 @@ extends:
         enabled: false
     pool:
       name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
+      image: 1ESPT-Windows2019
       os: windows
     featureFlags:
       enablePrepareFilesForSbom: true
