@@ -424,6 +424,11 @@
         <target state="translated">'{0}' 프로젝트를 찾을 수 없습니다. 프로젝트 참조가 올바르고 프로젝트 파일이 있는지 확인하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_ProjectJson_Deprecated">
+        <source>Managing packages with project.json is deprecated. Migrate to PackageReference.</source>
+        <target state="new">Managing packages with project.json is deprecated. Migrate to PackageReference.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">
         <source>The runtime.json specified in the project '{0}' could not be parsed. {1}</source>
         <target state="translated">프로젝트 '{0}'에 지정된 runtime.json을 구문 분석할 수 없습니다. {1}</target>

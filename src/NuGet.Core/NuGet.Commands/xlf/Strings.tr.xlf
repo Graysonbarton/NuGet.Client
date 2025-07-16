@@ -424,6 +424,11 @@
         <target state="translated">'{0}' projesi bulunamadı. Proje başvurusunun geçerli olup olmadığını ve proje dosyasının mevcut olup olmadığını denetleyin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_ProjectJson_Deprecated">
+        <source>Managing packages with project.json is deprecated. Migrate to PackageReference.</source>
+        <target state="new">Managing packages with project.json is deprecated. Migrate to PackageReference.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">
         <source>The runtime.json specified in the project '{0}' could not be parsed. {1}</source>
         <target state="translated">'{0}' projesinde belirtilen runtime.json ayrıştırılamadı. {1}</target>

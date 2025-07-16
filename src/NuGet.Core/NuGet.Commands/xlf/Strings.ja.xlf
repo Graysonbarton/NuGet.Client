@@ -424,6 +424,11 @@
         <target state="translated">プロジェクト '{0}' が見つかりません。プロジェクト参照が有効であり、プロジェクト ファイルが存在することを確認してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_ProjectJson_Deprecated">
+        <source>Managing packages with project.json is deprecated. Migrate to PackageReference.</source>
+        <target state="new">Managing packages with project.json is deprecated. Migrate to PackageReference.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">
         <source>The runtime.json specified in the project '{0}' could not be parsed. {1}</source>
         <target state="translated">プロジェクト '{0}' で指定された runtime.json を解析できませんでした。{1}</target>

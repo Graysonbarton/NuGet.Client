@@ -424,6 +424,11 @@
         <target state="translated">Não é possível encontrar o projeto '{0}'. Verifique se a referência do projeto é válida e se o arquivo de projeto existe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_ProjectJson_Deprecated">
+        <source>Managing packages with project.json is deprecated. Migrate to PackageReference.</source>
+        <target state="new">Managing packages with project.json is deprecated. Migrate to PackageReference.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">
         <source>The runtime.json specified in the project '{0}' could not be parsed. {1}</source>
         <target state="translated">Não foi possível analisar o runtime.json especificado no projeto '{0}'. {1}</target>

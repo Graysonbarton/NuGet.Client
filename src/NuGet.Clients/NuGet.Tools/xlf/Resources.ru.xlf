@@ -22,6 +22,16 @@
         <target state="translated">Сбой операции</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingPattern_Missing">
+        <source>A package pattern must be provided.</source>
+        <target state="new">A package pattern must be provided.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_PackageSourceMappingSource_Missing">
+        <source>At least one source must be selected.</source>
+        <target state="new">At least one source must be selected.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Error_PackageSourceName_Missing">
         <source>A name must be provided.</source>
         <target state="translated">Необходимо указать имя.</target>
