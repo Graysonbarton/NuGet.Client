@@ -1362,7 +1362,7 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="VerifyCommand_ContentHash">
         <source>Content hash: {0}</source>
-        <target state="new">Content hash: {0}</target>
+        <target state="translated">İçerik karması: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyCommand_Failed">

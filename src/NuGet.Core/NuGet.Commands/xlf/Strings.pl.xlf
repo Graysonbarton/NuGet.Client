@@ -1362,7 +1362,7 @@ Aby uzyskać więcej informacji, odwiedź stronę https://docs.nuget.org/docs/re
       </trans-unit>
       <trans-unit id="VerifyCommand_ContentHash">
         <source>Content hash: {0}</source>
-        <target state="new">Content hash: {0}</target>
+        <target state="translated">Skrót zawartości: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyCommand_Failed">

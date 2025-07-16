@@ -1362,7 +1362,7 @@ Weitere Informationen finden Sie unter https://docs.nuget.org/docs/reference/com
       </trans-unit>
       <trans-unit id="VerifyCommand_ContentHash">
         <source>Content hash: {0}</source>
-        <target state="new">Content hash: {0}</target>
+        <target state="translated">Inhaltshash: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyCommand_Failed">

@@ -1362,7 +1362,7 @@ Per altre informazioni, vedere https://docs.nuget.org/docs/reference/command-lin
       </trans-unit>
       <trans-unit id="VerifyCommand_ContentHash">
         <source>Content hash: {0}</source>
-        <target state="new">Content hash: {0}</target>
+        <target state="translated">Hash contenuto: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyCommand_Failed">

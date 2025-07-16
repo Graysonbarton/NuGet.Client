@@ -1362,7 +1362,7 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
       </trans-unit>
       <trans-unit id="VerifyCommand_ContentHash">
         <source>Content hash: {0}</source>
-        <target state="new">Content hash: {0}</target>
+        <target state="translated">Hodnota hash obsahu: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="VerifyCommand_Failed">
