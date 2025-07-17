@@ -54,7 +54,7 @@ param (
     [switch]$SkipDelaySigning,
     [switch]$Binlog,
     [switch]$IncludeApex,
-	[switch]$UpdateXlfOnBuild
+	[switch]$UpdateXlf
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -124,6 +124,20 @@ Invoke-BuildStep 'Running Restore' {
 } `
 -ev +BuildErrors
 
+Invoke-BuildStep 'Updating Xlf' {
+    $buildArgs = 'build\build.proj', "/t:UpdateXlf", '/v:m', '/m'
+
+    Trace-Log ". `"$MSBuildExe`" $buildArgs"
+    & $MSBuildExe @buildArgs
+
+    if (-not $?)
+    {
+        Write-Error "Failed - Updating Xlf"
+        exit 1
+    }
+}
+-skip:(-not $UpdateXlf)`
+-ev +BuildErrors
 
 Invoke-BuildStep $VSMessage {
 
@@ -143,11 +157,6 @@ Invoke-BuildStep $VSMessage {
     {
         $buildArgs += "-bl:msbuild.build.binlog"
     }
-	
-	if ($UpdateXlfOnBuild)
-	{
-		$buildArgs += "/p:UpdateXlfOnBuild=true"
-	}
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
     Trace-Log ". `"$MSBuildExe`" $buildArgs"

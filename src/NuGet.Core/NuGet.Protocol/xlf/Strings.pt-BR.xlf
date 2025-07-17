@@ -68,6 +68,12 @@
         <target state="translated">Você está executando a operação '{0}' com uma fonte 'HTTP', '{1}'. O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicitamente `'allowInsecureConnections'` como `true` no seu arquivo `NuGet.Config`. Consulte [https://aka.ms/nuget-https-everywhere](https://aka.ms/nuget-https-everywhere) para mais informações.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - server uri.</note>
       </trans-unit>
+      <trans-unit id="Error_Insecure_HTTP">
+        <source>You are using a NuGet source '{0}' that contains an 'HTTP' service index resource endpoint: '{1}'. This is insecure and not recommended. To allow HTTP resources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. For more information, visit https://aka.ms/nuget-https-everywhere.</source>
+        <target state="new">You are using a NuGet source '{0}' that contains an 'HTTP' service index resource endpoint: '{1}'. This is insecure and not recommended. To allow HTTP resources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. For more information, visit https://aka.ms/nuget-https-everywhere.</target>
+        <note>0 - NuGet Package source url
+1- resource endpoint url</note>
+      </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
         <source>The server responded with HTTP '403 Forbidden' when accessing the source '{0}'. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource.</source>
         <target state="translated">O servidor respondeu com HTTP '403 Proibido' ao acessar a origem '{0}'. Isso sugere que o servidor autenticou sua identidade, mas não permitiu que você acessasse o recurso solicitado. Forneça credenciais que tenham permissões para exibir esse recurso.</target>
