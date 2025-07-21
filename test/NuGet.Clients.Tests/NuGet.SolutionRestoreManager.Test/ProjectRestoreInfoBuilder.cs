@@ -52,14 +52,15 @@ namespace NuGet.SolutionRestoreManager.Test
                 return null;
             }
 
-            var projectProperties = new VsProjectProperties { };
+            var projectProperties = new VsProjectProperties
+            {
+                { "MSBuildProjectName", packageSpec.Name },
+                { "MSBuildStartupDirectory", packageSpec.BaseDirectory }
+            };
 
             if (packageSpec.Version != null)
             {
-                projectProperties = new VsProjectProperties
-                {
-                    { "PackageVersion", packageSpec.Version.ToString() }
-                };
+                projectProperties.Add("PackageVersion", packageSpec.Version.ToString());
             }
 
             var targetFrameworks = new VsTargetFrameworks(

@@ -26,6 +26,16 @@ namespace Test.Utility
             _toStringSuffix = toStringSuffix;
         }
 
+        public TestEnvironmentVariableReader(string variable, string value, string toStringSuffix = null)
+        {
+            if (string.IsNullOrEmpty(variable))
+            {
+                throw new ArgumentException("Variable name cannot be null or empty.", nameof(variable));
+            }
+            _variables = new Dictionary<string, string> { { variable, value } };
+            _toStringSuffix = toStringSuffix;
+        }
+
         public string GetEnvironmentVariable(string variable)
         {
             if (_variables.TryGetValue(variable, out var value))

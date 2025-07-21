@@ -330,7 +330,7 @@ public class TestPackageSpecFactory
         public required Dictionary<string, string> Properties { get; init; }
         public required Dictionary<string, List<IItem>> Items { get; init; }
 
-        public string GetProperty(string propertyName) => Properties.TryGetValue(propertyName, out var value) ? value : null!;
+        public string? GetProperty(string propertyName) => Properties.TryGetValue(propertyName, out var value) ? value : null;
         public IReadOnlyList<IItem> GetItems(string itemType) => Items.TryGetValue(itemType, out var items) ? items : [];
     }
 
@@ -340,13 +340,13 @@ public class TestPackageSpecFactory
 
         internal required IReadOnlyDictionary<string, string> Metadata { get; init; }
 
-        public string GetMetadata(string name)
+        public string? GetMetadata(string name)
         {
             if (Metadata.TryGetValue(name, out var value))
             {
                 return value;
             }
-            return null!;
+            return null;
         }
     }
 }
