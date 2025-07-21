@@ -135,7 +135,7 @@ Invoke-BuildStep 'Updating Xlf' {
         Write-Error "Failed - Updating Xlf"
         exit 1
     }
-}
+} `
 -skip:(-not $UpdateXlf)`
 -ev +BuildErrors
 
