@@ -60,7 +60,7 @@
       <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(PkgMicrosoft_Web_Xdt)\lib\net40\Microsoft.Web.XmlTransform.dll">
+    <Content Include="$(PkgMicrosoft_Web_Xdt)\lib\netstandard20\Microsoft.Web.XmlTransform.dll">
       <Link>Microsoft.Web.XmlTransform.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -362,7 +362,6 @@
     </MSBuild>
     <ItemGroup>
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)microsoft.web.xdt\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
