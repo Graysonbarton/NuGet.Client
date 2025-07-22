@@ -259,6 +259,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPackageReferences" />
     </CheckForDuplicateNuGetItemsTask>
 
+    <!-- Validate package IDs after deduplication -->
+    <ValidatePackageIdsTask
+      PackageReferences="@(DeduplicatedPackageReferences)"
+      Condition="'@(DeduplicatedPackageReferences)' != ''" />
+
     <ItemGroup Condition="'@(DeduplicatedPackageReferences)' != ''">
       <PackageReference Remove="@(PackageReference)" />
       <PackageReference Include="@(DeduplicatedPackageReferences)" />
