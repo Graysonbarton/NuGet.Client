@@ -757,6 +757,11 @@ namespace NuGet.Commands
         /// <returns>False if no vulnerability database could be found (so packages were not scanned for vulnerabilities), true otherwise.</returns>
         private async Task<bool> PerformAuditAsync(IEnumerable<RestoreTargetGraph> graphs, TelemetryActivity telemetry, CancellationToken token)
         {
+            if (!_success)
+            {
+                return false;
+            }
+            
             var audit = new AuditUtility(
                 _request.Project.RestoreMetadata.RestoreAuditProperties,
                 _request.Project.FilePath,
