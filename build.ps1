@@ -54,7 +54,7 @@ param (
     [switch]$SkipDelaySigning,
     [switch]$Binlog,
     [switch]$IncludeApex,
-	[switch]$UpdateXlf
+    [switch]$UpdateXlf
 )
 
 . "$PSScriptRoot\build\common.ps1"

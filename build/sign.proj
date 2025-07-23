@@ -69,7 +69,7 @@
         TempDir="$(SigningTempDirectory)"
         LogDir="$(SigningLogDirectory)"
         DotNetPath="$(DotnetExePath)"
-        MicroBuildCorePath="$(PkgMicroBuild_Core)"
+        MicroBuildCorePath="$(PkgMicrosoft_VisualStudioEng_MicroBuild_Core)"
         RepackParallelism="$(SignToolRepackParallelism)"
         MaximumParallelFileSize="$(SignToolRepackMaximumParallelFileSize)"
         DotNetTimeout="$(SignToolDotNetTimeout)"
