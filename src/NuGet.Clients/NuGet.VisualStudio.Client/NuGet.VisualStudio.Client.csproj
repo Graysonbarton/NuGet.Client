@@ -103,6 +103,14 @@
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <!-- Explicitly include the XmlTransform resource packages.
+         These aren't automatically included by the VSSDK in the correct spot.
+         Work around https://dev.azure.com/devdiv/DevDiv/_workitems/edit/2523215
+    -->
+    <Content Include="$(OutputPath)**/Microsoft.Web.XmlTransform.resources.dll">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="$(BuildCommonDirectory)NOTICES.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
