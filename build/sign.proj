@@ -16,7 +16,6 @@
           BeforeTargets="AfterBuild"
           DependsOnTargets="$(SignTargetsDependOn)">
 
-
     <PropertyGroup>
       <DryRunSigning Condition="'$(DryRunSigning)' == ''">true</DryRunSigning>
       <TestSigning>true</TestSigning>
@@ -30,19 +29,6 @@
 
       <SignToolDotNetTimeout Condition="'$(SignToolDotNetTimeout)' == ''">-1</SignToolDotNetTimeout>
     </PropertyGroup>
-
-  <Target Name="BatchSign">
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
-             Targets="GetSigningInputs"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="FilesToSign" />
-    </MSBuild>
-
-    <MSBuild Projects="$(VSIXProject)"
-             Targets="GetThirdPartyAssemblies"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="ThirdPartyAssembly" />
-    </MSBuild>
 
     <ItemGroup>
       <CertificatesSignInfo Include="3PartyDual" DualSigningAllowed="true" />
