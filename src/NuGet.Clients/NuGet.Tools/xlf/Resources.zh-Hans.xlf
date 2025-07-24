@@ -127,6 +127,11 @@
         <target state="translated">解决方案未保存。请先保存你的解决方案，然后再管理 NuGet 程序包。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_AllowInsecureConnections_Header">
+        <source>Allow Insecure Connections</source>
+        <target state="new">Allow Insecure Connections</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_CommonLink">
         <source>Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</source>
         <target state="translated">常用 NuGet 配置：[如何应用设置](https://aka.ms/nuget/how-settings-are-applied/)</target>

@@ -127,6 +127,11 @@
         <target state="translated">Die Projektmappe wurde nicht gespeichert. Bitte speichern Sie Ihre Projektmappe, bevor Sie NuGet-Pakete verwalten.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_AllowInsecureConnections_Header">
+        <source>Allow Insecure Connections</source>
+        <target state="new">Allow Insecure Connections</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_CommonLink">
         <source>Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</source>
         <target state="translated">Allgemeine NuGet-Konfigurationen: [Wie Einstellungen angewendet werden](https://aka.ms/nuget/how-settings-are-applied/)</target>

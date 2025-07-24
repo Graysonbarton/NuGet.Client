@@ -966,9 +966,9 @@ nuget sign MyPackage.nupkg -CertificateFingerprint certificate_fingerprint -Outp
         <note />
       </trans-unit>
       <trans-unit id="SignCommandInvalidCertificateFingerprint">
-        <source>Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">'CertificateFingerprint' 옵션의 값이 잘못되었습니다. 값은 SHA-256, SHA-384 또는 SHA-512 인증서 지문(16진수)이어야 합니다.</target>
-        <note />
+        <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
+        <target state="new">{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</target>
+        <note>{0} - error code</note>
       </trans-unit>
       <trans-unit id="SignCommandMissingArgumentException">
         <source>No value provided for '{0}', which is needed when using the '{1}' option. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>

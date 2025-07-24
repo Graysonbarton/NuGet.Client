@@ -871,15 +871,48 @@ Aby uzyskać więcej informacji, odwiedź stronę https://docs.nuget.org/docs/re
         <target state="translated">Ścieżka do pliku projektu lub rozwiązania albo katalogu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_FinalSummary">
+        <source>Updated {0} packages in {1} scanned packages.</source>
+        <target state="new">Updated {0} packages in {1} scanned packages.</target>
+        <note>{0}: Number of packages updated
+{1}: Package checked for updated versions</note>
+      </trans-unit>
+      <trans-unit id="PackageUpdate_FindingUpdateVersions">
+        <source>Finding versions of packages to update.</source>
+        <target state="new">Finding versions of packages to update.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageUpdate_LoadingDGSpec">
+        <source>Loading Project(s).</source>
+        <target state="new">Loading Project(s).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageUpdate_PackageArgumentDescription">
         <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
         <target state="translated">Odwołanie do pakietu w postaci identyfikatora pakietu, takiego jak „Newtonsoft.Json” lub identyfikator pakietu i wersja rozdzielone znakiem „@”, na przykład „Newtonsoft.Json@13.0.3”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageUpdate_PreviewRestore">
+        <source>Running preview restore to check package compatibility.</source>
+        <target state="new">Running preview restore to check package compatibility.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageUpdate_PreviewRestoreFailed">
         <source>Preview restore with updated packages was not successful. Force mode is not yet available.</source>
         <target state="translated">Podgląd przywracania z aktualizowanymi pakietami zakończył się niepowodzeniem. Tryb wymuszania nie jest jeszcze dostępny.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PackageUpdate_UpdatedMessage">
+        <source>Updated {0} {1} to {2}.</source>
+        <target state="new">Updated {0} {1} to {2}.</target>
+        <note>{0}: package id
+{1}: existing version
+{2}: new version</note>
+      </trans-unit>
+      <trans-unit id="PackageUpdate_UpdatingOutdatedPackages">
+        <source>Updating outdated packages in {0}.</source>
+        <target state="new">Updating outdated packages in {0}.</target>
+        <note>{0}: the project or solution that is being updated</note>
       </trans-unit>
       <trans-unit id="PrereleaseVersionsAvailable">
         <source>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</source>

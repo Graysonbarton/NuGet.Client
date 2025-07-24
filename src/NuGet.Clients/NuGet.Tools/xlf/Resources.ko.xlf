@@ -127,6 +127,11 @@
         <target state="translated">솔루션이 저장되지 않았습니다. NuGet 패키지를 관리하려면 솔루션을 저장하십시오.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_AllowInsecureConnections_Header">
+        <source>Allow Insecure Connections</source>
+        <target state="new">Allow Insecure Connections</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_CommonLink">
         <source>Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</source>
         <target state="translated">일반적인 NuGet 구성: [설정 적용 방법](https://aka.ms/nuget/how-settings-are-applied/)</target>

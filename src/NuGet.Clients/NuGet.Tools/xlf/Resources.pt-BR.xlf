@@ -127,6 +127,11 @@
         <target state="translated">A solução não está salva. Salve sua solução antes de gerenciar os pacotes NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Text_AllowInsecureConnections_Header">
+        <source>Allow Insecure Connections</source>
+        <target state="new">Allow Insecure Connections</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Text_ConfigurationFiles_CommonLink">
         <source>Common NuGet configurations: [How settings are applied](https://aka.ms/nuget/how-settings-are-applied/)</source>
         <target state="translated">Configurações comuns do NuGet: [Como as configurações são aplicadas](https://aka.ms/nuget/how-settings-are-applied/)</target>
