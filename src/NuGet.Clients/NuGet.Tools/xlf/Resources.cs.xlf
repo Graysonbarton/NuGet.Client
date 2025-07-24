@@ -24,12 +24,12 @@
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingPattern_Missing">
         <source>A package pattern must be provided.</source>
-        <target state="new">A package pattern must be provided.</target>
+        <target state="translated">Je nutné zadat vzor balíčku.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingSource_Missing">
         <source>At least one source must be selected.</source>
-        <target state="new">At least one source must be selected.</target>
+        <target state="translated">Musí být vybrán alespoň jeden zdroj.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceName_Missing">

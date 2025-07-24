@@ -70,7 +70,7 @@
       </trans-unit>
       <trans-unit id="Error_Insecure_HTTP">
         <source>You are using a NuGet source '{0}' that contains an 'HTTP' service index resource endpoint: '{1}'. This is insecure and not recommended. To allow HTTP resources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. For more information, visit https://aka.ms/nuget-https-everywhere.</source>
-        <target state="new">You are using a NuGet source '{0}' that contains an 'HTTP' service index resource endpoint: '{1}'. This is insecure and not recommended. To allow HTTP resources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. For more information, visit https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Вы используете источник NuGet "{0}", который содержит конечную точку ресурса индекса службы "HTTP": "{1}". Это небезопасно и не рекомендуется. Чтобы разрешить ресурсы HTTP, необходимо явно задать для параметра allowInsecureConnections значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
         <note>0 - NuGet Package source url
 1- resource endpoint url</note>
       </trans-unit>

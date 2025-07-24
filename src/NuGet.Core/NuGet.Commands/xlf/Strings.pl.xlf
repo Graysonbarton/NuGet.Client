@@ -426,7 +426,7 @@
       </trans-unit>
       <trans-unit id="Error_ProjectJson_Deprecated">
         <source>Managing packages with project.json is deprecated. Migrate to PackageReference.</source>
-        <target state="new">Managing packages with project.json is deprecated. Migrate to PackageReference.</target>
+        <target state="translated">Zarządzanie pakietami za pomocą pliku project.json jest przestarzałe. Migruj do PackageReference.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectRuntimeJsonIsUnreadable">

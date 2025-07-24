@@ -24,12 +24,12 @@
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingPattern_Missing">
         <source>A package pattern must be provided.</source>
-        <target state="new">A package pattern must be provided.</target>
+        <target state="translated">Необходимо указать шаблон пакета.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingSource_Missing">
         <source>At least one source must be selected.</source>
-        <target state="new">At least one source must be selected.</target>
+        <target state="translated">Необходимо выбрать по крайней мере один источник.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSourceName_Missing">

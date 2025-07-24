@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="new">{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</target>
+        <target state="translated">{0}: Ungültiger Wert für die Option „CertificateFingerprint“. Der Wert muss ein SHA-256-, SHA-384- oder SHA-512-Zertifikatfingerabdruck (hexadezimal) sein.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
