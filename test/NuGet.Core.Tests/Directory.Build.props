@@ -3,8 +3,8 @@
     <TestProject Condition="'$(TestProject)' == ''">true</TestProject>
     <TestProjectType>Unit</TestProjectType>
   </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>
