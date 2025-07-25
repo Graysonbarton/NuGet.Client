@@ -12,11 +12,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.SignTool" />
+  </ItemGroup>
+
   <Target Name="Sign"
           BeforeTargets="AfterBuild"
           DependsOnTargets="$(SignTargetsDependOn)">
-
-    <PackageReference Include="Microsoft.DotNet.SignTool" />
 
     <PropertyGroup>
       <DryRunSigning Condition="'$(DryRunSigning)' == ''">true</DryRunSigning>
