@@ -51,6 +51,7 @@
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Feed" Version="6.0.0-beta.20528.5" />
     <PackageVersion Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.24415.2" />
     <PackageVersion Include="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25260.104" />
+    <PackageVersion Include="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25367.5" />
     <PackageVersion Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19253.5" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
@@ -131,7 +132,6 @@
 
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " GeneratePathProperty="true" />
-    <GlobalPackageReference Include="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25367.5" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">

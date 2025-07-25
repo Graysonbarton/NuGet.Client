@@ -16,6 +16,8 @@
           BeforeTargets="AfterBuild"
           DependsOnTargets="$(SignTargetsDependOn)">
 
+    <PackageReference Include="Microsoft.DotNet.SignTool" />
+
     <PropertyGroup>
       <DryRunSigning Condition="'$(DryRunSigning)' == ''">true</DryRunSigning>
       <TestSigning>true</TestSigning>
