@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            var packageSourcesList = value as IReadOnlyList<IReadOnlyDictionary<string, object>>;
+            var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
             if (packageSourcesList is null)
             {
                 throw new InvalidOperationException();
@@ -125,7 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         }
 
         private ExternalSettingOperationResult SetIsEnabledOnMachineWidePackageSources(
-            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourcesList,
+            IReadOnlyList<IDictionary<string, object>> packageSourcesList,
             CancellationToken cancellationToken)
         {
             ExternalSettingOperationResult result;
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string originalPackageSourceName = originalMachineWideSource.Name;
-                    IReadOnlyDictionary<string, object> targetPackageSource = packageSourcesList
+                    IDictionary<string, object> targetPackageSource = packageSourcesList
                         .Single(packageSourceDictionary =>
                             packageSourceDictionary[MonikerSourceName].ToString() == originalPackageSourceName);
 
@@ -172,7 +172,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         }
 
         private (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) SavePackageSources(
-            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList,
+            IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList,
             CancellationToken cancellationToken)
         {
             bool hasAnyHiddenPropertyChanged = false;
@@ -197,7 +197,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             return (result, hasAnyHiddenPropertyChanged);
         }
 
-        private bool SavePackageSources(IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList, bool shouldSkipSave, CancellationToken cancellationToken)
+        private bool SavePackageSources(IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList, bool shouldSkipSave, CancellationToken cancellationToken)
         {
             List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
             List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
@@ -326,9 +326,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             bool shouldSkipSave = true;
             ExternalSettingOperationResult result;
 
+            //Convert arraySettingContent to a list of IDictonary<string, object>.
+            var packageSourceDictionaryList = arraySettingContent
+                .Select(dict => new Dictionary<string, object>(dict as IDictionary<string, object>))
+                .ToList();
+
             try
             {
-                SavePackageSources(packageSourceDictionaryList: arraySettingContent, shouldSkipSave, cancellationToken: CancellationToken.None);
+                SavePackageSources(packageSourceDictionaryList, shouldSkipSave, cancellationToken: CancellationToken.None);
                 result = ExternalSettingOperationResult.Success.Instance;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
