@@ -1,1 +1,4 @@
 #nullable enable
+NuGet.Configuration.IPackageSourceProvider.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource!>! sources, bool shouldSkipSave) -> void
+NuGet.Configuration.PackageSourceProvider.SavePackageSources(System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource!>! sources, bool shouldSkipSave) -> void
+NuGet.Configuration.PackageSourceProvider.SaveToDisk() -> void

@@ -83,6 +83,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="sources">PackageSources to be saved</param>
         void SavePackageSources(IEnumerable<PackageSource> sources);
+        void SavePackageSources(IEnumerable<PackageSource> sources, bool shouldSkipSave);
 
         /// <summary>
         /// Checks if a package source with a given name is part of the disabled sources configuration

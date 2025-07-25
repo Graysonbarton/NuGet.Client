@@ -724,12 +724,23 @@ namespace NuGet.Configuration
             }
         }
 
-        public void SavePackageSources(IEnumerable<PackageSource> sources)
+        public void SaveToDisk()
         {
-            SavePackageSources(sources, EnvironmentVariableWrapper.Instance);
+            Settings.SaveToDisk();
+            OnPackageSourcesChanged();
         }
 
-        internal void SavePackageSources(IEnumerable<PackageSource> sources, IEnvironmentVariableReader environmentVariableReader)
+        public void SavePackageSources(IEnumerable<PackageSource> sources)
+        {
+            SavePackageSources(sources, EnvironmentVariableWrapper.Instance, shouldSkipSave: false);
+        }
+
+        public void SavePackageSources(IEnumerable<PackageSource> sources, bool shouldSkipSave)
+        {
+            SavePackageSources(sources, EnvironmentVariableWrapper.Instance, shouldSkipSave);
+        }
+
+        internal void SavePackageSources(IEnumerable<PackageSource> sources, IEnvironmentVariableReader environmentVariableReader, bool shouldSkipSave)
         {
             if (sources == null)
             {
@@ -824,7 +835,7 @@ namespace NuGet.Configuration
                 }
             }
 
-            if (isDirty)
+            if (!shouldSkipSave && isDirty)
             {
                 Settings.SaveToDisk();
                 OnPackageSourcesChanged();

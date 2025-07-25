@@ -10,13 +10,14 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio.Options
 {
     [Guid("15C605EC-4FD7-446B-BA4A-75ECF0C0B2D0")]
-    public class PackageSourcesPage : NuGetExternalSettingsProvider
+    public class PackageSourcesPage : NuGetExternalSettingsProvider, IExternalSettingValidator
     {
         internal const string MonikerPackageSources = "packageSources";
         internal const string MonikerMachineWideSources = "machineWidePackageSources";
@@ -28,10 +29,18 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         private IPackageSourceProvider _packageSourceProvider;
 
+        public event EventHandler? RevalidationRequired;
+
         public PackageSourcesPage(VSSettings vsSettings, IPackageSourceProvider packageSourceProvider)
             : base(vsSettings)
         {
             _packageSourceProvider = packageSourceProvider ?? throw new ArgumentNullException(nameof(packageSourceProvider));
+        }
+
+        internal override void VsSettings_SettingsChanged(object sender, EventArgs e)
+        {
+            RevalidationRequired?.Invoke(sender, e);
+            base.VsSettings_SettingsChanged(sender, e);
         }
 
         private List<PackageSource> LoadPackageSources(bool isMachineWide)
@@ -69,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
         public override async Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken)
         {
-            var packageSourcesList = value as IReadOnlyList<IDictionary<string, object>>;
+            var packageSourcesList = value as IReadOnlyList<IReadOnlyDictionary<string, object>>;
             if (packageSourcesList is null)
             {
                 throw new InvalidOperationException();
@@ -116,7 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         }
 
         private ExternalSettingOperationResult SetIsEnabledOnMachineWidePackageSources(
-            IReadOnlyList<IDictionary<string, object>> packageSourcesList,
+            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourcesList,
             CancellationToken cancellationToken)
         {
             ExternalSettingOperationResult result;
@@ -130,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     cancellationToken.ThrowIfCancellationRequested();
 
                     string originalPackageSourceName = originalMachineWideSource.Name;
-                    IDictionary<string, object> targetPackageSource = packageSourcesList
+                    IReadOnlyDictionary<string, object> targetPackageSource = packageSourcesList
                         .Single(packageSourceDictionary =>
                             packageSourceDictionary[MonikerSourceName].ToString() == originalPackageSourceName);
 
@@ -163,7 +172,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         }
 
         private (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) SavePackageSources(
-            IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList,
+            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList,
             CancellationToken cancellationToken)
         {
             bool hasAnyHiddenPropertyChanged = false;
@@ -171,53 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             try
             {
-                List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
-                List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
-                bool hasAnyPackageSourceNameChanged = false;
-
-                foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    string name = packageSourceDictionary[MonikerSourceName].ToString();
-                    string lookupName;
-
-                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
-                    if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
-                    {
-                        lookupName = packageSourceIdObj.ToString();
-
-                        if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
-                            hasAnyPackageSourceNameChanged = true;
-                        }
-                    }
-                    else // Newly added Package Sources will not have a Package ID yet.
-                    {
-                        lookupName = name;
-                    }
-
-                    string source = packageSourceDictionary[MonikerSourceUrl].ToString();
-                    bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
-                    bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
-
-                    PackageSource packageSource =
-                        PackageSourceValidator.FindExistingOrCreate(
-                            lookupName,
-                            source,
-                            name,
-                            isEnabled,
-                            allowInsecureConnections,
-                            existingPackageSources);
-
-                    packageSources.Add(packageSource);
-                }
-
-                // Throw any validation errors before saving.
-                PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
-
-                _packageSourceProvider.SavePackageSources(packageSources);
+                var hasAnyPackageSourceNameChanged = SavePackageSources(packageSourceDictionaryList, shouldSkipSave: false, cancellationToken);
 
                 hasAnyHiddenPropertyChanged = hasAnyPackageSourceNameChanged;
 
@@ -232,6 +195,58 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
 
             return (result, hasAnyHiddenPropertyChanged);
+        }
+
+        private bool SavePackageSources(IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList, bool shouldSkipSave, CancellationToken cancellationToken)
+        {
+            List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
+            List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
+            bool hasAnyPackageSourceNameChanged = false;
+
+            foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string name = packageSourceDictionary[MonikerSourceName].ToString();
+                string lookupName;
+
+                // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+                if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
+                {
+                    lookupName = packageSourceIdObj.ToString();
+
+                    if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
+                        hasAnyPackageSourceNameChanged = true;
+                    }
+                }
+                else // Newly added Package Sources will not have a Package ID yet.
+                {
+                    lookupName = name;
+                }
+
+                string source = packageSourceDictionary[MonikerSourceUrl].ToString();
+                bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
+                bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
+
+                PackageSource packageSource =
+                    PackageSourceValidator.FindExistingOrCreate(
+                        lookupName,
+                        source,
+                        name,
+                        isEnabled,
+                        allowInsecureConnections,
+                        existingPackageSources);
+
+                packageSources.Add(packageSource);
+            }
+
+            // Throw any validation errors before saving.
+            PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+
+            _packageSourceProvider.SavePackageSources(packageSources, shouldSkipSave);
+            return hasAnyPackageSourceNameChanged;
         }
 
         private static ExternalSettingOperationResult<T> GetValuePackageSources<T>(List<PackageSource> packageSources)
@@ -273,5 +288,61 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             return result;
         }
+
+        public OneOrMany<SettingMessage> ValidateSetting(string moniker, object value)
+        {
+            //            // Do not save these settings changes to disk.
+            //            bool shouldSkipSave = true;
+
+            //            var arraySettingContent = value as IReadOnlyList<IReadOnlyDictionary<string, object>>;
+            //            if (arraySettingContent is null)
+            //            {
+            //                throw new InvalidOperationException();
+            //            }
+
+            //            ExternalSettingOperationResult result;
+
+            //            try
+            //            {
+            //                SavePackageSources(packageSourceDictionaryList: arraySettingContent, shouldSkipSave, cancellationToken: CancellationToken.None);
+            //                result = ExternalSettingOperationResult.Success.Instance;
+            //            }
+            //#pragma warning disable CA1031 // Do not catch general exception types
+            //            catch (Exception ex)
+            //#pragma warning restore CA1031 // Do not catch general exception types
+            //            {
+            //                var settingMessage = new SettingMessage(ex.Message, MessageSeverity.Error);
+            //                ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
+
+            //                return new OneOrMany<SettingMessage>(settingMessage);
+            //            }
+
+            return new OneOrMany<SettingMessage>();
+        }
+
+        public OneOrMany<SettingMessage> ValidateArrayItemProperty(string arraySettingMoniker, int arrayItemIndex, string propertyMoniker, IReadOnlyList<IReadOnlyDictionary<string, object>> arraySettingContent)
+        {
+            // Do not save these settings changes to disk.
+            bool shouldSkipSave = true;
+            ExternalSettingOperationResult result;
+
+            try
+            {
+                SavePackageSources(packageSourceDictionaryList: arraySettingContent, shouldSkipSave, cancellationToken: CancellationToken.None);
+                result = ExternalSettingOperationResult.Success.Instance;
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                var settingMessage = new SettingMessage(ex.Message, MessageSeverity.Error);
+                ActivityLog.LogError(ExceptionHelper.LogEntrySource, ex.ToString());
+
+                return new OneOrMany<SettingMessage>(settingMessage);
+            }
+
+            return new OneOrMany<SettingMessage>();
+        }
     }
 }
+
