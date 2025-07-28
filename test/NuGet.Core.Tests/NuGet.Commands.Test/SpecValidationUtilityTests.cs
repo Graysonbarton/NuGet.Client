@@ -160,11 +160,6 @@ namespace NuGet.Commands.Test
                     ProjectUniqueName = "b"
                 });
 
-            spec.Projects.First().Dependencies.Add(new LibraryDependency()
-            {
-                LibraryRange = new LibraryRange("b", LibraryDependencyTarget.PackageProjectExternal)
-            });
-
             // Act && Assert no errors
             SpecValidationUtility.ValidateDependencySpec(spec);
         }

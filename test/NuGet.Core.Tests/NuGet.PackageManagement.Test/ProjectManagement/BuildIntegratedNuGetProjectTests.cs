@@ -56,7 +56,6 @@ namespace ProjectManagement.Test
                 Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
                 Assert.Empty(actual.TargetFrameworks[0].Imports);
 
-                Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
                 Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
             }
@@ -427,7 +426,6 @@ namespace ProjectManagement.Test
                 Assert.Equal(1, actual.TargetFrameworks[0].Imports.Length);
                 Assert.Equal(FallbackTargetFramework, actual.TargetFrameworks[0].Imports[0]);
 
-                Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
                 Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
             }
@@ -481,7 +479,6 @@ namespace ProjectManagement.Test
                 Assert.Equal(1, actual.TargetFrameworks[0].Imports.Length);
                 Assert.Equal(FallbackTargetFramework, actual.TargetFrameworks[0].Imports[0]);
 
-                Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
                 Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
             }

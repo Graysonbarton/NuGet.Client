@@ -62,33 +62,24 @@ namespace NuGet.ProjectModel
 
             foreach (var group in ProjectFileDependencyGroups)
             {
-                IOrderedEnumerable<string> actualDependencies;
                 var expectedDependencies = @group.Dependencies.OrderBy(x => x, StringComparer.Ordinal);
 
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
-                if (string.IsNullOrEmpty(@group.FrameworkName))
-                {
-                    actualDependencies = spec.Dependencies
-                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
-                        .OrderBy(x => x, StringComparer.Ordinal);
-                }
-                else
-                {
-                    var framework = actualTargetFrameworks.FirstOrDefault(f => string.Equals(
-                                f.FrameworkName.DotNetFrameworkName,
-                                @group.FrameworkName,
-                                StringComparison.OrdinalIgnoreCase));
 
-                    if (framework == null)
-                    {
-                        return false;
-                    }
+                var framework = actualTargetFrameworks.FirstOrDefault(f => string.Equals(
+                            f.FrameworkName.DotNetFrameworkName,
+                            @group.FrameworkName,
+                            StringComparison.OrdinalIgnoreCase));
 
-                    actualDependencies = framework
-                        .Dependencies
-                        .Select(d => d.LibraryRange.ToLockFileDependencyGroupString())
-                        .OrderBy(x => x, StringComparer.Ordinal);
+                if (framework == null)
+                {
+                    return false;
                 }
+
+                IOrderedEnumerable<string> actualDependencies = framework
+                    .Dependencies
+                    .Select(d => d.LibraryRange.ToLockFileDependencyGroupString())
+                    .OrderBy(x => x, StringComparer.Ordinal);
 
                 if (!actualDependencies.SequenceEqual(expectedDependencies))
                 {

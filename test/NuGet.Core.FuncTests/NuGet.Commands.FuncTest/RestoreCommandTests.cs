@@ -90,20 +90,11 @@ namespace NuGet.Commands.FuncTest
                 Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
                 var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var projectSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", projectSpecPath);
-                projectSpec.Dependencies = new List<LibraryDependency>
-                {
-                    new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange(
-                            "ReferencedProject",
-                            VersionRange.Parse("2.0.0-beta1"),
-                            LibraryDependencyTarget.Project)
-                    }
-                };
 
                 Directory.CreateDirectory(Path.Combine(projectDir, "ReferencedProject"));
                 var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
                 var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath);
+                projectSpec = projectSpec.WithTestProjectReference(referenceSpec);
                 referenceSpec.Version = new NuGetVersion("2.0.0-BETA1");
                 PackageSpecWriter.WriteToFile(referenceSpec, referenceSpecPath);
 

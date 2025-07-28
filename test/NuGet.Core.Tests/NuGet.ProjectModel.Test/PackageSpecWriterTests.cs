@@ -826,7 +826,6 @@ namespace NuGet.ProjectModel.Test
 
             var packageSpec = new PackageSpec()
             {
-                Dependencies = new List<LibraryDependency>() { libraryDependency, libraryDependencyWithNoWarnGlobal },
                 Name = "name",
                 FilePath = "filePath",
                 RestoreMetadata = new ProjectRestoreMetadata()

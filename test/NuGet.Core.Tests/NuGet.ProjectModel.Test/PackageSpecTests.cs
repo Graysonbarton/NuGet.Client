@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -43,7 +42,6 @@ namespace NuGet.ProjectModel.Test
             packageSpec.FilePath = "FilePath";
             packageSpec.Name = "Name";
             packageSpec.Version = new NuGetVersion("1.0.0");
-            packageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
             packageSpec.RuntimeGraph = CreateRuntimeGraph();
             packageSpec.RestoreSettings = CreateProjectRestoreSettings();
             return packageSpec;
@@ -121,10 +119,6 @@ namespace NuGet.ProjectModel.Test
                 packageSpec.Version = new NuGetVersion("2.0.0");
             }
 
-            public static void ModifyDependencies(PackageSpec packageSpec)
-            {
-                packageSpec.Dependencies.Add(CreateLibraryDependency());
-            }
             public static void ModifyRuntimeGraph(PackageSpec packageSpec)
             {
                 packageSpec.RuntimeGraph.Supports["CompatibilityProfile"].RestoreContexts.Add(CreateFrameworkRuntimePair(rid: "win10-x64"));
@@ -728,46 +722,6 @@ namespace NuGet.ProjectModel.Test
             };
 
             leftSide.Should().Be(rightSide);
-        }
-
-        [Theory]
-        [InlineData("a", "a", true)]
-        [InlineData("b;a", "a;b", true)]
-        [InlineData("A;b", "a;B", true)]
-        [InlineData("a;b;c", "c;a;B", true)]
-        [InlineData("a;b;c;d", "c;a;b", false)]
-        public void PackageSpec_Equals_WithDependencies(string left, string right, bool expected)
-        {
-            var leftSide = new PackageSpec(new List<TargetFrameworkInformation>())
-            {
-                Dependencies = left.Split(';').Select(e =>
-                    new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange(e, VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
-                    }
-                    )
-                .ToList()
-            };
-
-            var rightSide = new PackageSpec(new List<TargetFrameworkInformation>())
-            {
-                Dependencies = right.Split(';').Select(e =>
-                    new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange(e, VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
-                    }
-                    )
-                .ToList()
-            };
-            if (expected)
-            {
-                leftSide.Should().Be(rightSide);
-            }
-            else
-            {
-                leftSide.Should().NotBe(rightSide);
-
-            }
         }
     }
 }
