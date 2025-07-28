@@ -89,11 +89,11 @@ namespace NuGet.Commands.FuncTest
             {
                 Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
                 var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", projectSpecPath);
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", projectSpecPath).WithTestRestoreMetadata();
 
                 Directory.CreateDirectory(Path.Combine(projectDir, "ReferencedProject"));
                 var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
-                var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath);
+                var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath).WithTestRestoreMetadata();
                 projectSpec = projectSpec.WithTestProjectReference(referenceSpec);
                 referenceSpec.Version = new NuGetVersion("2.0.0-BETA1");
                 PackageSpecWriter.WriteToFile(referenceSpec, referenceSpecPath);
@@ -1641,11 +1641,12 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_PopulatesProjectFileDependencyGroupsCorrectlyAsync()
         {
             const string project = @"{
-    ""dependencies"": {
-        ""Newtonsoft.Json"": ""6.0.4""
-    },
     ""frameworks"": {
-        ""net45"": {}
+        ""net45"": {
+            ""dependencies"": {
+                    ""Newtonsoft.Json"": ""6.0.4""
+            }
+        }
     },
     ""supports"": {
     }

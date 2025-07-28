@@ -441,7 +441,7 @@ namespace NuGet.Commands.Test
             spec.AddProject(project);
 
             // Act && Assert
-            AssertError(spec, "Property 'Dependencies' is not allowed");
+            AssertError(spec, "Property 'dependencies' is not allowed");
         }
 
         [Fact]
