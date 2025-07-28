@@ -60,7 +60,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("ModifyRestoreMetadata", true)]
         [InlineData("ModifyVersion", true)]
         [InlineData("ModifyRuntimeGraph", true)]
-        //[InlineData("ModifyRestoreSettings", true)] = Not really included in the equals and hash code comparisons
+        [InlineData("ModifyRestoreSettings", false)]
         public void PackageSpecCloneTest(string methodName, bool validateJson)
         {
             // Arrange
@@ -81,17 +81,23 @@ namespace NuGet.ProjectModel.Test
             methodInfo.Invoke(null, new object[] { packageSpec });
 
             // Assert
-            Assert.NotEqual(packageSpec, clonedPackageSpec);
-
             if (validateJson)
             {
+                Assert.NotEqual(packageSpec, clonedPackageSpec);
+
                 originalJObject = packageSpec.ToJObject();
                 clonedJObject = clonedPackageSpec.ToJObject();
 
                 Assert.NotEqual(originalJObject.ToString(), clonedJObject.ToString());
             }
+            else
+            {
+                Assert.Equal(packageSpec, clonedPackageSpec);
+
+            }
 
             Assert.False(object.ReferenceEquals(packageSpec, clonedPackageSpec));
+
         }
 
         public class PackageSpecModify
