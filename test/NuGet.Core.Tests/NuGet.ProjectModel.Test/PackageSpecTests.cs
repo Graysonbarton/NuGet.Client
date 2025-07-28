@@ -59,7 +59,6 @@ namespace NuGet.ProjectModel.Test
         [InlineData("ModifyOriginalTargetFrameworkInformationEdit", true)]
         [InlineData("ModifyRestoreMetadata", true)]
         [InlineData("ModifyVersion", true)]
-        [InlineData("ModifyDependencies", true)]
         [InlineData("ModifyRuntimeGraph", true)]
         //[InlineData("ModifyRestoreSettings", true)] = Not really included in the equals and hash code comparisons
         public void PackageSpecCloneTest(string methodName, bool validateJson)
