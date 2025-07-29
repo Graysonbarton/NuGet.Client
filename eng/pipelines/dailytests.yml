@@ -57,8 +57,6 @@ stages:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
       os: windows
-      demands:
-      - ImageOverride -equals server2022-microbuildVS2019-1es
     steps:
     - template: vs-test/build.yml
       parameters:

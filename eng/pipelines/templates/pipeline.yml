@@ -113,8 +113,6 @@ stages:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
       os: windows
-      demands:
-      - ImageOverride -equals server2022-microbuildVS2019-1es
     templateContext:
       mb:
         localization:
@@ -259,8 +257,6 @@ stages:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
       os: windows
-      demands:
-      - ImageOverride -equals server2022-microbuildVS2019-1es
     templateContext:
       mb:
         localization:
@@ -365,8 +361,6 @@ stages:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
       os: windows
-      demands:
-      - ImageOverride -equals server2022-microbuildVS2019-1es
     strategy:
       matrix:
         IsDesktop:
