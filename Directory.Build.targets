@@ -53,7 +53,7 @@
   <!-- By default do not include satellite DLLs in any of the packages except for NuGet.Localization. -->
   <Target Name="RemoveSatelliteDllsFromBuildOutputInPackage"
           BeforeTargets="GenerateNuspec"
-          Condition=" '$(IncludeSatelliteOutputInPack)' != 'true' ">
+          Condition="'$(IncludeSatelliteOutputInPack)' != 'true'">
     <!--
       Could not find a way to tell NuGet to exclude the satellite assemblies from the NuGet package so this target
       does it.
@@ -62,6 +62,6 @@
       <_BuildOutputInPackage Remove="$(IntermediateOutputPath)%(_TargetFramework.Identity)\**\$(AssemblyName).resources.dll" />
     </ItemGroup>
   </Target>
-
-  <Import Project="eng\dotnet-build\ExcludeFromDotNetBuild.AfterCommonTargets.targets" Condition="'$(DotNetBuildRepo)' == 'true'" />
+  
+  <Import Project="eng\dotnet-build\ExcludeFromDotNetBuild.AfterCommonTargets.targets" Condition="'$(DotNetBuild)' == 'true'" />
 </Project>
