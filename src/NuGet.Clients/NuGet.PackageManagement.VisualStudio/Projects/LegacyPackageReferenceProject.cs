@@ -14,10 +14,13 @@ using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
+using NuGet.Commands.Restore;
+using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Projects;
 using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -39,6 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
+        private readonly bool _usePackageSpecFactory;
 
         public NuGetFramework TargetFramework { get; }
 
@@ -46,7 +50,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
             INuGetProjectServices projectServices,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            IEnvironmentVariableReader environmentVariableReader)
             : base(vsProjectAdapter.ProjectName,
                 vsProjectAdapter.UniqueName,
                 vsProjectAdapter.FullProjectPath)
@@ -55,10 +60,10 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNullOrEmpty(projectId);
             Assumes.Present(projectServices);
             Assumes.Present(threadingService);
+            Assumes.Present(environmentVariableReader);
 
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
-
             ProjectStyle = ProjectStyle.PackageReference;
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, ProjectName);
@@ -67,6 +72,12 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             ProjectServices = projectServices;
+
+            var packageSpecFactoryEnvVar = environmentVariableReader.GetEnvironmentVariable("NUGET_USE_NEW_PACKAGESPEC_FACTORY");
+            _usePackageSpecFactory =
+                bool.FalseString.Equals(packageSpecFactoryEnvVar, StringComparison.OrdinalIgnoreCase)
+                ? false
+                : true;
         }
 
         public LegacyPackageReferenceProject(
@@ -78,7 +89,8 @@ namespace NuGet.PackageManagement.VisualStudio
             : this(vsProjectAdapter,
                 projectId,
                 projectServices,
-                threadingService)
+                threadingService,
+                EnvironmentVariableWrapper.Instance)
         {
             Assumes.NotNull(targetFramework);
             TargetFramework = targetFramework;
@@ -421,10 +433,23 @@ namespace NuGet.PackageManagement.VisualStudio
             return settings.GetConfigFilePaths();
         }
 
+
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
         private async Task<PackageSpec> GetPackageSpecAsync(ISettings settings)
+        {
+            if (_usePackageSpecFactory)
+            {
+                return await GetPackageSpecWithFactoryAsync(settings);
+            }
+            else
+            {
+                return await GetPackageSpecClassicAsync(settings);
+            }
+        }
+
+        private async Task<PackageSpec> GetPackageSpecClassicAsync(ISettings settings)
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -587,6 +612,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     UseLegacyDependencyResolver = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreUseLegacyDependencyResolver)),
                 }
             };
+        }
+
+        private async Task<PackageSpec> GetPackageSpecWithFactoryAsync(ISettings settings)
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+            IProject project = new LegacyProjectAdapter(_vsProjectAdapter);
+            PackageSpec packageSpec = PackageSpecFactory.GetPackageSpec(project, settings);
+            return packageSpec;
         }
 
         internal static ImmutableArray<LibraryDependency> ApplyCentralVersionInformation(ImmutableArray<LibraryDependency> packageReferences, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)

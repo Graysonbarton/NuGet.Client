@@ -186,7 +186,7 @@ static NuGet.LibraryModel.LibraryType.Parse(string! value) -> NuGet.LibraryModel
 static NuGet.LibraryModel.LibraryType.implicit operator string!(NuGet.LibraryModel.LibraryType libraryType) -> string!
 static NuGet.LibraryModel.LibraryType.operator !=(NuGet.LibraryModel.LibraryType left, NuGet.LibraryModel.LibraryType right) -> bool
 static NuGet.LibraryModel.LibraryType.operator ==(NuGet.LibraryModel.LibraryType left, NuGet.LibraryModel.LibraryType right) -> bool
-static NuGet.LibraryModel.PrunePackageReference.Create(string! name, string! version) -> NuGet.LibraryModel.PrunePackageReference!
+static NuGet.LibraryModel.PrunePackageReference.Create(string! name, string? version) -> NuGet.LibraryModel.PrunePackageReference!
 static readonly NuGet.LibraryModel.FrameworkDependencyFlagsUtils.Default -> NuGet.LibraryModel.FrameworkDependencyFlags
 static readonly NuGet.LibraryModel.KnownLibraryProperties.AssemblyPath -> string!
 static readonly NuGet.LibraryModel.KnownLibraryProperties.FrameworkAssemblies -> string!

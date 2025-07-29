@@ -126,7 +126,7 @@ namespace NuGet.Commands.Restore.Utility
                     CrossTargeting = (projectStyle == ProjectStyle.PackageReference) && (
                         project.TargetFrameworks.Count > 1 || !string.IsNullOrWhiteSpace(project.OuterBuild.GetProperty("TargetFrameworks"))),
                     FallbackFolders = GetFallbackFolders(
-                        outerBuild.GetProperty("MSBuildStartupDirectory"),
+                        outerBuild.GetProperty("MSBuildStartupDirectory")!,
                         project.Directory,
                         SplitPropertyValueOrNull(outerBuild, "RestoreFallbackFolders"),
                         SplitPropertyValueOrNull(outerBuild, "RestoreFallbackFolders"),
@@ -176,7 +176,7 @@ namespace NuGet.Commands.Restore.Utility
                         hasPackageReferenceItems: hasPackageReferenceItems,
                         projectJsonPath: project.OuterBuild.GetProperty("_CurrentProjectJsonPath"),
                         projectDirectory: project.Directory,
-                        projectName: project.OuterBuild.GetProperty("MSBuildProjectName"));
+                        projectName: project.OuterBuild.GetProperty("MSBuildProjectName")!);
 
                 return (projectStyleResult.ProjectStyle, projectStyleResult.PackagesConfigFilePath);
             }
@@ -245,9 +245,9 @@ namespace NuGet.Commands.Restore.Utility
 
         private static RestoreAuditProperties? GetRestoreAuditProperties(IProject project)
         {
-            string enableAudit = project.OuterBuild.GetProperty("NuGetAudit");
-            string auditLevel = project.OuterBuild.GetProperty("NuGetAuditLevel");
-            string auditMode = GetAuditMode(project);
+            string? enableAudit = project.OuterBuild.GetProperty("NuGetAudit");
+            string? auditLevel = project.OuterBuild.GetProperty("NuGetAuditLevel");
+            string? auditMode = GetAuditMode(project);
             HashSet<string>? suppressionItems = GetAuditSuppressions(project.OuterBuild);
 
             if (enableAudit != null || auditLevel != null || auditMode != null
@@ -268,18 +268,18 @@ namespace NuGet.Commands.Restore.Utility
             // However, that can only be done by an "inner build" evaulation, but we read other audit settings
             // from the project evaluation, not inner-builds. So, check the inner builds if any TFM sets mode
             // to "all", otherwise use the project's "outer build" mode.
-            string GetAuditMode(IProject project)
+            string? GetAuditMode(IProject project)
             {
                 foreach (var item in project.TargetFrameworks.NoAllocEnumerate())
                 {
-                    string auditMode = item.Value.GetProperty("NuGetAuditMode");
+                    string? auditMode = item.Value.GetProperty("NuGetAuditMode");
                     if (string.Equals(auditMode, "all", StringComparison.OrdinalIgnoreCase))
                     {
                         return auditMode;
                     }
                 }
 
-                string projectAuditMode = project.OuterBuild.GetProperty("NuGetAuditMode");
+                string? projectAuditMode = project.OuterBuild.GetProperty("NuGetAuditMode");
                 return projectAuditMode;
             }
         }
@@ -306,7 +306,7 @@ namespace NuGet.Commands.Restore.Utility
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
         private static (ProjectStyle ProjectStyle, string? PackagesConfigFilePath)
-            GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName)
+            GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string? projectJsonPath, string projectDirectory, string projectName)
         {
             ProjectStyle projectStyle;
             string? packagesConfigFilePath = null;
@@ -592,17 +592,17 @@ namespace NuGet.Commands.Restore.Utility
             {
                 var packageReferenceItem = packageReferenceItems[i];
                 bool autoReferenced = packageReferenceItem.IsMetadataTrue("IsImplicitlyDefined");
-                string version = packageReferenceItem.GetMetadata("Version");
+                string? version = packageReferenceItem.GetMetadata("Version");
 
-                VersionRange? versionRange = string.IsNullOrWhiteSpace(version) ? null : VersionRange.Parse(version);
+                VersionRange? versionRange = string.IsNullOrWhiteSpace(version) ? null : VersionRange.Parse(version!);
                 bool versionDefined = versionRange != null;
                 if (versionRange == null && !isCentralPackageVersionManagementEnabled)
                 {
                     versionRange = VersionRange.All;
                 }
 
-                string versionOverrideString = packageReferenceItem.GetMetadata("VersionOverride");
-                var versionOverrideRange = string.IsNullOrWhiteSpace(versionOverrideString) ? null : VersionRange.Parse(versionOverrideString);
+                string? versionOverrideString = packageReferenceItem.GetMetadata("VersionOverride");
+                var versionOverrideRange = string.IsNullOrWhiteSpace(versionOverrideString) ? null : VersionRange.Parse(versionOverrideString!);
 
                 CentralPackageVersion? centralPackageVersion = null;
                 bool isCentrallyManaged = !versionDefined && !autoReferenced && isCentralPackageVersionManagementEnabled && versionOverrideRange == null && centralPackageVersions != null && centralPackageVersions.TryGetValue(packageReferenceItem.Identity, out centralPackageVersion);
@@ -642,7 +642,7 @@ namespace NuGet.Commands.Restore.Utility
             foreach (var projectItemInstance in PrunePackageReferences)
             {
                 string id = projectItemInstance.Identity;
-                string versionString = projectItemInstance.GetMetadata("Version");
+                string? versionString = projectItemInstance.GetMetadata("Version");
                 result.Add(id, PrunePackageReference.Create(id, versionString));
             }
 
@@ -662,7 +662,7 @@ namespace NuGet.Commands.Restore.Utility
                 string id = projectItemInstance.Identity;
 
                 // PackageDownload items can contain multiple versions
-                string versionRanges = projectItemInstance.GetMetadata("Version");
+                string? versionRanges = projectItemInstance.GetMetadata("Version");
                 if (string.IsNullOrEmpty(versionRanges))
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
@@ -719,7 +719,7 @@ namespace NuGet.Commands.Restore.Utility
         /// <param name="value">A semicolon delimited list of include flags.</param>
         /// <param name="defaultValue">The default value ot return if the value contains no flags.</param>
         /// <returns>The <see cref="LibraryIncludeFlags" /> for the specified value, otherwise the <paramref name="defaultValue" />.</returns>
-        private static LibraryIncludeFlags GetLibraryIncludeFlags(string value, LibraryIncludeFlags defaultValue)
+        private static LibraryIncludeFlags GetLibraryIncludeFlags(string? value, LibraryIncludeFlags defaultValue)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -745,7 +745,7 @@ namespace NuGet.Commands.Restore.Utility
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
                 {
-                    string solutionDir = project.OuterBuild.GetProperty("SolutionPath");
+                    string? solutionDir = project.OuterBuild.GetProperty("SolutionPath");
 
                     solutionDir = string.Equals(solutionDir, "*Undefined*", StringComparison.OrdinalIgnoreCase)
                         ? project.Directory
@@ -771,8 +771,8 @@ namespace NuGet.Commands.Restore.Utility
             foreach (var projectItemInstance in packageVersionItems)
             {
                 string id = projectItemInstance.Identity;
-                string version = projectItemInstance.GetMetadata("Version");
-                VersionRange versionRange = string.IsNullOrWhiteSpace(version) ? VersionRange.All : VersionRange.Parse(version);
+                string? version = projectItemInstance.GetMetadata("Version");
+                VersionRange versionRange = string.IsNullOrWhiteSpace(version) ? VersionRange.All : VersionRange.Parse(version!);
 
                 result.Add(id, new CentralPackageVersion(id, versionRange));
             }
@@ -789,7 +789,7 @@ namespace NuGet.Commands.Restore.Utility
         internal static List<PackageSource> GetSources(IProject project, ISettings settings)
         {
             return GetSources(
-                project.OuterBuild.GetProperty("OriginalMSBuildStartupDirectory"),
+                project.OuterBuild.GetProperty("OriginalMSBuildStartupDirectory")!,
                 project.Directory,
                 project.OuterBuild.SplitPropertyValueOrNull("RestoreSources"),
                 project.OuterBuild.SplitPropertyValueOrNull("RestoreSources"),
@@ -907,7 +907,7 @@ namespace NuGet.Commands.Restore.Utility
 
         internal static bool IsPropertyFalse(this ITargetFramework project, string propertyName, bool defaultValue = false)
         {
-            string value = project.GetProperty(propertyName);
+            string? value = project.GetProperty(propertyName);
 
             if (string.IsNullOrWhiteSpace(value))
             {

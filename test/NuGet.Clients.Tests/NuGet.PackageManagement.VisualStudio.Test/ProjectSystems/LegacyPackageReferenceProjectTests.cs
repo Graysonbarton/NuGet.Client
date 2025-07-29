@@ -68,7 +68,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act
                 var assetsPath = await testProject.GetAssetsFilePathAsync();
@@ -94,7 +95,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Mock.Of<IVsProjectAdapter>(),
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -126,7 +128,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act
                 var cachePath = await testProject.GetCacheFilePathAsync();
@@ -152,7 +155,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Mock.Of<IVsProjectAdapter>(),
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act & Assert
                 await Assert.ThrowsAsync<InvalidDataException>(
@@ -182,7 +186,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act
                 var assetsPath = await testProject.GetCacheFilePathAsync();
@@ -211,7 +216,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -257,7 +263,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -313,7 +320,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -379,7 +387,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService
+                    , TestEnvironmentVariableReader.EmptyInstance);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -431,7 +440,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     new TestProjectSystemServices(),
-                    _threadingService);
+                    _threadingService
+                    , TestEnvironmentVariableReader.EmptyInstance);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -494,7 +504,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -546,7 +557,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -596,7 +608,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act
                 var packageReferences = await testProject.GetInstalledPackagesAsync(CancellationToken.None);
@@ -637,7 +650,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var buildIntegratedInstallationContext = new BuildIntegratedInstallationContext(
                     Enumerable.Empty<NuGetFramework>(),
@@ -687,7 +701,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 // Act
                 var result = await testProject.UninstallPackageAsync(
@@ -734,7 +749,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
@@ -789,7 +805,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -841,7 +858,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        new TestProjectSystemServices(),
-                       _threadingService);
+                       _threadingService,
+                       TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -894,7 +912,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        new TestProjectSystemServices(),
-                       _threadingService);
+                       _threadingService,
+                       TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -947,7 +966,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        new TestProjectSystemServices(),
-                       _threadingService);
+                       _threadingService,
+                       TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1485,7 +1505,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     projectAdapter,
                     Guid.NewGuid().ToString(),
                     projectServices,
-                    _threadingService);
+                    _threadingService,
+                    TestEnvironmentVariableReader.EmptyInstance);
 
                 var settings = NullSettings.Instance;
                 var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1560,7 +1581,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1605,7 +1627,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1644,7 +1667,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1681,7 +1705,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1719,7 +1744,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1754,7 +1780,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1782,7 +1809,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1810,7 +1838,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 new TestProjectSystemServices(),
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             // Act
             var packageSpecs = await testProject.GetPackageSpecsAsync(new DependencyGraphCacheContext(NullLogger.Instance, NullSettings.Instance));
@@ -1888,7 +1917,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        projectServices,
-                       _threadingService);
+                       _threadingService,
+                       TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -1968,7 +1998,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                        vsProjectAdapter,
                        Guid.NewGuid().ToString(),
                        projectServices,
-                       _threadingService);
+                       _threadingService,
+                       TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -2049,7 +2080,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 new TestProjectSystemServices(),
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             var settings = NullSettings.Instance;
             var testDependencyGraphCacheContext = new DependencyGraphCacheContext(NullLogger.Instance, settings);
@@ -2073,7 +2105,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 Guid.NewGuid().ToString(),
                 projectServices,
-                _threadingService);
+                _threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
             return testProject;
         }
     }

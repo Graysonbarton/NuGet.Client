@@ -92,7 +92,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         projectNames.ProjectId,
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -182,7 +183,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "Project1.csproj");
@@ -219,7 +221,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -324,7 +327,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -457,7 +461,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -611,7 +616,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -701,7 +707,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -833,7 +840,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -964,7 +972,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var testLogger = new TestLogger();
@@ -1107,7 +1116,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
@@ -1135,7 +1145,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -1208,7 +1219,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
                     var testLogger = new TestLogger();
@@ -1314,7 +1326,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
                     var testLogger = new TestLogger();
@@ -1418,7 +1431,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
@@ -1446,7 +1460,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -1569,7 +1584,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterC,
                         Guid.NewGuid().ToString(),
                         projectServicesC,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "project2.csproj");
                     var projectNamesB = new ProjectNames(
@@ -1605,7 +1621,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
                     var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
@@ -1633,7 +1650,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectC);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
@@ -1758,7 +1776,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectAServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     //projectB
                     var projectBPath = Path.Combine(testSolutionManager.TestDirectory, "projectB");
@@ -1790,7 +1809,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectBServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
 
@@ -1925,7 +1945,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterB,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     projectTargetFrameworkStr = "net461";
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
@@ -1964,7 +1985,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServicesA,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
                     testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
 
@@ -2093,7 +2115,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter2,
                         Guid.NewGuid().ToString(),
                         projectServicesB,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
 
                     var projectPath1 = Path.Combine(testSolutionManager.TestDirectory, "Project1");
                     var fullProjectPath1 = Path.Combine(projectPath1, "project1.csproj");
@@ -2120,7 +2143,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapterA,
                         Guid.NewGuid().ToString(),
                         projectServices1,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject1);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject2);
 
@@ -2239,7 +2263,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         vsProjectAdapter,
                         Guid.NewGuid().ToString(),
                         projectServices,
-                        _threadingService);
+                        _threadingService,
+                        TestEnvironmentVariableReader.EmptyInstance);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
 
                     var packageContextB = new SimpleTestPackageContext(packageB.PackageId, packageB.Version);

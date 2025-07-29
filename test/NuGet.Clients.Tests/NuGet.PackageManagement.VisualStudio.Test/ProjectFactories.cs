@@ -56,7 +56,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 projectAdapter,
                 projectId,
                 projectServices,
-                threadingService);
+                threadingService,
+                TestEnvironmentVariableReader.EmptyInstance);
 
             return testProject;
         }

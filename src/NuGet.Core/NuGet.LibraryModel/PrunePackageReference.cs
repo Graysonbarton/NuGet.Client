@@ -32,7 +32,7 @@ namespace NuGet.LibraryModel
             VersionRange = versionRange ?? throw new ArgumentNullException(nameof(versionRange));
         }
 
-        public static PrunePackageReference Create(string name, string version)
+        public static PrunePackageReference Create(string name, string? version)
         {
             if (string.IsNullOrEmpty(version))
             {
