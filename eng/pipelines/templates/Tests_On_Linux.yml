@@ -1,36 +1,28 @@
 steps:
 - task: ShellScript@2
-  displayName: "Run Tests (continue on error)"
+  displayName: "Run $(TestRunDisplayName) (continue on error)"
   continueOnError: "true"
   inputs:
     scriptPath: "scripts/funcTests/runFuncTests.sh"
+    args: $(TestRunCommandLineArguments)
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: ShellScript@2
-  displayName: "Run Tests (stop on error)"
+  displayName: "Run $(TestRunDisplayName) (stop on error)"
   continueOnError: "false"
   inputs:
     scriptPath: "scripts/funcTests/runFuncTests.sh"
-    disableAutoCwd: "true"
+    args: $(TestRunCommandLineArguments)
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
   inputs:
-    testRunner: "XUnit"
-    testResultsFiles: "*.xml"
-    testRunTitle: "NuGet.Client Tests On Linux"
+    testRunner: "VSTest"
+    testResultsFiles: "*.trx"
+    testRunTitle: "NuGet.Client $(TestRunDisplayName) On Linux"
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
-    mergeTestResults: "true"
   condition: "succeededOrFailed()"
-
-- task: PublishBuildArtifacts@1
-  displayName: "Publish Test Hang Dump"
-  inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-    ArtifactName: "$(Agent.JobName)"
-    ArtifactType: "Container"
-  condition: "or(failed(), canceled())"
