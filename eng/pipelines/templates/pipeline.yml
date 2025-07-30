@@ -111,7 +111,7 @@ stages:
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
     templateContext:
       mb:
@@ -255,7 +255,7 @@ stages:
       VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
       BuildRTM: "true"
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
     templateContext:
       mb:
@@ -359,7 +359,7 @@ stages:
       MSBuildEnableWorkloadResolver: false
     condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEngSS-MicroBuild2019-1ES
       os: windows
     strategy:
       matrix:
