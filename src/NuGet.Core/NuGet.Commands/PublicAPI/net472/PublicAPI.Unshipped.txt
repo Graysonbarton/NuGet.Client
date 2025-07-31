@@ -1,4 +1,7 @@
 #nullable enable
+NuGet.Commands.Experimental.Services.IPackageMetadataService
+NuGet.Commands.Experimental.Services.PackageMetadataService
+NuGet.Commands.Experimental.Services.PackageMetadataSourceResult
 NuGet.Commands.Restore.IItem
 NuGet.Commands.Restore.IItem.GetMetadata(string! name) -> string!
 NuGet.Commands.Restore.IItem.Identity.get -> string!
@@ -12,5 +15,12 @@ NuGet.Commands.Restore.ITargetFramework.GetItems(string! itemType) -> System.Col
 NuGet.Commands.Restore.ITargetFramework.GetProperty(string! propertyName) -> string!
 NuGet.Commands.Restore.Utility.PackageSpecFactory
 static NuGet.Commands.Restore.Utility.PackageSpecFactory.GetPackageSpec(NuGet.Commands.Restore.IProject! project, NuGet.Configuration.ISettings! settings) -> NuGet.ProjectModel.PackageSpec?
+~NuGet.Commands.Experimental.Services.IPackageMetadataService.GetLatestMetadataAsync(string packageId, System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> packageSources, bool includePrerelease = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<NuGet.Commands.Experimental.Services.PackageMetadataSourceResult>
+~NuGet.Commands.Experimental.Services.PackageMetadataService.GetLatestMetadataAsync(string packageId, System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource> packageSources, bool includePrerelease = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<NuGet.Commands.Experimental.Services.PackageMetadataSourceResult>
+~NuGet.Commands.Experimental.Services.PackageMetadataService.PackageMetadataService(NuGet.Common.ILogger logger) -> void
+~NuGet.Commands.Experimental.Services.PackageMetadataService.PackageMetadataService(System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider>> resourceProviders, NuGet.Common.ILogger logger) -> void
+~NuGet.Commands.Experimental.Services.PackageMetadataSourceResult.Metadata.get -> NuGet.Protocol.Core.Types.IPackageSearchMetadata
+~NuGet.Commands.Experimental.Services.PackageMetadataSourceResult.PackageMetadataSourceResult(NuGet.Protocol.Core.Types.IPackageSearchMetadata metadata, NuGet.Configuration.PackageSource source) -> void
+~NuGet.Commands.Experimental.Services.PackageMetadataSourceResult.Source.get -> NuGet.Configuration.PackageSource
 ~static NuGet.Commands.MSBuildRestoreUtility.GetRestoreAuditProperties(NuGet.Commands.IMSBuildItem specItem, System.Collections.Generic.IEnumerable<NuGet.Commands.IMSBuildItem> allItems, System.Collections.Generic.HashSet<string> suppressionItems) -> NuGet.ProjectModel.RestoreAuditProperties
 ~static NuGet.Commands.RestoreRunner.RunWithoutCommitAsync(System.Collections.Generic.IEnumerable<NuGet.Commands.RestoreSummaryRequest> restoreRequests, NuGet.Commands.RestoreArgs restoreContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<NuGet.Commands.RestoreResultPair>>
