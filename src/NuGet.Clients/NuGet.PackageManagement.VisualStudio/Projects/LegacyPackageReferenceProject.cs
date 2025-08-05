@@ -43,13 +43,14 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
         private readonly bool _usePackageSpecFactory;
+        private readonly ILegacyPackageReferenceProjectServices _projectServices;
 
         public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
-            INuGetProjectServices projectServices,
+            ILegacyPackageReferenceProjectServices projectServices,
             IVsProjectThreadingService threadingService,
             IEnvironmentVariableReader environmentVariableReader)
             : base(vsProjectAdapter.ProjectName,
@@ -72,6 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             ProjectServices = projectServices;
+            _projectServices = projectServices;
 
             var packageSpecFactoryEnvVar = environmentVariableReader.GetEnvironmentVariable("NUGET_USE_NEW_PACKAGESPEC_FACTORY");
             _usePackageSpecFactory =
@@ -83,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
-            INuGetProjectServices projectServices,
+            ILegacyPackageReferenceProjectServices projectServices,
             IVsProjectThreadingService threadingService,
             NuGetFramework targetFramework)
             : this(vsProjectAdapter,
@@ -617,7 +619,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<PackageSpec> GetPackageSpecWithFactoryAsync(ISettings settings)
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-            IProject project = new LegacyProjectAdapter(_vsProjectAdapter);
+            IProject project = new LegacyProjectAdapter(_vsProjectAdapter, _projectServices.Project4);
             PackageSpec packageSpec = PackageSpecFactory.GetPackageSpec(project, settings);
             return packageSpec;
         }

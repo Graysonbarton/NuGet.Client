@@ -7,9 +7,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Microsoft;
 using NuGet.Commands.Restore;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using VSLangProj150;
 
 namespace NuGet.PackageManagement.VisualStudio.Projects;
 
@@ -17,10 +19,10 @@ internal class LegacyProjectAdapter : IProject
 {
     private readonly IVsProjectAdapter _projectAdapter;
 
-    public LegacyProjectAdapter(IVsProjectAdapter projectAdapter)
+    public LegacyProjectAdapter(IVsProjectAdapter projectAdapter, VSProject4 project4)
     {
         _projectAdapter = projectAdapter;
-        OuterBuild = new TargetFrameworkAdapter(_projectAdapter);
+        OuterBuild = new TargetFrameworkAdapter(_projectAdapter, project4);
         TargetFrameworks = new Dictionary<string, ITargetFramework>(StringComparer.OrdinalIgnoreCase)
         {
             [""] = OuterBuild
@@ -38,10 +40,12 @@ internal class LegacyProjectAdapter : IProject
     private class TargetFrameworkAdapter : ITargetFramework
     {
         private readonly IVsProjectAdapter _projectAdapter;
+        private readonly VSProject4 _project4;
 
-        public TargetFrameworkAdapter(IVsProjectAdapter projectAdapter)
+        public TargetFrameworkAdapter(IVsProjectAdapter projectAdapter, VSProject4 project4)
         {
             _projectAdapter = projectAdapter;
+            _project4 = project4;
         }
 
         public IReadOnlyList<IItem> GetItems(string itemType)
@@ -51,6 +55,17 @@ internal class LegacyProjectAdapter : IProject
             if (!ItemMetadataNames.TryGetValue(itemType, out var metadataNames))
             {
                 throw new ArgumentException($"Unknown item type: {itemType}", nameof(itemType));
+            }
+
+            if (itemType.Equals(ProjectItems.PackageReference, StringComparison.OrdinalIgnoreCase))
+            {
+                var packageReferences = GetPackageReferences(metadataNames);
+                return packageReferences;
+            }
+            else if (itemType.Equals(ProjectItems.ProjectReference, StringComparison.OrdinalIgnoreCase))
+            {
+                var projectReferences = GetProjectReferences(metadataNames);
+                return projectReferences;
             }
 
             var items = _projectAdapter.GetBuildItemInformation(itemType, metadataNames);
@@ -76,6 +91,95 @@ internal class LegacyProjectAdapter : IProject
             }
 
             return result;
+        }
+
+        private IReadOnlyList<IItem> GetPackageReferences(string[] metadataNames)
+        {
+            if (_project4.PackageReferences is null)
+            {
+                return [];
+            }
+
+            string[]? installedPackages = (string[]?)_project4.PackageReferences.InstalledPackages;
+
+            if (installedPackages is null || installedPackages.Length == 0)
+            {
+                return [];
+            }
+
+            List<IItem> packageReferences = new List<IItem>(installedPackages.Length);
+            foreach (var packageId in installedPackages)
+            {
+                if (_project4.PackageReferences.TryGetReference(packageId, metadataNames, out string version, out var metadataElements, out var metadataValues))
+                {
+                    Dictionary<string, string> metadataDictionary = ToMetadataDictionary(metadataElements, metadataValues);
+
+                    if (!string.IsNullOrEmpty(version))
+                    {
+                        metadataDictionary[ProjectBuildProperties.Version] = version;
+                    }
+
+                    var itemAdapter = new ItemAdapter
+                    {
+                        Identity = packageId,
+                        Metadata = metadataDictionary
+                    };
+                    packageReferences.Add(itemAdapter);
+                }
+            }
+
+            return packageReferences;
+        }
+
+        private IReadOnlyList<IItem> GetProjectReferences(string[] metadataNames)
+        {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_project4.References is null)
+            {
+                return [];
+            }
+
+            List<IItem> references = new List<IItem>();
+            foreach (Reference6 projectReference in _project4.References)
+            {
+                if (projectReference.SourceProject != null && EnvDTEProjectUtility.IsSupported(projectReference.SourceProject, _projectAdapter.VsHierarchy))
+                {
+                    Array metadataElements;
+                    Array metadataValues;
+                    projectReference.GetMetadata(metadataNames, out metadataElements, out metadataValues);
+                    var metadataDictionary = ToMetadataDictionary(metadataElements, metadataValues);
+
+                    var itemAdapter = new ItemAdapter
+                    {
+                        Identity = projectReference.SourceProject.FullName,
+                        Metadata = metadataDictionary
+                    };
+
+                    references.Add(itemAdapter);
+                }
+            }
+
+            return references;
+        }
+
+        private static Dictionary<string, string> ToMetadataDictionary(Array names, Array values)
+        {
+            Assumes.True(names.Length == values.Length);
+
+            var dictionary = new Dictionary<string, string>(names.Length, StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                string? name = names.GetValue(i) as string;
+                string? value = values.GetValue(i) as string;
+                if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(value))
+                {
+                    dictionary[name!] = value!;
+                }
+            }
+
+            return dictionary;
         }
 
         public string? GetProperty(string propertyName)
