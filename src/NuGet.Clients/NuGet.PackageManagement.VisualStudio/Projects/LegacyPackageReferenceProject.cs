@@ -435,7 +435,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return settings.GetConfigFilePaths();
         }
 
-
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
