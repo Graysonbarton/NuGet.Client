@@ -197,7 +197,17 @@ internal class LegacyProjectAdapter : IProject
                 value = _projectAdapter.BuildProperties.GetPropertyValue(propertyName);
             }
 
-            return string.IsNullOrEmpty(value) ? null : value;
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            if (propertyName.Equals(ProjectBuildProperties.RestoreProjectStyle, StringComparison.OrdinalIgnoreCase))
+            {
+                return "PackageReference";
+            }
+
+            return null;
         }
 
         // Do not add new properties here. New properties should only use new project system APIs.
