@@ -169,10 +169,10 @@ steps:
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+    solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
+  condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
