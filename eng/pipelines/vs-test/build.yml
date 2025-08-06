@@ -193,12 +193,12 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.StagingDirectory)\\E2ETests /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\12.CreateEndToEndTestPackage.binlog"
 
-- task: CopyFiles@2
-  displayName: "Copy NuGet.exe for E2E Tests"
-  inputs:
-    SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
-    Contents: "NuGet.exe"
-    TargetFolder: "$(Build.StagingDirectory)\\E2ETests"
+# - task: CopyFiles@2
+#   displayName: "Copy NuGet.exe for E2E Tests"
+#   inputs:
+#     SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+#     Contents: "NuGet.exe"
+#     TargetFolder: "$(Build.StagingDirectory)\\E2ETests"
 
 - task: NuGetToolInstaller@1
 
@@ -259,23 +259,6 @@ steps:
     solution: 'build\runsettings.proj'
     msbuildArguments: '/restore:false /property:OutputPath="$(Build.StagingDirectory)\RunSettings" /property:TestDrop="$(RunSettingsDrop)" /binarylogger:$(Build.StagingDirectory)\\binlog\\13.GenerateRunSettings.binlog'
 
-- task: PowerShell@1
-  displayName: 'Copy VS integration test binaries'
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        Write-Output "Copying NuGet.OptProf binaries"
-        Copy-Item "test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration)" "$(Build.StagingDirectory)\RunSettings\NuGet.OptProf\" -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex binaries"
-        Copy-Item "test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration)" "$(Build.StagingDirectory)\RunSettings\NuGet.Tests.Apex\" -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex.Daily binaries"
-        Copy-Item "test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\bin\$(BuildConfiguration)" "$(Build.StagingDirectory)\RunSettings\NuGet.Tests.Apex.Daily\" -Recurse -ErrorAction Stop
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$_"
-        exit 1
-      }
-
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
   inputs:
@@ -319,11 +302,11 @@ steps:
     usePat: true
     dropMetadataContainerName: 'DropMetadata-RunSettings'
 
-- task: PublishPipelineArtifact@1
-  displayName: "Publish E2E tests"
-  inputs:
-    artifactName: "E2ETests"
-    targetPath: "$(Build.StagingDirectory)\\E2ETests"
+# - task: PublishPipelineArtifact@1
+#   displayName: "Publish E2E tests"
+#   inputs:
+#     artifactName: "E2ETests"
+#     targetPath: "$(Build.StagingDirectory)\\E2ETests"
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish scripts"

@@ -69,29 +69,14 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
-
-- task: PowerShell@1
-  displayName: "Set IncludeApex variable"
-  name: "includeapex"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        $IncludeApex = -not [bool]::Parse($env:BuildRTM)
-        Write-Host "IncludeApex URL: $IncludeApex"
-        Write-Host "##vso[task.setvariable variable=IncludeApex]$IncludeApex"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set IncludeApex: $_"
-        exit 1
-      }
+    msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
 - task: MSBuild@1
   displayName: "Build"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
+    msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=false /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
 
 - task: CodeQL3000Finalize@0
   displayName: Finalize CodeQL
@@ -325,22 +310,6 @@ steps:
   inputs:
     solution: 'build\runsettings.proj'
     msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: PowerShell@1
-  displayName: 'Copy VS integration test binaries'
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        Write-Output "Copying NuGet.OptProf binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$_"
-        exit 1
-      }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
