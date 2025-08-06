@@ -20,11 +20,11 @@
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="VSLangProj140">
       <HintPath>$(NuGetPackageRoot)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="VSLangProj150">
       <HintPath>$(NuGetPackageRoot)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
   <ItemGroup>
