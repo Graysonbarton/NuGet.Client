@@ -102,28 +102,21 @@ steps:
   inputs:
     solution: "build\\loc.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
+    msbuildArguments: "/t:AfterBuild"
 
 - task: MSBuild@1
-  displayName: "Build NuGet.exe Localized"
+  displayName: "Build Final NuGet.exe (via ILMerge)"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
-
-- task: MSBuild@1
-  displayName: "ILMerge NuGet.exe"
-  inputs:
-    solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:ILMergeNuGetExe /binarylogger:$(Build.StagingDirectory)\\binlog\\05.ILMergeNuGetExe.binlog"
+    msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
 
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
   inputs:
     solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:CopyFinalNuGetExeToOutputPath /binarylogger:$(Build.StagingDirectory)\\binlog\\06.CopyFinalNuGetExeToOutputPath.binlog"
+    msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
