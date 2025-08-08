@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>NuGet's configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
-    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(TargetFrameworksLibraryForSigning)</TargetFrameworks>
     <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">$(NETFXTargetFramework)</TargetFramework>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>

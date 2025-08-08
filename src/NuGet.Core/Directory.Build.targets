@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <IsAotCompatible>$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NETCoreLegacyTargetFrameworkForSigning)'))</IsAotCompatible>
+  </PropertyGroup>
+  <Import Project="..\..\Directory.Build.targets" />
+</Project>

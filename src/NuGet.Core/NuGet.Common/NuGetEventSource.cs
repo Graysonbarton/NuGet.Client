@@ -7,17 +7,22 @@ namespace NuGet.Common
     /// <summary>
     /// Represents a class used for logging trace events from NuGet.
     /// </summary>
-    public static class NuGetEventSource
+    public sealed class NuGetEventSource : EventSource
     {
+        private NuGetEventSource()
+            : base("Microsoft-NuGet")
+
+        {
+        }
         /// <summary>
         /// Gets a <see cref="NuGetEventSource" /> which can be used to trace events from NuGet.
         /// </summary>
-        public static EventSource Instance { get; } = new EventSource("Microsoft-NuGet");
+        public static NuGetEventSource Instance { get; } = new NuGetEventSource();
 
         /// <summary>
         /// Gets a value indicating whether tracing is enabled for the <see cref="NuGetEventSource" />.
         /// </summary>
-        public static bool IsEnabled { get; } = Instance.IsEnabled();
+        //public static bool IsEnabled { get; } = Instance.IsEnabled();
 
         /// <summary>
         /// Represents a class for declaring event keywords. Each keyword must be a flag (2^N) for use in a bitwise operation.
