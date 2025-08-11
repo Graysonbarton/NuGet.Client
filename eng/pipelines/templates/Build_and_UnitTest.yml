@@ -1,350 +1,349 @@
 parameters:
-- name: BuildRTM
-  type: boolean
-- name: SigningType
-  displayName: Type of signing to use
-  type: string
+  - name: BuildRTM
+    type: boolean
+  - name: SigningType
+    displayName: Type of signing to use
+    type: string
 
 steps:
-- task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
-    arguments: "-Force"
-  displayName: "Run Configure.ps1"
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force"
+    displayName: "Run Configure.ps1"
 
-- task: PowerShell@1
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(Build.SourceBranchName) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
-  displayName: "Configure VSTS CI Environment"
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
+      arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(Build.SourceBranchName) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
+    displayName: "Configure VSTS CI Environment"
 
-- task: PowerShell@1
-  displayName: "Print Environment Variables"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-- task: MicroBuildLocalizationPlugin@1
-  displayName: "Install Localization Plugin"
+  - task: MicroBuildLocalizationPlugin@1
+    displayName: "Install Localization Plugin"
 
-- task: MicroBuildSigningPlugin@1
-  inputs:
-    signType: "$(SigningType)"
-    esrpSigning: "true"
-  displayName: "Install Signing Plugin"
+  - task: MicroBuildSigningPlugin@1
+    inputs:
+      signType: "$(SigningType)"
+      esrpSigning: "true"
+    displayName: "Install Signing Plugin"
 
-- task: MicroBuildSwixPlugin@1
-  displayName: "Install Swix Plugin"
+  - task: MicroBuildSwixPlugin@1
+    displayName: "Install Swix Plugin"
 
-# NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
-# However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
-# won't be able to determine the URL to embed in the pdbs.
-# Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
-# tell SourceLink.GitHub what that remote name is
-- task: PowerShell@1
-  displayName: "Prepare for source link"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        $nugetUrl = "https://github.com/NuGet/NuGet.Client.git"
-        if (@(& git remote).Contains("github"))
-        {
-          $currentGitHubRemoteUrl = & git remote get-url github
-          Write-Host "Current github remote URL: $currentGitHubRemoteUrl"
-          if ($currentGitHubRemoteUrl -ne $nugetUrl)
+  # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
+  # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
+  # won't be able to determine the URL to embed in the pdbs.
+  # Therefore, when the git origin remote is not github (official builds), we need to add the GitHub repo URL as a remote, and
+  # tell SourceLink.GitHub what that remote name is
+  - task: PowerShell@1
+    displayName: "Prepare for source link"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        try {
+          $nugetUrl = "https://github.com/NuGet/NuGet.Client.git"
+          if (@(& git remote).Contains("github"))
           {
-            Write-Host "git remote set-url github $nugetUrl"
-            & git remote set-url github $nugetUrl
+            $currentGitHubRemoteUrl = & git remote get-url github
+            Write-Host "Current github remote URL: $currentGitHubRemoteUrl"
+            if ($currentGitHubRemoteUrl -ne $nugetUrl)
+            {
+              Write-Host "git remote set-url github $nugetUrl"
+              & git remote set-url github $nugetUrl
+            }
+            else
+            {
+              Write-Host "Git remote url already correct"
+            }
           }
           else
           {
-            Write-Host "Git remote url already correct"
+            Write-Host "git remote add github $nugetUrl"
+            & git remote add github $nugetUrl
           }
+          Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
+        } catch {
+          Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
+          exit 1
         }
-        else
-        {
-          Write-Host "git remote add github $nugetUrl"
-          & git remote add github $nugetUrl
+    condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+
+  - task: MSBuild@1
+    displayName: "Restore for VS2019"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+      maximumCpuCount: true
+
+  - task: MSBuild@1
+    displayName: "Build for VS2019"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github /p:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\02.BuildVS2019.binlog"
+      maximumCpuCount: true
+
+  - task: MSBuild@1
+    displayName: "Ensure msbuild.exe can parse nuget.sln"
+    continueOnError: "false"
+    inputs:
+      solution: "nuget.sln"
+      msbuildArguments: "/t:EnsureNewtonsoftJsonVersion /binarylogger:$(Build.StagingDirectory)\\binlog\\03.NuGetSln.binlog"
+      maximumCpuCount: true
+    condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))" #skip this task for nonRTM in private build
+
+  - task: MSBuild@1
+    displayName: "Ensure package versions are declared in packages.targets"
+    continueOnError: "false"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution /binarylogger:$(Build.StagingDirectory)\\binlog\\04.PackagesTargets.binlog"
+    condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))" #skip this task for nonRTM in private build
+
+  - task: MSBuild@1
+    displayName: "Localize Assemblies"
+    inputs:
+      solution: "build\\loc.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\05.LocalizeAssemblies.binlog"
+
+  - task: MSBuild@1
+    displayName: "Build Final NuGet.exe (via ILMerge)"
+    inputs:
+      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount) /binarylogger:$(Build.StagingDirectory)\\binlog\\06.ILMerge.binlog"
+
+  - task: MSBuild@1
+    displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
+    inputs:
+      solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
+  - task: MSBuild@1
+    displayName: "Run unit tests (stop on error)"
+    continueOnError: "false"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
+
+  - task: MSBuild@1
+    displayName: "Run unit tests (continue on error)"
+    continueOnError: "true"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      testRunTitle: "NuGet.Client Unit Tests On Windows"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+      mergeTestResults: "true"
+      publishRunAttachments: "false"
+    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+
+  - task: MSBuild@1
+    displayName: "Sign Assemblies"
+    inputs:
+      solution: "build\\sign.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:AfterBuild"
+      maximumCpuCount: true
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: MSBuild@1
+    displayName: "Pack Nupkgs"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+      maximumCpuCount: true
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: MSBuild@1
+    displayName: "Ensure all Nupkgs and Symbols are created"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: MSBuild@1
+    displayName: "Pack VSIX"
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
+      maximumCpuCount: true
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+  - ${{ if not(parameters.BuildRTM)}}:
+      - template: /eng/common/templates/steps/generate-sbom.yml@self
+        parameters:
+          PackageName: "NuGet.Client"
+          PackageVersion: "$(SemanticVersion)"
+
+  - task: MSBuild@1
+    displayName: "Generate Build Tools package"
+    inputs:
+      solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: MSBuild@1
+    displayName: "Sign Nupkgs and VSIX"
+    inputs:
+      solution: "build\\sign.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: NuGetCommand@2
+    displayName: "Verify Nupkg Signatures"
+    inputs:
+      command: "custom"
+      arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: MicroBuildCodesignVerify@1
+    displayName: Verify Assembly Signatures and StrongName for the nupkgs
+    inputs:
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: MicroBuildCodesignVerify@1
+    displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
+    inputs:
+      TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
+      WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+      WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+    condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true'))) #skip this task for nonRTM in private build
+
+  - task: MSBuild@1
+    displayName: "Generate VSMAN file for NuGet Core VSIX"
+    inputs:
+      solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateVSManifestForVSIX.binlog"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+  - task: MSBuild@1
+    displayName: "Generate VSMAN file for Build Tools VSIX"
+    inputs:
+      solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateVSManifestForToolsVSIX.binlog"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+  - task: PowerShell@1
+    displayName: "Create EndToEnd Test Package"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
+      arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
+      failOnStandardError: "true"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+  - task: NuGetCommand@2
+    displayName: "Add the VSEng package source"
+    inputs:
+      command: "custom"
+      arguments: 'sources add -Name VS -Source $(VsPackageFeedUrl) -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: NuGetCommand@2
+    displayName: "Install the NuGet package for building .runsettingsproj files"
+    inputs:
+      command: "custom"
+      arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: MicroBuildBuildVSBootstrapper@3
+    displayName: "Build a Visual Studio bootstrapper"
+    inputs:
+      channelName: "$(VsTargetChannel)"
+      vsMajorVersion: "$(VsTargetMajorVersion)"
+      manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+      outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  - task: PowerShell@1
+    displayName: "Set Bootstrapper URL variable for tests"
+    name: "vsbootstrapper"
+    inputs:
+      scriptType: "inlineScript"
+      # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output.
+      # https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
+      inlineScript: |
+        try {
+          $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+          $bootstrapperUrl = $json[0].bootstrapperUrl;
+          Write-Host "Bootstrapper URL: $bootstrapperUrl"
+          Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
+        } catch {
+          Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
+          exit 1
         }
-        Write-Host "##vso[task.setvariable variable=gitRepositoryRemoteName]github"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
-        exit 1
-      }
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
-  displayName: "Restore for VS2019"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
-    maximumCpuCount: true
+  - task: MSBuild@1
+    displayName: "Generate .runsettings files"
+    inputs:
+      solution: 'build\runsettings.proj'
+      msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\18.GenerateRunSettings.binlog'
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
-  displayName: "Build for VS2019"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github /p:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\02.BuildVS2019.binlog"
-    maximumCpuCount: true
+  - task: PowerShell@1
+    displayName: "Copy VS integration test binaries"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        try {
+          Write-Output "Copying NuGet.OptProf binaries"
+          Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
+          Write-Output "Copying NuGet.Tests.Apex binaries"
+          Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
+        } catch {
+          Write-Host "##vso[task.LogIssue type=error;]$_"
+          exit 1
+        }
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
-  displayName: "Ensure msbuild.exe can parse nuget.sln"
-  continueOnError: "false"
-  inputs:
-    solution: "nuget.sln"
-    msbuildArguments: "/t:EnsureNewtonsoftJsonVersion /binarylogger:$(Build.StagingDirectory)\\binlog\\03.NuGetSln.binlog"
-    maximumCpuCount: true
-  condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
+  - task: MSBuild@1
+    displayName: "Collect Build Symbols"
+    inputs:
+      solution: "build\\symbols.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
+      maximumCpuCount: true
+    condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
 
-- task: MSBuild@1
-  displayName: "Ensure package versions are declared in packages.targets"
-  continueOnError: "false"
-  inputs:
-    solution: "build\\build.proj"
-    msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution /binarylogger:$(Build.StagingDirectory)\\binlog\\04.PackagesTargets.binlog"
-  condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"  #skip this task for nonRTM in private build
+  - task: PowerShell@1
+    displayName: "LocValidation: Verify VSIX"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
+      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-
-- task: MSBuild@1
-  displayName: "Localize Assemblies"
-  inputs:
-    solution: "build\\loc.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\05.LocalizeAssemblies.binlog"
-
-- task: MSBuild@1
-  displayName: "Build Final NuGet.exe (via ILMerge)"
-  inputs:
-    solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount) /binarylogger:$(Build.StagingDirectory)\\binlog\\06.ILMerge.binlog"
-
-- task: MSBuild@1
-  displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
-  inputs:
-    solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
-
-- task: MSBuild@1
-  displayName: "Run unit tests (stop on error)"
-  continueOnError: "false"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
-
-- task: MSBuild@1
-  displayName: "Run unit tests (continue on error)"
-  continueOnError: "true"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
-
-- task: PublishTestResults@2
-  displayName: "Publish Test Results"
-  inputs:
-    testRunner: "XUnit"
-    testResultsFiles: "*.xml"
-    testRunTitle: "NuGet.Client Unit Tests On Windows"
-    searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-    mergeTestResults: "true"
-    publishRunAttachments: "false"
-  condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-- task: MSBuild@1
-  displayName: "Sign Assemblies"
-  inputs:
-    solution: "build\\sign.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild"
-    maximumCpuCount: true
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: MSBuild@1
-  displayName: "Pack Nupkgs"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
-    maximumCpuCount: true
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: MSBuild@1
-  displayName: "Ensure all Nupkgs and Symbols are created"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM)"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: MSBuild@1
-  displayName: "Pack VSIX"
-  inputs:
-    solution: "build\\build.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true"
-    maximumCpuCount: true
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
-- ${{ if not(parameters.BuildRTM)}}:
-  - template: /eng/common/templates/steps/generate-sbom.yml@self
-    parameters:
-      PackageName: 'NuGet.Client'
-      PackageVersion: "$(SemanticVersion)"
-
-- task: MSBuild@1
-  displayName: "Generate Build Tools package"
-  inputs:
-    solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: MSBuild@1
-  displayName: "Sign Nupkgs and VSIX"
-  inputs:
-    solution: "build\\sign.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /p:SignPackages=true"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: NuGetCommand@2
-  displayName: "Verify Nupkg Signatures"
-  inputs:
-    command: "custom"
-    arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: MicroBuildCodesignVerify@1
-  displayName: Verify Assembly Signatures and StrongName for the nupkgs
-  inputs:
-    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: MicroBuildCodesignVerify@1
-  displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
-  inputs:
-    TargetFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
-    WhiteListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-    WhiteListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-  condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))  #skip this task for nonRTM in private build
-
-- task: MSBuild@1
-  displayName: "Generate VSMAN file for NuGet Core VSIX"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateVSManifestForVSIX.binlog"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: MSBuild@1
-  displayName: "Generate VSMAN file for Build Tools VSIX"
-  inputs:
-    solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.SourcesDirectory)/artifacts /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateVSManifestForToolsVSIX.binlog"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: PowerShell@1
-  displayName: "Create EndToEnd Test Package"
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
-    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
-    failOnStandardError: "true"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false')) "
-
-- task: NuGetCommand@2
-  displayName: 'Add the VSEng package source'
-  inputs:
-    command: 'custom'
-    arguments: 'sources add -Name VS -Source $(VsPackageFeedUrl) -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: NuGetCommand@2
-  displayName: 'Install the NuGet package for building .runsettingsproj files'
-  inputs:
-    command: 'custom'
-    arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: MicroBuildBuildVSBootstrapper@3
-  displayName: 'Build a Visual Studio bootstrapper'
-  inputs:
-    channelName: "$(VsTargetChannel)"
-    vsMajorVersion: "$(VsTargetMajorVersion)"
-    manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
-    outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: PowerShell@1
-  displayName: "Set Bootstrapper URL variable for tests"
-  name: "vsbootstrapper"
-  inputs:
-    scriptType: "inlineScript"
-    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output.
-    # https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-    inlineScript: |
-      try {
-        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
-        $bootstrapperUrl = $json[0].bootstrapperUrl;
-        Write-Host "Bootstrapper URL: $bootstrapperUrl"
-        Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
-        exit 1
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: MSBuild@1
-  displayName: 'Generate .runsettings files'
-  inputs:
-    solution: 'build\runsettings.proj'
-    msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\18.GenerateRunSettings.binlog'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: PowerShell@1
-  displayName: 'Copy VS integration test binaries'
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        Write-Output "Copying NuGet.OptProf binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$_"
-        exit 1
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: MSBuild@1
-  displayName: "Collect Build Symbols"
-  inputs:
-    solution: "build\\symbols.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM)"
-    maximumCpuCount: true
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
-
-- task: PowerShell@1
-  displayName: "LocValidation: Verify VSIX"
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs -TmpPath $(Agent.TempDirectory) -ValidateVsix"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
-- task: PowerShell@1
-  displayName: "LocValidation: Verify Artifacts"
-  inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  - task: PowerShell@1
+    displayName: "LocValidation: Verify Artifacts"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
+      arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
+    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
