@@ -58,7 +58,7 @@ namespace NuGet.Commands.Experimental.Services
             return GetLatestOrDefault(latestMetadataPerSource, (x, y) => VersionComparer.VersionReleaseMetadata.Compare(x.Metadata.Identity.Version, y.Metadata.Identity.Version) > 0);
         }
 
-        private async Task<IReadOnlyCollection<PackageMetadataSourceResult>?> GetLatestMetadataPerSourceAsync(string packageId, IEnumerable<PackageSource> packageSources, bool includePrerelease = false, CancellationToken cancellationToken = default)
+        private async Task<IReadOnlyCollection<PackageMetadataSourceResult>?> GetLatestMetadataPerSourceAsync(string packageId, IEnumerable<PackageSource> packageSources, bool includePrerelease, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(packageId) || packageSources == null || !packageSources.Any())
             {
