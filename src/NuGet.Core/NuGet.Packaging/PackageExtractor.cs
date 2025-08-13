@@ -187,8 +187,6 @@ namespace NuGet.Packaging
             }
 
             var packageSaveMode = packageExtractionContext.PackageSaveMode;
-            var extractionId = Guid.NewGuid();
-            var nupkgStartPosition = packageStream.Position;
             var filesAdded = new List<string>();
 
             var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
@@ -295,7 +293,6 @@ namespace NuGet.Packaging
             token.ThrowIfCancellationRequested();
 
             var packageSaveMode = packageExtractionContext.PackageSaveMode;
-            var extractionId = Guid.NewGuid();
             var filesAdded = new List<string>();
 
             var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
@@ -397,7 +394,6 @@ namespace NuGet.Packaging
             }
 
             var logger = packageExtractionContext.Logger;
-            var extractionId = Guid.NewGuid();
 
             var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.DownloadResource, packageIdentity);
             using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
@@ -493,8 +489,6 @@ namespace NuGet.Packaging
 
                                         if ((packageSaveMode & PackageSaveMode.Files) == PackageSaveMode.Files)
                                         {
-                                            var nupkgFileName = Path.GetFileName(targetNupkg);
-                                            var nuspecFileName = Path.GetFileName(targetNuspec);
                                             var hashFileName = Path.GetFileName(hashPath);
                                             var nupkgMetadataFileName = Path.GetFileName(nupkgMetadataFilePath);
                                             var packageFiles = packageReader.GetFiles()
