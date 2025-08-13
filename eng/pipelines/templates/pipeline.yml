@@ -185,6 +185,7 @@ stages:
               toLowerCase: false
               usePat: true
               dropMetadataContainerName: "DropMetadata-ProfilingInputs"
+              continueOnError: true # Do not fail the build on OptProf failures.
 
             - output: pipelineArtifact
               displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
