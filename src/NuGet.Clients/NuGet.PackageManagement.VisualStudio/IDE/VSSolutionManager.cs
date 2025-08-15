@@ -14,6 +14,7 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.PlatformUI.Search;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -761,21 +762,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            // TODO ?
-            //// Close NuGet Package Manager if it is open for this project
-            //IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
-            //windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
+            _logger.LogInformation("Migrating project.json project...");
+
             string projectJsonUniqueName = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out string value))
             {
                 projectJsonUniqueName = value;
             }
 
+            _logger.LogInformation("Project name: " + projectJsonUniqueName);
+
             string projectFullPath = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out string valuePath))
             {
                 projectFullPath = valuePath;
             }
+
+            _logger.LogInformation("Project path: " + projectFullPath);
 
             var result = await _projectJsonMigrator.Value.MigrateProjectJsonToPackageReferenceAsync(projectFullPath);
 
@@ -785,11 +788,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!migrationResult.IsSuccess)
                 {
-                    MessageHelper.ShowWarningMessage(migrationResult.ErrorMessage, "Migration Failed");
+                    _logger.LogError(migrationResult.ErrorMessage);
                 }
                 else
                 {
-                    MessageHelper.ShowInfoMessage("Migration Succeeded", "Migration Succeeded");
+                    _logger.LogInformation("Migration Succeeded");
                 }
             }
 
