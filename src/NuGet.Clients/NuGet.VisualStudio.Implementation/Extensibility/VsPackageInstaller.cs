@@ -468,6 +468,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 // 1 means PackageReference
                 var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
 
+                //TODO: refer to this
+
                 // Check if default package format is set to `PackageReference` and project has no
                 // package installed yet then upgrade it to `PackageReference` based project.
                 if (preferPackageReference &&

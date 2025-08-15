@@ -128,6 +128,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 await TaskScheduler.Default;
                 var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
 
+                //TODO: If the Backup already exists, something (File copy) throws!
+
                 Directory.CreateDirectory(backupDirectory);
 
                 var backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));

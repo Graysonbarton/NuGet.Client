@@ -29,6 +29,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Project = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -42,6 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string VSNuGetClientName = "NuGet VS VSIX";
 
         private readonly INuGetLockService _initLock;
+        private readonly Lazy<IVsProjectJsonToPackageReferenceMigrator> _projectJsonMigrator;
         private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private SolutionEvents _solutionEvents;
@@ -137,7 +139,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Common.ILogger logger,
             Lazy<ISettings> settings,
             INuGetFeatureFlagService featureFlagService,
-            JoinableTaskContext joinableTaskContext)
+            JoinableTaskContext joinableTaskContext,
+            Lazy<IVsProjectJsonToPackageReferenceMigrator> projectJsonMigrator)
             : this(AsyncServiceProvider.GlobalProvider,
                    projectSystemCache,
                    projectSystemFactory,
@@ -146,7 +149,8 @@ namespace NuGet.PackageManagement.VisualStudio
                    logger,
                    settings,
                    featureFlagService,
-                   joinableTaskContext)
+                   joinableTaskContext,
+                   projectJsonMigrator)
         { }
 
 
@@ -159,7 +163,8 @@ namespace NuGet.PackageManagement.VisualStudio
             ILogger logger,
             Lazy<ISettings> settings,
             INuGetFeatureFlagService featureFlagService,
-            JoinableTaskContext joinableTaskContext)
+            JoinableTaskContext joinableTaskContext,
+            Lazy<IVsProjectJsonToPackageReferenceMigrator> projectJsonMigrator)
         {
             Assumes.Present(asyncServiceProvider);
             Assumes.Present(projectSystemCache);
@@ -170,6 +175,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(settings);
             Assumes.Present(featureFlagService);
             Assumes.Present(joinableTaskContext);
+            Assumes.Present(projectJsonMigrator);
 
             _asyncServiceProvider = asyncServiceProvider;
             _projectSystemCache = projectSystemCache;
@@ -180,6 +186,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _settings = settings;
             _featureFlagService = featureFlagService;
             _initLock = new NuGetLockService(joinableTaskContext);
+            _projectJsonMigrator = projectJsonMigrator;
             _dte = new(() => asyncServiceProvider.GetDTEAsync(), NuGetUIThreadHelper.JoinableTaskFactory);
             _asyncVSSolution = new(() => asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>(), NuGetUIThreadHelper.JoinableTaskFactory);
         }
@@ -745,6 +752,50 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        private async Task<IVsProjectJsonToPackageReferenceMigrateResult> ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(NuGetProject nuGetProject)
+        {
+            IVsProjectJsonToPackageReferenceMigrateResult migrationResult = null;
+            if (nuGetProject is not ProjectJsonNuGetProject)
+            {
+                //MessageHelper.ShowWarningMessage(Resources.ProjectJsonMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
+                return null;
+            }
+
+            // TODO ?
+            //// Close NuGet Package Manager if it is open for this project
+            //IVsWindowFrame windowFrame = await FindExistingWindowFrameAsync(project);
+            //windowFrame?.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_SaveIfDirty);
+            string projectJsonUniqueName = string.Empty;
+            if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out string value))
+            {
+                projectJsonUniqueName = value;
+            }
+
+            string projectFullPath = string.Empty;
+            if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out string valuePath))
+            {
+                projectFullPath = valuePath;
+            }
+
+            var result = await _projectJsonMigrator.Value.MigrateProjectJsonToPackageReferenceAsync(projectFullPath);
+
+            if (result is IVsProjectJsonToPackageReferenceMigrateResult migratorResult)
+            {
+                migrationResult = migratorResult;
+
+                if (!migrationResult.IsSuccess)
+                {
+                    MessageHelper.ShowWarningMessage(migrationResult.ErrorMessage, "Migration Failed");
+                }
+                else
+                {
+                    MessageHelper.ShowInfoMessage("Migration Succeeded", "Migration Succeeded");
+                }
+            }
+
+            return migrationResult;
+        }
+
         private async Task EnsureNuGetAndVsProjectAdapterCacheAsync()
         {
             await _initLock.ExecuteNuGetOperationAsync(async () =>
@@ -762,8 +813,30 @@ namespace NuGet.PackageManagement.VisualStudio
                             {
                                 try
                                 {
-                                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
+                                    // TODO: Iterate these projects for project.json migration.
+                                    // Catch it - don't have cache.
+                                    //await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                                    //var projectSafeName = await project.GetCustomUniqueNameAsync();
+                                    //var nuGetProject = await GetNuGetProjectAsync(projectSafeName);
+                                    IVsProjectAdapter vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
                                     await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+
+                                    NuGetProject projectJsonNuGetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
+                                    IVsProjectJsonToPackageReferenceMigrateResult migrationResult = await ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(projectJsonNuGetProject);
+                                    if (migrationResult is not null && migrationResult.IsSuccess)
+                                    {
+                                        string projectJsonUniqueName = null;
+
+                                        // Refresh the adapter in the cache after migration.
+                                        if (projectJsonNuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out projectJsonUniqueName))
+                                        {
+                                            RemoveVsProjectAdapterFromCache(projectJsonUniqueName);
+                                            IVsProjectAdapter vsProjectAdapterMigrated = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
+                                            await AddVsProjectAdapterToCacheAsync(vsProjectAdapterMigrated);
+                                        }
+                                    }
+
                                 }
                                 catch (Exception e)
                                 {
