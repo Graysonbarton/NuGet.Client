@@ -14,7 +14,6 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.PlatformUI.Search;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -758,7 +757,6 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectJsonToPackageReferenceMigrateResult migrationResult = null;
             if (nuGetProject is not ProjectJsonNuGetProject)
             {
-                //MessageHelper.ShowWarningMessage(Resources.ProjectJsonMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
                 return null;
             }
 
@@ -816,12 +814,6 @@ namespace NuGet.PackageManagement.VisualStudio
                             {
                                 try
                                 {
-                                    // TODO: Iterate these projects for project.json migration.
-                                    // Catch it - don't have cache.
-                                    //await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                                    //var projectSafeName = await project.GetCustomUniqueNameAsync();
-                                    //var nuGetProject = await GetNuGetProjectAsync(projectSafeName);
                                     IVsProjectAdapter vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
                                     await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
 
