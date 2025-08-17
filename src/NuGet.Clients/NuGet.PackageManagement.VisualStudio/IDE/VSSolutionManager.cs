@@ -27,7 +27,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
@@ -47,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly INuGetLockService _initLock;
         private readonly Lazy<IVsProjectJsonToPackageReferenceMigrator> _projectJsonMigrator;
-        private readonly Lazy<IServiceBrokerProvider> _serviceBrokerProvider;
+        private readonly Lazy<INuGetUILogger> _outputConsoleLogger;
         private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private SolutionEvents _solutionEvents;
@@ -133,9 +132,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion Events
 
-        //Lazy<IServiceBrokerProvider> ServiceBrokerProvider
-        //IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
-
         [ImportingConstructor]
         internal VSSolutionManager(
             IProjectSystemCache projectSystemCache,
@@ -148,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetFeatureFlagService featureFlagService,
             JoinableTaskContext joinableTaskContext,
             Lazy<IVsProjectJsonToPackageReferenceMigrator> projectJsonMigrator,
-            Lazy<IServiceBrokerProvider> serviceBrokerProvider)
+            Lazy<INuGetUILogger> outputConsoleLogger)
             : this(AsyncServiceProvider.GlobalProvider,
                    projectSystemCache,
                    projectSystemFactory,
@@ -159,7 +155,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    featureFlagService,
                    joinableTaskContext,
                    projectJsonMigrator,
-                   serviceBrokerProvider)
+                   outputConsoleLogger)
         { }
 
 
@@ -174,7 +170,7 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetFeatureFlagService featureFlagService,
             JoinableTaskContext joinableTaskContext,
             Lazy<IVsProjectJsonToPackageReferenceMigrator> projectJsonMigrator,
-            Lazy<IServiceBrokerProvider> serviceBrokerProvider)
+            Lazy<INuGetUILogger> outputConsoleLogger)
         {
             Assumes.Present(asyncServiceProvider);
             Assumes.Present(projectSystemCache);
@@ -186,7 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(featureFlagService);
             Assumes.Present(joinableTaskContext);
             Assumes.Present(projectJsonMigrator);
-            Assumes.Present(serviceBrokerProvider);
+            Assumes.Present(outputConsoleLogger);
 
             _asyncServiceProvider = asyncServiceProvider;
             _projectSystemCache = projectSystemCache;
@@ -198,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _featureFlagService = featureFlagService;
             _initLock = new NuGetLockService(joinableTaskContext);
             _projectJsonMigrator = projectJsonMigrator;
-            _serviceBrokerProvider = serviceBrokerProvider;
+            _outputConsoleLogger = outputConsoleLogger;
             _dte = new(() => asyncServiceProvider.GetDTEAsync(), NuGetUIThreadHelper.JoinableTaskFactory);
             _asyncVSSolution = new(() => asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>(), NuGetUIThreadHelper.JoinableTaskFactory);
         }
@@ -772,7 +768,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            _logger.LogInformation("Migrating project.json project...");
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Migrating project.json project...");
 
             string projectJsonUniqueName = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out string value))
@@ -780,7 +776,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectJsonUniqueName = value;
             }
 
-            _logger.LogInformation("Project name: " + projectJsonUniqueName);
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Project name: " + projectJsonUniqueName);
 
             string projectFullPath = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out string valuePath))
@@ -788,9 +784,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectFullPath = valuePath;
             }
 
-            _logger.LogInformation("Project path: " + projectFullPath);
-
-            //string backupPath = ProjectJsonToPackageRefMigrator.CreateBackup(legacyPRProject, SolutionDirectory, projectFullPath);
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Project path: " + projectFullPath);
 
             var result = await _projectJsonMigrator.Value.MigrateProjectJsonToPackageReferenceAsync(projectFullPath);
 
@@ -800,11 +794,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!migrationResult.IsSuccess)
                 {
-                    _logger.LogError(migrationResult.ErrorMessage);
+                    _outputConsoleLogger.Value.ReportError(new LogMessage(LogLevel.Error, message: migrationResult.ErrorMessage));
                 }
                 else
                 {
-                    _logger.LogInformation("Migration Succeeded");
+                    _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Migration Succeeded");
 
                     // Generate and display the migration report
                     string htmlReportPath = GenerateProjectJsonMigrationReport(projectJsonUniqueName, migratorResult.BackupPath, projectFullPath);
@@ -818,7 +812,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                         {
-                            _logger.LogError($"Failed to open migration report: {ex.Message}");
+                            string exceptionMessage = $"Failed to open migration report: {ex.Message}";
+                            _outputConsoleLogger.Value.ReportError(new LogMessage(LogLevel.Error, message: exceptionMessage));
+
+                            // Also log exceptions to the Activity Logger.
+                            _logger.LogError(data: exceptionMessage);
                         }
                     }
                 }
@@ -905,7 +903,8 @@ namespace NuGet.PackageManagement.VisualStudio
                                     await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
 
                                     NuGetProject projectJsonNuGetProject = await CreateNuGetProjectAsync(vsProjectAdapter);
-                                    IVsProjectJsonToPackageReferenceMigrateResult migrationResult = await ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(projectJsonNuGetProject);
+                                    IVsProjectJsonToPackageReferenceMigrateResult migrationResult = await
+                                    ExecuteUpgradeProjectJsonNuGetProjectCommandAsync(projectJsonNuGetProject);
                                     if (migrationResult is not null && migrationResult.IsSuccess)
                                     {
                                         string projectJsonUniqueName = null;
