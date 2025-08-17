@@ -121,7 +121,7 @@ namespace NuGetVSExtension
         [Import]
         private Lazy<ISettings> Settings { get; set; }
 
-        [Import()]
+        [Import]
         private Lazy<IVsSolutionManager> SolutionManager { get; set; }
 
         [Import]
@@ -238,7 +238,6 @@ namespace NuGetVSExtension
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 SolutionManager.Value.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
-                SolutionManager.Value.SolutionOpening += SolutionManager_NuGetProjectOpening;
 
                 Brushes.LoadVsBrushes(NuGetExperimentationService.Value);
 
@@ -277,16 +276,6 @@ namespace NuGetVSExtension
 
                 _initialized = true;
             });
-        }
-
-        private void SolutionManager_NuGetProjectOpening(object sender, EventArgs e)
-        {
-            //this.solution
-            //string uniqueName = VsMonitorSelection.GetActiveProject().GetUniqueName();
-            //    NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-
-            //    command.Visible = GetIsSolutionOpen() && nuGetProject != null && nuGetProject is ProjectJsonNuGetProject;
-            //ExecuteAutoMigrateProjectJsonNuGetProjectCommand(sender, e);
         }
 
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)

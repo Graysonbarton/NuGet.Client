@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.ProjectManagement.Projects;
@@ -21,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class ProjectJsonToPackageRefMigrator
     {
-        public static async Task MigrateAsync(
+        public static async Task<string> MigrateAsync(
             BuildIntegratedNuGetProject project)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -53,8 +52,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             RemoveProjectJsonReference(buildProject, projectJsonFilePath);
 
-            await CreateBackupAsync(project,
-                projectJsonFilePath);
+            // TODO: this is happening earlier now.
+            string backupPath = CreateBackup(project, projectJsonFilePath);
+            return backupPath;
+            //await CreateBackupAsync(project,
+            //    projectJsonFilePath);
         }
 
         private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpec packageSpec)
@@ -119,28 +121,44 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
 
-        private static async Task CreateBackupAsync(
-            BuildIntegratedNuGetProject project,
-            string projectJsonFilePath)
+        //public async ValueTask<string> BackupProjectJsonProjectAsync(string projectId, CancellationToken cancellationToken)
+        //{
+        //    Assumes.NotNullOrEmpty(projectId);
+
+        //    cancellationToken.ThrowIfCancellationRequested();
+
+        //    IVsSolutionManager? solutionManager = await _state.SolutionManager.GetValueAsync(cancellationToken);
+        //    Assumes.NotNull(solutionManager);
+
+        //    string solutionDirectory = await solutionManager.GetSolutionDirectoryAsync();
+
+        //    await TaskScheduler.Default;
+
+        //    MSBuildNuGetProject project = await GetMsBuildNuGetProjectAsync(projectId, cancellationToken);
+
+        //    return CreateBackup(project, solutionDirectory);
+        //}
+
+        public static string CreateBackup(BuildIntegratedNuGetProject project, string projectJsonFilePath)
         {
-            try
-            {
-                await TaskScheduler.Default;
-                var backupDirectory = Path.Combine(Path.GetDirectoryName(project.MSBuildProjectPath), "Backup");
+            var guid = Guid.NewGuid().ToString().Split('-').First();
+            //NuGetProject.GetUniqueNameOrName(msBuildNuGetProject)
+            var projectDirectory = Path.GetDirectoryName(project.MSBuildProjectPath);
+            var backupPath = Path.Combine(projectDirectory, "MigrationBackup", guid, project.ProjectName);
+            Directory.CreateDirectory(backupPath);
 
-                //TODO: If the Backup already exists, something (File copy) throws!
+            var backupJsonFile = Path.Combine(backupPath, Path.GetFileName(projectJsonFilePath));
+            FileUtility.Replace(projectJsonFilePath, backupJsonFile);
+            var backupProjectFile = Path.Combine(backupPath, Path.GetFileName(project.MSBuildProjectPath));
+            File.Copy(project.MSBuildProjectPath, backupProjectFile, overwrite: true);
 
-                Directory.CreateDirectory(backupDirectory);
+            //// Backup project file
+            //var msBuildNuGetProjectSystem = project.ProjectServices.ProjectSystem;
+            //var projectFullPath = project.MSBuildProjectPath;
+            //var projectFileName = Path.GetFileName(projectFullPath);
+            //File.Copy(projectFullPath, Path.Combine(backupPath, projectFileName), overwrite: true);
 
-                var backupJsonFile = Path.Combine(backupDirectory, Path.GetFileName(projectJsonFilePath));
-                FileUtility.Replace(projectJsonFilePath, backupJsonFile);
-                var backupProjectFile = Path.Combine(backupDirectory, Path.GetFileName(project.MSBuildProjectPath));
-                File.Copy(project.MSBuildProjectPath, backupProjectFile);
-            }
-            finally
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            }
+            return backupPath;
         }
     }
 }

@@ -19,6 +19,11 @@ namespace NuGet.VisualStudio
         bool IsSuccess { get; }
 
         /// <summary>
+        /// TODO
+        /// </summary>
+        string BackupPath { get; set; }
+
+        /// <summary>
         /// If migrate operation was unsuccessful, stores the error message in the exception.
         /// </summary>
         string ErrorMessage { get; }

@@ -76,6 +76,12 @@
     <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
   </ItemGroup>
 
+<ItemGroup>
+  <EmbeddedResource Include="Migrate\UpgradeReport.xslt">
+    <SubType>Designer</SubType>
+  </EmbeddedResource>
+</ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="NuGet.PackageManagement.UI.Test" />
     <InternalsVisibleTo Include="NuGet.PackageManagement.VisualStudio.Test" />
