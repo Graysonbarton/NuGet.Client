@@ -52,11 +52,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             RemoveProjectJsonReference(buildProject, projectJsonFilePath);
 
-            // TODO: this is happening earlier now.
             string backupPath = CreateBackup(project, projectJsonFilePath);
             return backupPath;
-            //await CreateBackupAsync(project,
-            //    projectJsonFilePath);
         }
 
         private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpec packageSpec)
@@ -120,29 +117,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-
-        //public async ValueTask<string> BackupProjectJsonProjectAsync(string projectId, CancellationToken cancellationToken)
-        //{
-        //    Assumes.NotNullOrEmpty(projectId);
-
-        //    cancellationToken.ThrowIfCancellationRequested();
-
-        //    IVsSolutionManager? solutionManager = await _state.SolutionManager.GetValueAsync(cancellationToken);
-        //    Assumes.NotNull(solutionManager);
-
-        //    string solutionDirectory = await solutionManager.GetSolutionDirectoryAsync();
-
-        //    await TaskScheduler.Default;
-
-        //    MSBuildNuGetProject project = await GetMsBuildNuGetProjectAsync(projectId, cancellationToken);
-
-        //    return CreateBackup(project, solutionDirectory);
-        //}
-
         public static string CreateBackup(BuildIntegratedNuGetProject project, string projectJsonFilePath)
         {
             var guid = Guid.NewGuid().ToString().Split('-').First();
-            //NuGetProject.GetUniqueNameOrName(msBuildNuGetProject)
+
             var projectDirectory = Path.GetDirectoryName(project.MSBuildProjectPath);
             var backupPath = Path.Combine(projectDirectory, "MigrationBackup", guid, project.ProjectName);
             Directory.CreateDirectory(backupPath);
@@ -151,12 +129,6 @@ namespace NuGet.PackageManagement.VisualStudio
             FileUtility.Replace(projectJsonFilePath, backupJsonFile);
             var backupProjectFile = Path.Combine(backupPath, Path.GetFileName(project.MSBuildProjectPath));
             File.Copy(project.MSBuildProjectPath, backupProjectFile, overwrite: true);
-
-            //// Backup project file
-            //var msBuildNuGetProjectSystem = project.ProjectServices.ProjectSystem;
-            //var projectFullPath = project.MSBuildProjectPath;
-            //var projectFileName = Path.GetFileName(projectFullPath);
-            //File.Copy(projectFullPath, Path.Combine(backupPath, projectFileName), overwrite: true);
 
             return backupPath;
         }
