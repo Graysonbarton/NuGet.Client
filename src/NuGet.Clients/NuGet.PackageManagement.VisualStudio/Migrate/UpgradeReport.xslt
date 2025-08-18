@@ -296,12 +296,12 @@
       </head>
       <body>
         <h1>
-          NuGet Migration Report - <xsl:value-of select="current()/@Name" />
+          NuGet Migration Report - project.json to PackageReference
         </h1>
 
         <div id="content">
           <h2 _locID="OverviewTitle">Overview</h2>
-          <div class="info-text">Migration to PackageReference was completed successfully. Please reload your projects or the solution, and build and run your solution to verify that all packages are available.</div>
+          <div class="info-text">Migration to PackageReference was completed successfully. Please build and run your solution to verify that all packages are available.</div>
           <div class="info-text">
             If you run into any problems, have feedback, questions, or concerns, please
             <a href="https://github.com/NuGet/Home/issues/">file an issue on the NuGet GitHub repository.</a>
@@ -319,22 +319,10 @@
             <a href="https://aka.ms/nuget/projectjson">More information about project.json migration.</a>
           </div>
 
-          <h2 _locID="PackagesTitle">Packages processed</h2>
-          <h3 _locID="IncludePackagesTitle">Top-level dependencies:</h3>
-          <div class="issues">
-            <xsl:apply-templates select="Projects" mode="IncludedPackages" />
-          </div>
-          <p />
-          <h3 _locID="IncludePackagesTitle">Transitive dependencies:</h3>
-          <div class="issues">
-            <xsl:apply-templates select="Projects" mode="ExcludedPackages" />
-          </div>
-
-          <h2 _locID="IssuesTitle">Package compatibility issues</h2>
-          <div class="issues">
-            <xsl:apply-templates select="Projects" mode="ProjectDetails" />
-          </div>
-
+          <h2 _locID="PackagesTitle">Projects migrated</h2>
+            <div class="issues">
+                <xsl:apply-templates select="Projects" mode="ProjectDetails" />
+            </div>
         </div>
       </body>
     </html>

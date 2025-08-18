@@ -14,48 +14,16 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
 {
     internal class UpgradeLogger : IDisposable
     {
-        // Example upgrade report XML:
-        //
-        // <?xml version="1.0" encoding="UTF-8"?>
-        // <NuGetUpgradeReport Name="ConsoleApplication13" BackupPath="c:\MySolution\Backup\ConsoleApplication13">
-        //   <Properties />
-        //   <Projects>
-        //     <Project Name="ConsoleApplication13">
-        //       <Issues>
-        //         <Package Name="Newtonsoft.Json" Version="1.0.0">
-        //           <Issue Description="contains an install.ps1 script that will not be applied after upgrading." />
-        //           <Issue Description="could not be found." />
-        //         </Package>
-        //       </Issues>
-        //       <IncludedPackages>
-        //         <Package Name="Microsoft.Owin" Version="3.0.1" />
-        //         <Package Name="WindowsAzure.Storage" Version="7.0.0" />
-        //       </IncludedPackages>
-        //       <ExcludedPackages>
-        //         <Package Name="Microsoft.Azure.KeyVault.Core" Version="1.0.0" />
-        //         <Package Name="Microsoft.Data.Edm" Version="5.6.4" />
-        //         <Package Name="Microsoft.Data.OData" Version="5.6.4" />
-        //         <Package Name="Microsoft.Data.Services.Client" Version="5.6.4" />
-        //         <Package Name="Newtonsoft.Json" Version="6.0.8" />
-        //         <Package Name="Owin" Version="1.0.0" />
-        //         <Package Name="System.Spatial" Version="5.6.4" />
-        //       </ExcludedPackages>
-        //     </Project>
-        //   </Projects>
-        // </NuGetUpgradeReport>
-        //
-        // Note that we currently only supported upgrading a single project, but the log format can handle multiple projects
-        // (in which case the log name would likely be the name of the solution).
-
-        private const string DescriptionString = "Description";
+        //private const string DescriptionString = "Description";
         private const string ExcludedPackagesString = "ExcludedPackages";
         private const string IncludedPackagesString = "IncludedPackages";
         private const string IssuesString = "Issues";
-        private const string IssueString = "Issue";
+
+        //private const string IssueString = "Issue";
         private const string NameString = "Name";
-        private const string VersionString = "Version";
+        //private const string VersionString = "Version";
         private const string NuGetUpgradeReportString = "NuGetUpgradeReport";
-        private const string PackageString = "Package";
+        //private const string PackageString = "Package";
         private const string ProjectsString = "Projects";
         private const string ProjectString = "Project";
         private const string PropertiesString = "Properties";
@@ -72,24 +40,15 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
         private readonly XmlElement _projectsElement;
         private readonly XmlElement _propertiesElement;
 
-        private readonly string _backupPath;
         private readonly string _htmlFilePath;
 
-        internal UpgradeLogger(string reportName, string backupPath)
+        internal UpgradeLogger(string reportName, string solutionReportPath)
         {
             if (string.IsNullOrEmpty(reportName))
             {
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(reportName));
             }
 
-            if (string.IsNullOrEmpty(backupPath) || !Directory.Exists(backupPath))
-            {
-                //TODO: UpgradeLogger_BackupPathMustBeValid
-                throw new ArgumentException("Path not found.", nameof(backupPath));
-            }
-
-            _backupPath = backupPath;
-            _htmlFilePath = $@"{_backupPath}\NuGetUpgradeLog.html";
             _xmlDocument = new XmlDocument { PreserveWhitespace = true };
             _xmlDocument.LoadXml($"<?xml version='1.0' encoding='UTF-16'?>\r\n<{NuGetUpgradeReportString}>\r\n</{NuGetUpgradeReportString}>");
 
@@ -97,7 +56,15 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
             Debug.Assert(upgradeReportElement != null, "_upgradeReportElement != null");
 
             upgradeReportElement.SetAttribute(NameString, reportName);
-            upgradeReportElement.SetAttribute(BackupPathString, backupPath);
+
+            if (string.IsNullOrEmpty(solutionReportPath) || !Directory.Exists(solutionReportPath))
+            {
+                //TODO: UpgradeLogger_BackupPathMustBeValid
+                throw new ArgumentException("Path not found.", nameof(solutionReportPath));
+            }
+            upgradeReportElement.SetAttribute(BackupPathString, solutionReportPath);
+
+            _htmlFilePath = $@"{solutionReportPath}\NuGetUpgradeLog.html";
 
             _propertiesElement = _xmlDocument.CreateElement(PropertiesString);
             upgradeReportElement.AppendChild(_propertiesElement);
@@ -114,30 +81,28 @@ namespace NuGet.PackageManagement.VisualStudio.Migrate
             _propertiesElement.AppendChild(propertyElement);
         }
 
-        internal void RegisterPackage(string projectName, string name, string version, IList<PackagingLogMessage> issues, bool included)
+
+        internal void RegisterProject(string projectName, IList<PackagingLogMessage> issues, bool included)
         {
-            var packageElement = _xmlDocument.CreateElement(PackageString);
-            packageElement.SetAttribute(NameString, name);
-            packageElement.SetAttribute(VersionString, version);
+            //var upgradeReportElement = _xmlDocument.DocumentElement;
+            //packageElement.SetAttribute(VersionString, version);
 
             var packagesElement = GetProjectElement(projectName).SelectSingleNode(included ? IncludedPackagesString : ExcludedPackagesString);
             Debug.Assert(packagesElement != null, "packagesElement != null");
-            packagesElement.AppendChild(packageElement);
 
             if (issues.Count > 0)
             {
                 var issuesElement = GetProjectElement(projectName).SelectSingleNode(IssuesString);
                 Debug.Assert(issuesElement != null, "issuesElement != null");
-                var issuePackageElement = packageElement.Clone();
-                issuesElement.AppendChild(issuePackageElement);
+                //issuesElement.AppendChild(issuePackageElement);
 
-                foreach (var issue in issues)
-                {
-                    var issueElement = _xmlDocument.CreateElement(IssueString);
-                    issueElement.SetAttribute(DescriptionString, issue.Message);
+                //foreach (var issue in issues)
+                //{
+                //    var issueElement = _xmlDocument.CreateElement(IssueString);
+                //    issueElement.SetAttribute(DescriptionString, issue.Message);
 
-                    issuePackageElement.AppendChild(issueElement);
-                }
+                //    issuePackageElement.AppendChild(issueElement);
+                //}
             }
         }
 
