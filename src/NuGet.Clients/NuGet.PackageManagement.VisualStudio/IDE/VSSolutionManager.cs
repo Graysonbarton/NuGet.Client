@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -766,7 +767,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Migrating project.json project...");
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: Strings.Migrating_ProjectJson_Started);
 
             string projectJsonUniqueName = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out string value))
@@ -774,7 +775,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectJsonUniqueName = value;
             }
 
-            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Project name: " + projectJsonUniqueName);
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: string.Format(CultureInfo.CurrentCulture, Strings.Migrating_ProjectJson_ProjectName, projectJsonUniqueName));
 
             string projectFullPath = string.Empty;
             if (nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out string valuePath))
@@ -782,7 +783,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectFullPath = valuePath;
             }
 
-            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Project path: " + projectFullPath);
+            _outputConsoleLogger.Value.Log(MessageLevel.Info, message: string.Format(CultureInfo.CurrentCulture, Strings.Migrating_ProjectJson_ProjectPath, projectFullPath));
 
             var result = await _projectJsonMigrator.Value.MigrateProjectJsonToPackageReferenceAsync(projectFullPath);
 
@@ -796,7 +797,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 else
                 {
-                    _outputConsoleLogger.Value.Log(MessageLevel.Info, message: "Migration Succeeded");
+                    _outputConsoleLogger.Value.Log(MessageLevel.Info, message: Strings.Migrating_ProjectJson_Succeeded);
                 }
             }
 
