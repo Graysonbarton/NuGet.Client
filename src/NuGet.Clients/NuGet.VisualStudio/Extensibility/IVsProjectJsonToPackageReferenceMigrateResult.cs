@@ -19,6 +19,11 @@ namespace NuGet.VisualStudio
         bool IsSuccess { get; }
 
         /// <summary>
+        /// Path to the backup the project.json file and the project file before migration.
+        /// </summary>
+        string BackupPath { get; }
+
+        /// <summary>
         /// If migrate operation was unsuccessful, stores the error message in the exception.
         /// </summary>
         string ErrorMessage { get; }

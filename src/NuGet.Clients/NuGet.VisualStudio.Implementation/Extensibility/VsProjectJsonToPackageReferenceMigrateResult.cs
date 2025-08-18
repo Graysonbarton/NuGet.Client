@@ -9,6 +9,8 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
         public string ErrorMessage { get; }
 
+        public string BackupPath { get; set; }
+
         public VsProjectJsonToPackageReferenceMigrateResult(bool success, string errorMessage)
         {
             IsSuccess = success;

@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.VisualStudio.Migrate;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -30,6 +31,7 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Process = System.Diagnostics.Process;
 using Project = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
@@ -798,10 +800,87 @@ namespace NuGet.PackageManagement.VisualStudio
                 else
                 {
                     _outputConsoleLogger.Value.Log(MessageLevel.Info, message: Strings.Migrating_ProjectJson_Succeeded);
+
+                    // Generate and display the migration report
+                    string htmlReportPath = GenerateProjectJsonMigrationReport(projectJsonUniqueName, migratorResult.BackupPath, projectFullPath);
+                    if (!string.IsNullOrEmpty(htmlReportPath))
+                    {
+                        try
+                        {
+                            using var process = Process.Start(htmlReportPath);
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            string exceptionMessage = $"Failed to open migration report: {ex.Message}";
+                            _outputConsoleLogger.Value.ReportError(new LogMessage(LogLevel.Error, message: exceptionMessage));
+
+                            // Also log exceptions to the Activity Logger.
+                            _logger.LogError(data: exceptionMessage);
+                        }
+                    }
                 }
             }
 
             return migrationResult;
+        }
+
+        private string GenerateProjectJsonMigrationReport(string projectName, string backupPath, string projectJsonPath)
+        {
+            using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
+            {
+                // Set custom properties for project.json migration
+                upgradeLogger.SetProperty("MigrationType", "project.json to PackageReference");
+                upgradeLogger.SetProperty("ProjectJsonPath", projectJsonPath);
+
+                // Parse project.json to extract dependencies
+                var projectJsonFile = Path.Combine(backupPath, "project.json");
+                if (File.Exists(projectJsonFile))
+                {
+                    try
+                    {
+                        var packageSpec = JsonPackageSpecReader.GetPackageSpec(projectName, projectJsonFile);
+
+                        // Log dependencies from project.json
+                        foreach (var targetFramework in packageSpec.TargetFrameworks)
+                        {
+                            foreach (var dependency in targetFramework.Dependencies)
+                            {
+                                var issues = new List<PackagingLogMessage>();
+                                // Add any specific issues for project.json migration
+
+                                upgradeLogger.RegisterPackage(
+                                    projectName,
+                                    dependency.Name,
+                                    dependency.LibraryRange.VersionRange?.ToString() ?? "Unknown",
+                                    issues,
+                                    true); // All dependencies are typically top-level in project.json
+                            }
+                        }
+
+                        // Log global dependencies
+                        foreach (var dependency in packageSpec.Dependencies)
+                        {
+                            var issues = new List<PackagingLogMessage>();
+                            upgradeLogger.RegisterPackage(
+                                projectName,
+                                dependency.Name,
+                                dependency.LibraryRange.VersionRange?.ToString() ?? "Unknown",
+                                issues,
+                                true);
+                        }
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogWarning($"Could not parse project.json for migration report: {ex.Message}");
+                    }
+                }
+
+                return upgradeLogger.GetHtmlFilePath();
+            }
         }
 
         private async Task EnsureNuGetAndVsProjectAdapterCacheAsync()

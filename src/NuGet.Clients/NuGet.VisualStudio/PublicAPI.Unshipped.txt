@@ -1,1 +1,2 @@
 #nullable enable
+~NuGet.VisualStudio.IVsProjectJsonToPackageReferenceMigrateResult.BackupPath.get -> string
