@@ -890,7 +890,9 @@ namespace NuGet.Commands
                         }
                     }
 
-                    dependencies = newDependencies;
+                    // If there are no dependencies, pass null.
+                    // The PackageDependencyInfo constructor will convert this to an empty array.
+                    dependencies = newDependencies.Count == 0 ? null : newDependencies;
                 }
 
                 result.Add(new PackageDependencyInfo(item.Key.Name, item.Key.Version, dependencies));
