@@ -86,13 +86,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
             }
 
-            // can only interact when VS is not in server mode.
-            bool nonInteractive = await VisualStudioContextHelper.IsInServerModeAsync(CancellationToken.None);
-
             // Initialize the credential service.
             var credentialService = new CredentialService(
                 new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)),
-                nonInteractive: nonInteractive,
+                nonInteractive: false,
                 handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             return credentialService;
