@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
-    <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
@@ -9,11 +8,6 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's types and interfaces for understanding dependencies.</Description>
     <nullable>enable</nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
-    <TargetFrameworks />
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
