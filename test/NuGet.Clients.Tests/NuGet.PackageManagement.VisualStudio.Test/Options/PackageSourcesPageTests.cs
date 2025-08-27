@@ -300,5 +300,64 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.Should().NotBeNull();
             result.Should().BeOfType<ExternalSettingOperationResult.Success>();
         }
+
+        [Fact]
+        public async Task SetValueAsync_EnableDuplicateSource_ReturnsFailureResultTaskAsync()
+        {
+            // Arrange
+            string sourceName1 = "unitTestingSourceName1";
+            string sourceUrl1 = "https://testsource1.com";
+            bool isSource1Enabled = false;
+
+            string sourceName2 = "unitTestingSourceName2";
+            string sourceUrl2 = sourceUrl1;
+            bool isSource2Enabled = true;
+
+            // Configure 3 existing package sources
+            _packageSources =
+            [
+                new PackageSource(sourceUrl1, sourceName1, isSource1Enabled),
+                new PackageSource(sourceUrl2, sourceName2, isSource2Enabled)
+            ];
+
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+
+            // Configure Unified Settings input to Toggle IsEnabled state on the disabled source.
+            Dictionary<string, object> packageSourceDictionary1 = new Dictionary<string, object>();
+            packageSourceDictionary1[PackageSourcesPage.MonikerSourceName] = sourceName1;
+            packageSourceDictionary1[PackageSourcesPage.MonikerSourceUrl] = sourceUrl1;
+            packageSourceDictionary1[PackageSourcesPage.MonikerIsEnabled] = true; // Enable the first source.
+            packageSourceDictionary1[PackageSourcesPage.MonikerAllowInsecureConnections] = false;
+
+            Dictionary<string, object> packageSourceDictionary2 = new Dictionary<string, object>();
+            packageSourceDictionary2[PackageSourcesPage.MonikerSourceName] = sourceName2;
+            packageSourceDictionary2[PackageSourcesPage.MonikerSourceUrl] = sourceUrl2;
+            packageSourceDictionary2[PackageSourcesPage.MonikerIsEnabled] = isSource2Enabled;
+            packageSourceDictionary2[PackageSourcesPage.MonikerAllowInsecureConnections] = false;
+
+            IList<IDictionary<string, object>> packageSourceDictionaryList =
+                new List<IDictionary<string, object>>(capacity: 2)
+                {
+                    packageSourceDictionary1,
+                    packageSourceDictionary2
+                };
+
+            // Act
+            ExternalSettingOperationResult result = await instance.SetValueAsync(
+                PackageSourcesPage.MonikerPackageSources,
+                packageSourceDictionaryList,
+                CancellationToken.None);
+
+            // Assert
+            _countEnablePackageSourceCalled.Should().Be(0);
+            _countDisablePackageSourceCalled.Should().Be(0);
+            result.Should().NotBeNull();
+
+            var failure = (ExternalSettingOperationResult.Failure)result;
+            failure.Should().NotBeNull();
+            failure.IsTransient.Should().BeTrue();
+            failure.Scope.Should().Be(ExternalSettingsErrorScope.SingleSettingOnly);
+            failure.ErrorMessage.Should().StartWith(Strings.Error_PackageSource_UniqueSource);
+        }
     }
 }
