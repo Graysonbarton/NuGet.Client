@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+            Action act = () => PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+            Action act = () => PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+            PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
             // Assert
             // No exception should be thrown, indicating success.
@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+            Action act = () => PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -123,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            Action act = () => PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+            Action act = () => PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
             // Assert
             ArgumentException exception = Assert.Throws<ArgumentException>(act);
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             };
 
             // Act
-            PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+            PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
             // Assert
             // No exception should be thrown, indicating success.

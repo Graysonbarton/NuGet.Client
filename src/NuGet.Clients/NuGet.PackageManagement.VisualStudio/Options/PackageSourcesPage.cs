@@ -96,7 +96,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                         return await Task.Run(
                             () =>
                             {
-                                (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) savePackageSourcesResult = SavePackageSources(packageSourcesList, cancellationToken);
+                                var packageSourceDictionaryList = packageSourcesList
+                                    .Select(dict => (IReadOnlyDictionary<string, object>)new Dictionary<string, object>(dict))
+                                    .ToList()
+                                    .AsReadOnly();
+
+                                (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) savePackageSourcesResult = SavePackageSources(packageSourceDictionaryList, cancellationToken);
                                 hasAnyHiddenPropertyChanged = savePackageSourcesResult.hasAnyHiddenPropertyChanged;
                                 return savePackageSourcesResult.result;
                             },
@@ -171,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         }
 
         private (ExternalSettingOperationResult result, bool hasAnyHiddenPropertyChanged) SavePackageSources(
-            IReadOnlyList<IDictionary<string, object>> packageSourceDictionaryList,
+            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList,
             CancellationToken cancellationToken)
         {
             bool hasAnyHiddenPropertyChanged = false;
@@ -179,51 +184,12 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
             try
             {
-                List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
                 List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
                 bool hasAnyPackageSourceNameChanged = false;
 
-                foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    string name = packageSourceDictionary[MonikerSourceName].ToString();
-                    string lookupName;
-
-                    // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
-                    if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
-                    {
-                        lookupName = packageSourceIdObj.ToString();
-
-                        if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
-                            hasAnyPackageSourceNameChanged = true;
-                        }
-                    }
-                    else // Newly added Package Sources will not have a Package ID yet.
-                    {
-                        lookupName = name;
-                    }
-
-                    string source = packageSourceDictionary[MonikerSourceUrl].ToString();
-                    bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
-                    bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
-
-                    PackageSource packageSource =
-                        PackageSourceValidator.FindExistingOrCreate(
-                            lookupName,
-                            source,
-                            name,
-                            isEnabled,
-                            allowInsecureConnections,
-                            existingPackageSources);
-
-                    packageSources.Add(packageSource);
-                }
-
+                var packageSources = UnifiedSettingsDictionaryToPackageSources(existingPackageSources, ref hasAnyPackageSourceNameChanged, packageSourceDictionaryList, cancellationToken);
                 // Throw any validation errors before saving.
-                PackageSourceValidator.ValidateUniquenessOrThrow(packageSources);
+                PackageSourceValidator.EnsureUniquenessOrThrow(packageSources);
 
                 _packageSourceProvider.SavePackageSources(packageSources);
 
@@ -240,6 +206,56 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
 
             return (result, hasAnyHiddenPropertyChanged);
+        }
+
+        private static IReadOnlyList<PackageSource> UnifiedSettingsDictionaryToPackageSources(
+            IReadOnlyList<PackageSource> existingPackageSources,
+            ref bool hasAnyPackageSourceNameChanged,
+            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList,
+            CancellationToken cancellationToken)
+        {
+            List<PackageSource> packageSources = new List<PackageSource>(capacity: packageSourceDictionaryList.Count);
+
+            foreach (Dictionary<string, object> packageSourceDictionary in packageSourceDictionaryList)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string name = packageSourceDictionary[MonikerSourceName].ToString();
+                string lookupName;
+
+                // Package Sources that were pre-existing in the NuGet.Config when GetValueAsync was called will have a Package ID.
+                if (packageSourceDictionary.TryGetValue(MonikerPackageSourceId, out object packageSourceIdObj))
+                {
+                    lookupName = packageSourceIdObj.ToString();
+
+                    if (!string.Equals(lookupName, name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        // Changing the ID needs to refresh Unified Settings since the ID is a hidden property.
+                        hasAnyPackageSourceNameChanged = true;
+                    }
+                }
+                else // Newly added Package Sources will not have a Package ID yet.
+                {
+                    lookupName = name;
+                }
+
+                string source = packageSourceDictionary[MonikerSourceUrl].ToString();
+                bool isEnabled = (bool)packageSourceDictionary[MonikerIsEnabled];
+                bool allowInsecureConnections = (bool)packageSourceDictionary[MonikerAllowInsecureConnections];
+
+                PackageSource packageSource =
+                    PackageSourceValidator.FindExistingOrCreate(
+                        lookupName,
+                        source,
+                        name,
+                        isEnabled,
+                        allowInsecureConnections,
+                        existingPackageSources);
+
+                packageSources.Add(packageSource);
+            }
+
+            return packageSources;
         }
 
         private static PackageSource ParsePackageSource(IReadOnlyDictionary<string, object> packageSourceDictionary)
@@ -327,8 +343,6 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 return settingMessages;
             }
 
-            List<PackageSource> packageSources = new List<PackageSource>(capacity: arraySettingContent.Count);
-
             try
             {
 
@@ -356,6 +370,19 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                         }
                     case MonikerIsEnabled:
                         {
+                            bool hasAnyPackageSourceNameChanged = false; // Ignored for validation
+                            List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
+                            var packageSources = UnifiedSettingsDictionaryToPackageSources(existingPackageSources, ref hasAnyPackageSourceNameChanged, arraySettingContent, CancellationToken.None);
+
+                            var isUniqueSource = PackageSourceValidator.HasUniqueSources(packageSources);
+                            if (!isUniqueSource)
+                            {
+                                var validationMessage = new SettingMessage(
+                                    Text: Strings.Error_PackageSource_UniqueSource,
+                                    Severity: MessageSeverity.Error);
+                                settingMessages.Add(validationMessage);
+                            }
+
                             break;
                         }
                     case MonikerAllowInsecureConnections:

@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             string name,
             bool isEnabled,
             bool allowInsecureConnections,
-            List<PackageSource> packageSources)
+            IReadOnlyList<PackageSource> packageSources)
         {
             string trimmedLookupName = lookupName?.Trim() ?? string.Empty;
             if (string.IsNullOrEmpty(trimmedLookupName))
@@ -117,15 +117,21 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             }
         }
 
-        internal static void ValidateUniquenessOrThrow(List<PackageSource> packageSources)
+        internal static void EnsureUniquenessOrThrow(IReadOnlyList<PackageSource> packageSources)
         {
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
-            EnsureUniqueNames(packageSources);
-            EnsureUniqueSources(packageSources);
+            if (!HasUniqueNames(packageSources))
+            {
+                throw new ArgumentException(message: Strings.Error_PackageSource_UniqueName);
+            }
+            if (!HasUniqueSources(packageSources))
+            {
+                throw new ArgumentException(message: Strings.Error_PackageSource_UniqueSource);
+            }
         }
 
-        private static void EnsureUniqueNames(List<PackageSource> packageSources)
+        internal static bool HasUniqueNames(IReadOnlyList<PackageSource> packageSources)
         {
             var seen = new HashSet<string>(
                 capacity: packageSources.Count,
@@ -135,12 +141,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
             {
                 if (!seen.Add(packageSource.Name.Trim()))
                 {
-                    throw new ArgumentException(message: Strings.Error_PackageSource_UniqueName);
+                    return false;
                 }
             }
+
+            return true;
         }
 
-        private static void EnsureUniqueSources(List<PackageSource> packageSources)
+        internal static bool HasUniqueSources(IReadOnlyList<PackageSource> packageSources)
         {
             var seen = new HashSet<string>(
                 capacity: packageSources.Count,
@@ -163,12 +171,14 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                 if (isDuplicate)
                 {
-                    throw new ArgumentException(message: Strings.Error_PackageSource_UniqueSource);
+                    return false;
                 }
             }
+
+            return true;
         }
 
-        private static PackageSource? FindByName(string packageSourceName, List<PackageSource> packageSources)
+        private static PackageSource? FindByName(string packageSourceName, IReadOnlyList<PackageSource> packageSources)
         {
             _ = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
 
