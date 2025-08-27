@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using Moq;
 using NuGet.Configuration;
@@ -301,6 +302,65 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
             result.Should().BeOfType<ExternalSettingOperationResult.Success>();
         }
 
+        [Fact]
+        public void ValidateArrayItemProperty_EnableDuplicateSource_ReturnsFailureSettingMessage()
+        {
+            // Arrange
+            string sourceName1 = "unitTestingSourceName1";
+            string sourceUrl1 = "https://testsource1.com";
+            bool isSource1Enabled = false;
+
+            string sourceName2 = "unitTestingSourceName2";
+            string sourceUrl2 = sourceUrl1;
+            bool isSource2Enabled = true;
+
+            // Configure 3 existing package sources
+            _packageSources =
+            [
+                new PackageSource(sourceUrl1, sourceName1, isSource1Enabled),
+                new PackageSource(sourceUrl2, sourceName2, isSource2Enabled)
+            ];
+
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+
+            // Configure Unified Settings input to Toggle IsEnabled state on the disabled source.
+            Dictionary<string, object> packageSourceDictionary1 = new Dictionary<string, object>();
+            packageSourceDictionary1[PackageSourcesPage.MonikerSourceName] = sourceName1;
+            packageSourceDictionary1[PackageSourcesPage.MonikerSourceUrl] = sourceUrl1;
+            packageSourceDictionary1[PackageSourcesPage.MonikerIsEnabled] = true; // Enable the first source.
+            packageSourceDictionary1[PackageSourcesPage.MonikerAllowInsecureConnections] = false;
+
+            Dictionary<string, object> packageSourceDictionary2 = new Dictionary<string, object>();
+            packageSourceDictionary2[PackageSourcesPage.MonikerSourceName] = sourceName2;
+            packageSourceDictionary2[PackageSourcesPage.MonikerSourceUrl] = sourceUrl2;
+            packageSourceDictionary2[PackageSourcesPage.MonikerIsEnabled] = isSource2Enabled;
+            packageSourceDictionary2[PackageSourcesPage.MonikerAllowInsecureConnections] = false;
+
+            IReadOnlyList<IReadOnlyDictionary<string, object>> packageSourceDictionaryList =
+                new List<IReadOnlyDictionary<string, object>>(capacity: 2)
+                {
+                    packageSourceDictionary1,
+                    packageSourceDictionary2
+                };
+
+            // Act
+            OneOrMany<SettingMessage> result = instance.ValidateArrayItemProperty(
+                arraySettingMoniker: PackageSourcesPage.MonikerPackageSources,
+                arrayItemIndex: 0,
+                propertyMoniker: PackageSourcesPage.MonikerIsEnabled,
+                arraySettingContent: packageSourceDictionaryList);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            SettingMessage resultSettingMessage = result[0];
+            resultSettingMessage.Severity.Should().Be(MessageSeverity.Error);
+            resultSettingMessage.Text.Should().Be(Strings.Error_PackageSource_UniqueSource);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
         [Fact]
         public async Task SetValueAsync_EnableDuplicateSource_ReturnsFailureResultTaskAsync()
         {
