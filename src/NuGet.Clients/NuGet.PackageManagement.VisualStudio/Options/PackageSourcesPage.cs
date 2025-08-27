@@ -371,6 +371,8 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                     case MonikerIsEnabled:
                         {
                             bool hasAnyPackageSourceNameChanged = false; // Ignored for validation
+
+                            //TODO: Back to isolating only 1 source, validating it, and not every source should have an error for duplicates.
                             List<PackageSource> existingPackageSources = LoadPackageSources(isMachineWide: false);
                             var packageSources = UnifiedSettingsDictionaryToPackageSources(existingPackageSources, ref hasAnyPackageSourceNameChanged, arraySettingContent, CancellationToken.None);
 
