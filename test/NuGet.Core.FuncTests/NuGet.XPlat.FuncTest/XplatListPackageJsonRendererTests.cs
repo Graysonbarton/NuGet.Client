@@ -1403,6 +1403,11 @@ namespace NuGet.XPlat.FuncTest
             {
                 var projectModel = new ListPackageProjectModel(project.projectPath);
                 projectModel.TargetFrameworkPackages = project.listPackageReportFrameworks;
+                var hasAutoReferencedTopLevelPackage = project.listPackageReportFrameworks?.Any(packageReportFramework =>
+                                                           packageReportFramework.TopLevelPackages?.Any(topLevelPackage => topLevelPackage.AutoReference) ?? false) ??
+                                                       false;
+
+                projectModel.AutoReferenceFound = hasAutoReferencedTopLevelPackage;
 
                 if (project.projectProblems != null)
                 {
