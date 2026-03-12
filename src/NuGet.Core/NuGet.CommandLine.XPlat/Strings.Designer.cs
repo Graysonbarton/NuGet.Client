@@ -1070,7 +1070,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid..
+        ///   Looks up a localized string similar to The specified TargetFramework &apos;{0}&apos; is not found in the project &apos;{1}&apos;..
         /// </summary>
         internal static string ListPkg_InvalidFramework {
             get {
