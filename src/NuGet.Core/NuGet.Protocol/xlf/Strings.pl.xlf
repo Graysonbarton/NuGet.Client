@@ -86,12 +86,12 @@
       </trans-unit>
       <trans-unit id="Error_RequiredJsonPropertyMissing">
         <source>Required property '{0}' not found in JSON.</source>
-        <target state="new">Required property '{0}' not found in JSON.</target>
+        <target state="translated">Nie znaleziono wymaganej właściwości „{0}” w formacie JSON.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnexpectedJsonToken">
         <source>Unexpected JSON token type '{0}'.</source>
-        <target state="new">Unexpected JSON token type '{0}'.</target>
+        <target state="translated">Nieoczekiwany typ tokenu JSON „{0}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
